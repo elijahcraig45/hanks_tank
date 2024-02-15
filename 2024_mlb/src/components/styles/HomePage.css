@@ -1,0 +1,30 @@
+body.dark-theme {
+    background-color: #202124;
+    color: #fff;
+  }
+  
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: #fff;
+  }
+  
+  p,
+  ul li {
+    color: #eee;
+  }
+  
+  .card {
+    background-color: #303134;
+    border: 1px solid #404144;
+  }
+  
+  .card-body {
+    padding: 20px;
+  }
+  
+  /* Add more styles as needed */
+  
