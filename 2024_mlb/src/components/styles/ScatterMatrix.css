@@ -1,0 +1,55 @@
+/* styles/ScatterMatrix.css */
+
+.scatter-matrix-grid {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  grid-gap: 10px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  align-items: center;
+}
+
+.col {
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.col:first-child {
+  border-left: 0;
+}
+
+.col:last-child {
+  border-right: 0;
+}
+
+.dropdown-button {
+  width: 100%;
+  font-size: 14px;
+  text-align: left;
+}
+
+.dropdown-item {
+  font-size: 13px;
+}
+
+.scatter-chart {
+  border: 1px solid #eee;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.x-axis, .y-axis {
+  font-size: 12px;
+}
+
+.custom-tooltip {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  padding: 5px;
+  border-radius: 3px;
+  font-size: 12px;
+}
