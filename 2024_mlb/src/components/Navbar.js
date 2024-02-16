@@ -14,7 +14,8 @@ function BasicExample() {
             <Nav.Link href="/">Home</Nav.Link>
             <Nav.Link href="TeamBatting">Team Batting</Nav.Link>
             <Nav.Link href="TeamPitching">Team Pitching</Nav.Link>
-            <Nav.Link href="PlayerStats">Player Stats</Nav.Link>
+            <Nav.Link href="PlayerBatting">Player Batting</Nav.Link>
+            <Nav.Link href="PlayerPitching">Player Pitching</Nav.Link>
             <Nav.Link href="AssistedAnalysis">Assisted</Nav.Link>
             
           </Nav>
