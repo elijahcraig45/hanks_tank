@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
 import Table from 'react-bootstrap/Table';
+// import ScatterPlotMatrix from './ScatterPlotMatrix';
 
 const TeamPitching = () => {
   const [pitchingData, setPitchingData] = useState([]);
@@ -45,7 +46,8 @@ const TeamPitching = () => {
   };
 
   return (
-    <Container fluid className="pt-3">
+    <Container class="container-md" className="pt-3">
+      <Row style={ {height:"50px"}}> <h1>Team Pitching</h1></Row>
       <Row>
         <Col xs={12} style={{ overflow: 'auto', maxHeight: '500px' }}>
           <Table striped bordered hover size="sm" className="mt-3">
@@ -70,7 +72,7 @@ const TeamPitching = () => {
           </Table>
         </Col>
       </Row>
-
+      <Row style={ {height:"100px"}}> <h2>Visualizations</h2></Row>
       {/* Visualizations */}
       <Row>
         {/* ERA Bar Chart */}
@@ -165,6 +167,13 @@ const TeamPitching = () => {
 
         {/* Additional charts can be added here based on the available data */}
       </Row>
+      
+      {/* <Row style={ {height:"100px"}}> <h2>Correlations</h2></Row>
+      <Row>
+        <Col>
+          <ScatterPlotMatrix data={pitchingData} sortKey="Team" />
+        </Col>
+      </Row> */}
     </Container>
   );
 };
