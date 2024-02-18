@@ -24,7 +24,8 @@ const PlayerBatting = () => {
   const headers = Object.keys(playerData[0]);
 
   return (
-    <Container fluid>
+    <Container class="container-md">
+      <Row style={ {height:"50px"}}> <h1>Player Batting</h1></Row>
       <Row className="my-4">
       <Col xs={12} style={{ overflow: 'auto', maxHeight: '500px' }}>
           
@@ -48,7 +49,7 @@ const PlayerBatting = () => {
         </Table>
         </Col>
       </Row>
-    
+      <Row style={ {height:"50px"}}> <h2>Correlations</h2></Row>
       {/* Pass the loaded playerData and a key to sort by (e.g., 'Name') to the ScatterPlotMatrix */}
       <Row>
         <Col>

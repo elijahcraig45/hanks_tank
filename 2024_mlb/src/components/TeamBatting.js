@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
 import Table from 'react-bootstrap/Table';
-
+// import ScatterPlotMatrix from './ScatterPlotMatrix';
 
 const TeamBatting = () => {
   const [teamData, setTeamData] = useState([]);
@@ -50,7 +50,8 @@ const TeamBatting = () => {
   };
 
   return (
-    <Container fluid className="pt-3">
+    <Container class="container-md" className="pt-3">
+      <Row style={ {height:"50px"}}> <h1>Team Batting</h1></Row>
         <Row>
           <Col xs={12} style={{ overflow: 'auto', maxHeight: '500px' }}>
           <Table striped bordered hover size="sm" className="mt-3">
@@ -92,7 +93,7 @@ const TeamBatting = () => {
             />
           </Col>
         </Row> */}
-
+      <Row style={ {height:"100px"}}> <h2>Visualizations</h2></Row>
         <Row>
         <Row>
     {/* HR Pie Chart */}
@@ -190,6 +191,13 @@ const TeamBatting = () => {
   </Row>
 
         </Row>
+
+        {/* <Row style={ {height:"100px"}}> <h2>Correlations</h2></Row>
+      <Row>
+        <Col>
+          <ScatterPlotMatrix data={teamData} sortKey="Team" />
+        </Col>
+      </Row> */}
 
     </Container>
   );
