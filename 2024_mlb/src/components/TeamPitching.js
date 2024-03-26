@@ -9,11 +9,24 @@ const TeamPitching = () => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
 
   useEffect(() => {
-    fetch('/data/2023_teamPitching.json')
-      .then(response => response.json())
-      .then(data => setPitchingData(data))
-      .catch(error => console.error("Failed to fetch pitching data:", error));
+    // Construct the full endpoint URL
+    const teamDataEndpoint = `${process.env.REACT_APP_API_URL}/TeamPitching`; // Adjust '/player-batting' as needed
+
+    fetch(teamDataEndpoint)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data && data.length > 0) {
+          setPitchingData(data);
+        }
+      })
+      .catch((error) => console.error("Failed to fetch player data:", error));
   }, []);
+
 
   const sortedPitchingData = useMemo(() => {
     let sortableData = [...pitchingData];
@@ -44,6 +57,11 @@ const TeamPitching = () => {
     if (['ERA', 'WHIP'].includes(key)) return parseFloat(data).toFixed(2);
     return data;
   };
+
+
+  if (!pitchingData) {
+    return <div>Loading...</div>; // or any other fallback UI
+  }
 
   return (
     <Container class="container-md" className="pt-3">

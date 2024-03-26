@@ -6,19 +6,30 @@ const PlayerPitching = () => {
   const [playerData, setPlayerData] = useState([]);
 
   useEffect(() => {
-    fetch('/data/2023_PlayerPitching.json')
-      .then(response => response.json())
-      .then(data => {
-        if (data && data.length > 0) {
-          setPlayerData(data);
-        }
-      })
-      .catch(error => console.error("Failed to fetch player data:", error));
-  }, []);
+    // Construct the full endpoint URL
+    const playerDataEndpoint = `${process.env.REACT_APP_API_URL}/PlayerPitching`; // Adjust '/player-batting' as needed
+    console.log('Fetching from:', playerDataEndpoint);
 
-  if (playerData.length === 0) {
-    // Show a loading state, or simply return null to render nothing
-    return <div>Loading...</div>;
+    fetch(playerDataEndpoint)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Received data:', data);
+      if (data && data.length > 0) {
+        setPlayerData(data);
+      }
+    })
+    .catch(error => console.error("Failed to fetch player data:", error));
+}, []);
+
+
+
+  if (!playerData || playerData.length === 0) {
+    return <div>Loading...</div>; // or any other fallback UI
   }
 
   const headers = Object.keys(playerData[0]);
