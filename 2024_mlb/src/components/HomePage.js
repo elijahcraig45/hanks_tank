@@ -6,16 +6,30 @@ function HomePage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      // Fetch logic remains the same, ensure the correct paths to your JSON files
-      const [mlbNews, bravesNews] = await Promise.all([
-        fetch('/data/2024_mlb_news.json'),
-        fetch('/data/2024_braves_news.json'),
-      ]);
-      const mlbData = await mlbNews.json();
-      const bravesData = await bravesNews.json();
-      setNewsData({ mlb: mlbData.articles, braves: bravesData.articles });
+      // Using the REACT_APP_API_URL environment variable
+      const apiUrl = process.env.REACT_APP_API_URL;
+      const mlbEndpoint = `${apiUrl}/mlb-news`; // Adjust the endpoint as needed
+      const bravesEndpoint = `${apiUrl}/braves-news`; // Adjust the endpoint as needed
+  
+      try {
+        const [mlbNews, bravesNews] = await Promise.all([
+          fetch(mlbEndpoint),
+          fetch(bravesEndpoint),
+        ]);
+        
+        if (!mlbNews.ok || !bravesNews.ok) {
+          throw new Error('Network response was not ok');
+        }
+  
+        const mlbData = await mlbNews.json();
+        const bravesData = await bravesNews.json();
+        setNewsData({ mlb: mlbData.articles, braves: bravesData.articles });
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        // Handle errors as needed
+      }
     };
-
+  
     fetchData();
   }, []);
 
