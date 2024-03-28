@@ -1,101 +1,118 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Container, Row, Col } from "react-bootstrap";
+import { Container, Row, Col, Dropdown, Form } from "react-bootstrap";
 import {
-  BarChart,
-  Bar,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  CartesianGrid,
+  BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, CartesianGrid,
 } from "recharts";
 import Table from "react-bootstrap/Table";
-// import ScatterPlotMatrix from './ScatterPlotMatrix';
 
 const TeamBatting = () => {
   const [teamData, setTeamData] = useState([]);
-  const [sortConfig, setSortConfig] = useState({
-    key: null,
-    direction: "ascending",
-  });
+  const [selectedYear, setSelectedYear] = useState("2023");
+  const [visibleStats, setVisibleStats] = useState(new Set(["Team", "HR", "AVG", "RBI", "OPS", 'G', 'AB',	'PA',	'H'	,'HR'	,'R',	'RBI'	,'BB'	,'SO',	'AVG',])); // Initial visible stats
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "ascending" });
 
   useEffect(() => {
-    // Construct the full endpoint URL
-    const teamDataEndpoint = `${process.env.REACT_APP_API_URL}/TeamBatting`; // Adjust '/player-batting' as needed
-
+    const teamDataEndpoint = `${process.env.REACT_APP_API_URL}/TeamBatting?year=${selectedYear}`;
     fetch(teamDataEndpoint)
-      .then((response) => {
+      .then(response => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
         return response.json();
       })
-      .then((data) => {
+      .then(data => {
         if (data && data.length > 0) {
           setTeamData(data);
         }
       })
-      .catch((error) => console.error("Failed to fetch player data:", error));
-  }, []);
+      .catch(error => console.error("Failed to fetch team batting data:", error));
+  }, [selectedYear]);
 
-  
-
-  const sortedTeams = useMemo(() => {
-    let sortableTeams = [...teamData]; // Clone to avoid directly mutating state
-    if (sortConfig !== null) {
-      sortableTeams.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === "ascending" ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === "ascending" ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-    return sortableTeams;
-  }, [teamData, sortConfig]);
+  const sortedTeams = useMemo(() => [...teamData].sort((a, b) => {
+    if (!sortConfig.key) return 0;
+    const order = sortConfig.direction === "ascending" ? 1 : -1;
+    return (a[sortConfig.key] < b[sortConfig.key] ? -1 : 1) * order;
+  }), [teamData, sortConfig]);
 
   const requestSort = (key) => {
-    let direction = "ascending";
-    if (sortConfig.key === key && sortConfig.direction === "ascending") {
-      direction = "descending";
-    }
-    setSortConfig({ key, direction });
+    setSortConfig({
+      key,
+      direction: sortConfig.key === key && sortConfig.direction === "ascending" ? "descending" : "ascending"
+    });
   };
 
-  if (!teamData) {
-    return <div>Loading...</div>; // or any other fallback UI
-  }
+  const toggleStatVisibility = (stat) => {
+    setVisibleStats(prevStats => {
+      const newStats = new Set(prevStats);
+      if (newStats.has(stat)) {
+        newStats.delete(stat);
+      } else {
+        newStats.add(stat);
+      }
+      return newStats;
+    });
+  };
 
-  // Data formatter for table
   const formatData = (data, key) => {
-    if (["HR", "RBI", "SB"].includes(key))
-      return parseInt(data).toLocaleString();
-    if (["AVG", "OBP", "SLG", "OPS"].includes(key))
-      return parseFloat(data).toFixed(3);
+    if (["HR", "RBI", "SB"].includes(key)) return parseInt(data).toLocaleString();
+    if (["AVG", "OBP", "SLG", "OPS"].includes(key)) return parseFloat(data).toFixed(3);
     return data;
   };
 
+  if (!teamData.length) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <Container class="container-md" className="pt-3">
-      <Row style={{ height: "50px" }}>
-        {" "}
-        <h1>Team Batting</h1>
+    <Container className="container-md pt-3">
+      <Row className="justify-content-between align-items-center mb-3">
+        <Col>
+          <h1>Team Batting</h1>
+        </Col>
+        <Col xs="auto">
+          <Row>
+            <Col>
+          <Dropdown>
+            <Dropdown.Toggle variant="secondary" id="dropdown-year">
+              Year: {selectedYear}
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              {["2019", "2020", "2021", "2022", "2023", "2024"].map(year => (
+                <Dropdown.Item key={year} onClick={() => setSelectedYear(year)}>
+                  {year}
+                </Dropdown.Item>
+              ))}
+            </Dropdown.Menu>
+          </Dropdown>
+          </Col> <Col>
+          <Dropdown >
+            <Dropdown.Toggle variant="info">Choose Stats</Dropdown.Toggle>
+            <Dropdown.Menu>
+              {teamData.length > 0 && Object.keys(teamData[0]).map(key => (
+                <Dropdown.ItemText key={key}>
+                  <Form.Check
+                    type="checkbox"
+                    label={key}
+                    checked={visibleStats.has(key)}
+                    onChange={() => toggleStatVisibility(key)}
+                  />
+                </Dropdown.ItemText>
+              ))}
+            </Dropdown.Menu>
+          </Dropdown>
+          </Col>
+          </Row>
+        </Col>
       </Row>
       <Row>
         <Col xs={12} style={{ overflow: "auto", maxHeight: "500px" }}>
           <Table striped bordered hover size="sm" className="mt-3">
             <thead>
               <tr>
-                {teamData.length > 0 &&
-                  Object.keys(teamData[0]).map((key) => (
-                    <th
-                      key={key}
-                      onClick={() => requestSort(key)}
-                      style={{ cursor: "pointer" }}
-                    >
+                {teamData.length > 0 && Object.keys(teamData[0])
+                  .filter(key => visibleStats.has(key))
+                  .map(key => (
+                    <th key={key} onClick={() => requestSort(key)} style={{ cursor: "pointer" }}>
                       {key}
                     </th>
                   ))}
@@ -104,140 +121,113 @@ const TeamBatting = () => {
             <tbody>
               {sortedTeams.map((team, idx) => (
                 <tr key={idx}>
-                  {Object.entries(team).map(([key, value], valueIdx) => (
-                    <td key={valueIdx}>{formatData(value, key)}</td>
-                  ))}
+                  {Object.entries(team)
+                    .filter(([key]) => visibleStats.has(key))
+                    .map(([key, value], valueIdx) => (
+                      <td key={`${key}-${valueIdx}`}>{formatData(value, key)}</td>
+                    ))}
                 </tr>
               ))}
             </tbody>
           </Table>
         </Col>
       </Row>
-
-      {/* <Row>
-          <Col xs={12}>
-            <Select
-              options={teamOptions}
-              value={selectedTeams}
-              onChange={handleChange}
-              components={{ Option }}
-              isMulti
-              closeMenuOnSelect={false}
-              hideSelectedOptions={false}
-              className="basic-multi-select"
-              classNamePrefix="select"
-            />
-          </Col>
-        </Row> */}
-      <Row style={{ height: "100px" }}>
-        {" "}
-        <h2>Visualizations</h2>
-      </Row>
+      {/* Visualizations updated to reflect the format and year selection */}
+      <Row className="mt-4">
+              {/* Visualizations */}
       <Row>
-        <Row>
-          {/* HR Pie Chart */}
-          <Col xs={12} md={6} lg={4}>
-            <h4>Home Runs Distribution</h4>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={sortedTeams}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="Team" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="HR" fill="#82ca9d" name="Home Runs" />
-              </BarChart>
-            </ResponsiveContainer>
-          </Col>
-
-          {/* Batting Average (AVG) Bar Chart */}
-          <Col xs={12} md={6} lg={4}>
-            <h4>Team Batting Averages</h4>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={sortedTeams}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="Team" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="AVG" fill="#82ca9d" name="Batting Average" />
-              </BarChart>
-            </ResponsiveContainer>
-          </Col>
-
-          {/* On-base Plus Slugging (OPS) Line Chart */}
-          <Col xs={12} md={6} lg={4}>
-            <h4>OPS Trend Across Teams</h4>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={sortedTeams}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="Team" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="OPS" fill="#ff7300" name="OPS" />
-              </BarChart>
-            </ResponsiveContainer>
-          </Col>
-
-          {/* RBI Pie Chart */}
-          <Col xs={12} md={6} lg={4}>
-            <h4>Runs Batted In (RBI) Distribution</h4>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={sortedTeams}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="Team" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="RBI" fill="#a4de6c" name="Runs Batted In (RBI)" />
-              </BarChart>
-            </ResponsiveContainer>
-          </Col>
-
-          {/* Stolen Bases (SB) Bar Chart */}
-          <Col xs={12} md={6} lg={4}>
-            <h4>Stolen Bases Comparison</h4>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={sortedTeams}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="Team" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="SB" fill="#a4de6c" name="Stolen Bases" />
-              </BarChart>
-            </ResponsiveContainer>
-          </Col>
-
-          {/* Extra Base Hits (XBH) Calculation & Bar Chart */}
-          <Col xs={12} md={6} lg={4}>
-            <h4>Extra Base Hits (XBH)</h4>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart
-                data={sortedTeams.map((team) => ({
-                  ...team,
-                  XBH: team["2B"] + team["3B"] + team.HR, // Assuming 2B, 3B, and HR keys exist
-                }))}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="Team" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="XBH" fill="#4d4dff" name="Extra Base Hits" />
-              </BarChart>
-            </ResponsiveContainer>
-          </Col>
-        </Row>
-      </Row>
-
-      {/* <Row style={ {height:"100px"}}> <h2>Correlations</h2></Row>
-      <Row>
-        <Col>
-          <ScatterPlotMatrix data={teamData} sortKey="Team" />
+        {/* Home Runs (HR) Bar Chart */}
+        <Col xs={12} md={6} lg={4} className="mb-4">
+          <h4>Home Runs (HR)</h4>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={sortedTeams}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="Team" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="HR" fill="#8884d8" name="Home Runs" />
+            </BarChart>
+          </ResponsiveContainer>
         </Col>
-      </Row> */}
+
+        {/* Batting Average (AVG) Bar Chart */}
+        <Col xs={12} md={6} lg={4} className="mb-4">
+          <h4>Batting Average (AVG)</h4>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={sortedTeams}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="Team" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="AVG" fill="#82ca9d" name="Batting Average" />
+            </BarChart>
+          </ResponsiveContainer>
+        </Col>
+
+        {/* Runs Batted In (RBI) Bar Chart */}
+        <Col xs={12} md={6} lg={4} className="mb-4">
+          <h4>Runs Batted In (RBI)</h4>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={sortedTeams}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="Team" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="RBI" fill="#ffc658" name="Runs Batted In" />
+            </BarChart>
+          </ResponsiveContainer>
+        </Col>
+
+        {/* On-base Plus Slugging (OPS) Bar Chart */}
+        <Col xs={12} md={6} lg={4} className="mb-4">
+          <h4>On-base Plus Slugging (OPS)</h4>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={sortedTeams}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="Team" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="OPS" fill="#fa8072" name="On-base Plus Slugging" />
+            </BarChart>
+          </ResponsiveContainer>
+        </Col>
+              {/* Stolen Bases (SB) Bar Chart */}
+      <Col xs={12} md={6} lg={4} className="mb-4">
+        <h4>Stolen Bases (SB)</h4>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={sortedTeams}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="Team" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="SB" fill="#4287f5" name="Stolen Bases" />
+          </BarChart>
+        </ResponsiveContainer>
+      </Col>
+
+      {/* On-Base Percentage (OBP) Bar Chart */}
+      <Col xs={12} md={6} lg={4} className="mb-4">
+        <h4>On-Base Percentage (OBP)</h4>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={sortedTeams}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="Team" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="OBP" fill="#20c997" name="On-Base Percentage" />
+          </BarChart>
+        </ResponsiveContainer>
+      </Col>
+
+      </Row>
+      
+      </Row>
     </Container>
   );
 };
