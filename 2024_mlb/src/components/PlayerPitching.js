@@ -3,7 +3,7 @@ import { Container, Row, Col, Table, Dropdown, Form } from 'react-bootstrap';
 
 const PlayerPitching = () => {
   const [playerData, setPlayerData] = useState([]);
-  const [selectedYear, setSelectedYear] = useState('2023');
+  const [selectedYear, setSelectedYear] = useState('2024');
   const [visibleStats, setVisibleStats] = useState(new Set(['Name', 'Team', 'ERA', 'SO', 'G', 'IP', 'H', 'ER', 'HR', 'BB', 'K/9', 'BB/9', "WHIP"])); // Assuming these are the "essentials"
 
   useEffect(() => {

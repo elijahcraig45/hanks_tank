@@ -7,7 +7,7 @@ import Table from "react-bootstrap/Table";
 
 const TeamPitching = () => {
   const [teamData, setTeamData] = useState([]);
-  const [selectedYear, setSelectedYear] = useState("2023");
+  const [selectedYear, setSelectedYear] = useState("2024");
   const [visibleStats, setVisibleStats] = useState(new Set(["Team", "HR", "AVG", "RBI", "OPS", 'G', 'AB',	'PA',	'H'	,'HR'	,'R','ERA', 'SO', 'G', 'IP', 'H', 'ER', 'HR', 'BB', 'K/9', 'BB/9', "WHIP"	,'BB'	,'SO',	'AVG',])); // Initial visible stats
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "ascending" });
 
