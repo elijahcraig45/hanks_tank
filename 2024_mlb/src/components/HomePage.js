@@ -1,28 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, ListGroup, Badge, Image } from 'react-bootstrap';
+import { Container, Row, Col, Card, ListGroup, Badge, Image, Table } from 'react-bootstrap';
 
 function HomePage() {
   const [newsData, setNewsData] = useState({ mlb: [], braves: [] });
+  const [standings, setStandings] = useState([]);
 
   useEffect(() => {
+    const apiUrl = process.env.REACT_APP_API_URL;
     const fetchData = async () => {
-      const apiUrl = process.env.REACT_APP_API_URL;
-      const mlbEndpoint = `${apiUrl}/mlb-news`;
-      const bravesEndpoint = `${apiUrl}/braves-news`;
-
       try {
-        const [mlbNews, bravesNews] = await Promise.all([
-          fetch(mlbEndpoint),
-          fetch(bravesEndpoint),
+        const [mlbNews, bravesNews, standingsData] = await Promise.all([
+          fetch(`${apiUrl}/mlb-news`),
+          fetch(`${apiUrl}/braves-news`),
+          fetch(`${apiUrl}/standings`),
         ]);
 
-        if (!mlbNews.ok || !bravesNews.ok) {
+        if (!mlbNews.ok || !bravesNews.ok || !standingsData.ok) {
           throw new Error('Network response was not ok');
         }
 
         const mlbData = await mlbNews.json();
         const bravesData = await bravesNews.json();
+        let standingsRawData = await standingsData.json();
+
+        // Format the standings data
+        standingsRawData = standingsRawData.map(team => ({
+          ...team,
+          L: team.L === false ? 0 : team.L === true ? 1 : team.L,
+        }));
+
         setNewsData({ mlb: mlbData.articles, braves: bravesData.articles });
+        setStandings(standingsRawData);
       } catch (error) {
         console.error("Failed to fetch data:", error);
       }
@@ -34,6 +42,8 @@ function HomePage() {
   const sortNewsByDate = (newsArray) => {
     return newsArray.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
   };
+
+  const divisions = ["AL East", "AL Central", "AL West", "NL East", "NL Central", "NL West"];
 
   return (
     <Container fluid="lg" className="py-5">
@@ -57,17 +67,19 @@ function HomePage() {
               ))}
             </ListGroup>
           </Card>
-        </Col>
-        <Col xs={12} lg={4}>
-          {/* This space can be used for current standings, upcoming games, or any other relevant information. */}
           <Card>
-            <Card.Header as="h5" className="text-center">Current Standings</Card.Header>
-            {/* Standings or other content goes here */}
+            <Card.Header as="h5">Braves News</Card.Header>
+            <ListGroup variant="flush">
+              {sortNewsByDate(newsData.braves).slice(10, 20).map((item, index) => (
+                <ListGroup.Item key={index} className="d-flex align-items-center">
+                  <Image src={item.urlToImage} alt="" rounded style={{ width: '60px', height: '60px', marginRight: '15px', objectFit: 'cover' }} />
+                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="link-dark">
+                    {item.title}
+                  </a>
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
           </Card>
-        </Col>
-      </Row>
-      <Row className="g-4 mt-4">
-        <Col xs={12} md={6}>
           <Card>
             <Card.Header as="h5">MLB News</Card.Header>
             <ListGroup variant="flush">
@@ -82,20 +94,48 @@ function HomePage() {
             </ListGroup>
           </Card>
         </Col>
-        <Col xs={12} md={6}>
+        <Col xs={12} lg={4}>
+          
+          {/* This space can be used for current standings, upcoming games, or any other relevant information. */}
           <Card>
-            <Card.Header as="h5">Braves News</Card.Header>
-            <ListGroup variant="flush">
-              {sortNewsByDate(newsData.braves).slice(10, 20).map((item, index) => (
-                <ListGroup.Item key={index} className="d-flex align-items-center">
-                  <Image src={item.urlToImage} alt="" rounded style={{ width: '60px', height: '60px', marginRight: '15px', objectFit: 'cover' }} />
-                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="link-dark">
-                    {item.title}
-                  </a>
-                </ListGroup.Item>
+            {/* Standings or other content goes here */}
+            <Card.Header as="h5" className="text-center">Current Standings</Card.Header>
+            <Card.Body>
+              {divisions.map((division, divIndex) => (
+                <div key={division} className="mb-3">
+                  <h6>{division}</h6>
+                  <Table striped bordered hover size="sm">
+                    <thead>
+                      <tr>
+                        <th>Team</th>
+                        <th>W-L</th>
+                        <th>%</th>
+                        <th>GB</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {standings.slice(divIndex * 5, (divIndex + 1) * 5).map((team, index) => (
+                        <tr key={index}>
+                          <td>{team.Tm}</td>
+                          <td>{team.W}-{team.L}</td>
+                          <td>{team["W-L%%"]}</td>
+                          <td>{team.GB ?? '--'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
               ))}
-            </ListGroup>
+            </Card.Body>
           </Card>
+        </Col>
+      </Row>
+      <Row className="g-4 mt-4">
+        <Col xs={12} md={6}>
+          
+        </Col>
+        <Col xs={12} md={6}>
+          
         </Col>
       </Row>
     </Container>
