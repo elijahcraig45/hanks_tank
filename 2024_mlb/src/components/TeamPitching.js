@@ -4,6 +4,8 @@ import {
   BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, CartesianGrid,
 } from "recharts";
 import Table from "react-bootstrap/Table";
+import {Link } from "react-router-dom"; // Assuming React Router is used for routing
+
 
 const TeamPitching = () => {
   const [teamData, setTeamData] = useState([]);
@@ -124,7 +126,9 @@ const TeamPitching = () => {
                   {Object.entries(team)
                     .filter(([key]) => visibleStats.has(key))
                     .map(([key, value], valueIdx) => (
-                      <td key={`${key}-${valueIdx}`}>{formatData(value, key)}</td>
+                      <td key={`${key}-${valueIdx}`}>
+                      {key === "Team" ? <Link to={`/team/${team.Team}`}>{value}</Link> : formatData(value, key)}
+                    </td>
                     ))}
                 </tr>
               ))}
