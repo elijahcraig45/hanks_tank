@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Table, Dropdown, Form } from 'react-bootstrap';
-
+import { Link } from 'react-router-dom';
 const PlayerPitching = () => {
   const [playerData, setPlayerData] = useState([]);
   const [selectedYear, setSelectedYear] = useState('2024');
@@ -91,14 +91,25 @@ const PlayerPitching = () => {
               </tr>
             </thead>
             <tbody>
-              {playerData.map((player, idx) => (
-                <tr key={idx}>
-                  {headers.filter(header => visibleStats.has(header)).map(key => (
-                    <td key={`${key}-${idx}`}>{player[key]}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
+  {playerData.map((player, idx) => (
+    <tr key={idx}>
+      {headers.filter(header => visibleStats.has(header)).map(key => {
+        // If the key is "Name", render it as a link
+        if (key === "Name") {
+          // Assuming player[key] is "FirstName LastName"
+          const [firstName, lastName] = player[key].split(" "); // Adjust this if the format differs
+          return (
+            <td key={`${key}-${idx}`}>
+              <Link to={`/player/${firstName}/${lastName}`}>{player[key]}</Link>
+            </td>
+          );
+        } else {
+          return <td key={`${key}-${idx}`}>{player[key]}</td>;
+        }
+      })}
+    </tr>
+  ))}
+</tbody>
           </Table>
         </Col>
       </Row>

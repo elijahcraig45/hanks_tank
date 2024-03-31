@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Container, Row, Col, Table, Dropdown, Form,  Card } from 'react-bootstrap';
+import { Container, Row, Col, Table, Dropdown, Form } from 'react-bootstrap';
 
 const TeamPage = () => {
   const { teamAbbr } = useParams();
