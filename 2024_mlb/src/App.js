@@ -8,6 +8,7 @@ import AssistedAnalysis from './components/AssistedAnalysis';
 import Navbar from './components/Navbar';
 import TeamPitching from './components/TeamPitching';
 import TeamPage from './components/TeamPage';
+import PlayerPage from './components/PlayerPage';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/PlayerPitching" element={<PlayerPitching />} />
         <Route path="/AssistedAnalysis" element={<AssistedAnalysis />} />
         <Route path="/team/:teamAbbr" element={<TeamPage />} />
+        <Route path="/player/:firstName/:lastName" element={<PlayerPage />} />
       </Routes>
     </Router>
   );
