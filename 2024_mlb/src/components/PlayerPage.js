@@ -1,22 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
 import { Container, Row, Col, Table, Dropdown, Form } from 'react-bootstrap';
+import { useLocation } from 'react-router-dom';
+
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
 
 const PlayerPage = () => {
-  const { firstName, lastName } = useParams();
   const [playerData, setPlayerData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [visibleBattingStats, setVisibleBattingStats] = useState(new Set([ 'Team','AB', 'H', 'HR', 'RBI', 'AVG', "SO", "BB", "BABIP"]));
   const [visiblePitchingStats, setVisiblePitchingStats] = useState(new Set([ 'Team','ERA',"G", 'W', "L" ,'IP', 'ER', 'SO', 'BB', 'WHIP']));
 
+  const query = useQuery();
+  const playerName = query.get('name');
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true); // Start loading
-      const apiUrl = `${process.env.REACT_APP_API_URL}/player-stats/${firstName}/${lastName}`;
+      const encodedName = encodeURIComponent(playerName);
+      const apiUrl = `${process.env.REACT_APP_API_URL}/player-stats?name=${encodedName}`;
+      console.log(apiUrl)
       try {
         const response = await fetch(apiUrl);
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
+        console.log(data)
         setPlayerData(data);
       } catch (error) {
         console.error("Failed to fetch player data:", error);
@@ -25,7 +34,7 @@ const PlayerPage = () => {
       }
     };
     fetchData();
-  }, [firstName, lastName]);
+  }, [playerName]);
 
   if (isLoading) {
     return (
@@ -131,11 +140,11 @@ const PlayerPage = () => {
     <Container className="mt-4">
       <Row>
         <Col>
-          <h1>{`Player Stats: ${firstName} ${lastName}`}</h1>
+          <h1>{`Player Stats: ${playerName}`}</h1>
         </Col>
       </Row>
 
-      {renderTable('playerBatting', visibleBattingStats)}
+     {renderTable('playerBatting', visibleBattingStats)}
      {renderTable('playerPitching', visiblePitchingStats)}
       {/* Add additional years and pitching stats as needed */}
     </Container>
