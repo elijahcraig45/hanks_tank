@@ -93,21 +93,22 @@ const PlayerPitching = () => {
             <tbody>
   {playerData.map((player, idx) => (
     <tr key={idx}>
-      {headers.filter(header => visibleStats.has(header)).map(key => {
-        // If the key is "Name", render it as a link
-        if (key === "Name") {
-          // Assuming player[key] is "FirstName LastName"
-          const [firstName, lastName] = player[key].split(" "); // Adjust this if the format differs
-          return (
-            <td key={`${key}-${idx}`}>
-              <Link to={`/player/${firstName}/${lastName}`}>{player[key]}</Link>
-            </td>
-          );
-        } else {
-          return <td key={`${key}-${idx}`}>{player[key]}</td>;
-        }
-      })}
-    </tr>
+    {headers.filter(header => visibleStats.has(header)).map(key => {
+      // If the key is "Name", render it as a link
+      if (key === "Name") {
+        // Encode the player's name to ensure the URL is properly formatted
+        // player[key] is expected to be in "FirstName LastName" format or similar
+        const encodedName = encodeURIComponent(player[key]);
+        return (
+          <td key={`${key}-${idx}`}>
+            <Link to={`/player?name=${encodedName}`}>{player[key]}</Link>
+          </td>
+        );
+      } else {
+        return <td key={`${key}-${idx}`}>{player[key]}</td>;
+      }
+    })}
+  </tr>
   ))}
 </tbody>
           </Table>

@@ -22,7 +22,7 @@ function App() {
         <Route path="/PlayerPitching" element={<PlayerPitching />} />
         <Route path="/AssistedAnalysis" element={<AssistedAnalysis />} />
         <Route path="/team/:teamAbbr" element={<TeamPage />} />
-        <Route path="/player/:firstName/:lastName" element={<PlayerPage />} />
+        <Route path="/player" element={<PlayerPage />} />
       </Routes>
     </Router>
   );
