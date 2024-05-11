@@ -93,18 +93,34 @@ const PlayerPage = () => {
     // Define the years you're interested in
     const years = ['2024', '2023', '2022', '2021', '2020', '2019'];
   
-    // Early exit if there's no data for any year
-    if (years.every(year => !playerData[`${category}_${year}`] || playerData[`${category}_${year}`].length === 0)) {
-      return null;
+    // Check if there is data for any year for the specific category (batting or pitching)
+    const hasDataForAnyYear = years.some(year => playerData[`${category}_${year}`] && Array.isArray(playerData[`${category}_${year}`]) && playerData[`${category}_${year}`].length > 0);
+    let dataYears = [];
+    for (let i = 0; i < years.length; i++) {
+      let tableName = `${category}_${years[i]}`
+      if (playerData[tableName] != null  && playerData[tableName].length > 0) {
+        dataYears.push(years[i]);
+      }
     }
-  
-    const allStats = Object.keys(playerData[`${category}_2024`] ? playerData[`${category}_2024`][0] : {}).concat(Array.from(visibleStats));
+    console.log(dataYears.toString());
+    
+    // Early exit if there's no data for any year for the specific category
+    if (!hasDataForAnyYear) {
+      return (
+        <div>
+          <h2>{`${category.includes('Batting') ? 'Batting' : 'Pitching'} Stats`}</h2>
+          <p>No data available</p>
+        </div>
+      );
+    }
+    let latestYear = dataYears[0];
+    const allStats = Object.keys(playerData[`${category}_${latestYear}`] ? playerData[`${category}_${latestYear}`][0] : {}).concat(Array.from(visibleStats));
   
     return (
       <>
         <Row>
           <Col>
-            <h2>{`${category} Stats`}</h2>
+            <h2>{`${category.includes('Batting') ? 'Batting' : 'Pitching'} Stats`}</h2>
           </Col>
           <Col xs="auto">
             {renderStatSelectionDropdown(visibleStats, category.includes('Batting') ? setVisibleBattingStats : setVisiblePitchingStats, allStats, category)}
@@ -118,21 +134,42 @@ const PlayerPage = () => {
           </thead>
           <tbody>
             {years.map(year => {
-              const dataKey = `${category}_${year}`;
-              const data = playerData[dataKey];
-              if (!data) return null;
-              return data.map((item, index) => (
-                <tr key={`${year}-${index}`}>
-                  <td>{year}</td>
-                  {Array.from(visibleStats).map(stat => <td key={stat}>{item[stat]}</td>)}
-                </tr>
-              ));
+              if (dataYears.includes(year)) {
+                const dataKey = `${category}_${year}`;
+                const data = playerData[dataKey];
+                if (!data || !Array.isArray(data) || data.length === 0) {
+                  return (
+                    <tr key={`no-data-${year}`}>
+                      <td>{year}</td>
+                      <td colSpan={visibleStats.size}>No data available</td>
+                    </tr>
+                  );
+                }
+                return data.map((item, index) => (
+                  <tr key={`${year}-${index}`}>
+                    <td>{year}</td>
+                    {Array.from(visibleStats).map(stat => <td key={stat}>{item[stat]}</td>)}
+                  </tr>
+                ));
+              } else {
+                return  (
+                  <tr key={`${year}-null`}>
+                    <td>{year}</td>
+                    {<td key={year-null}>No data available</td>}
+                  </tr>
+                );
+              }
+              
             })}
           </tbody>
         </Table>
       </>
     );
   };
+  
+  
+  
+  
   
 
   
