@@ -1,189 +1,140 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Table, Dropdown, Form } from 'react-bootstrap';
-import { useLocation } from 'react-router-dom';
-
-function useQuery() {
-  return new URLSearchParams(useLocation().search);
-}
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Container, Row, Col, Table, Image } from 'react-bootstrap';
 
 const PlayerPage = () => {
+  const { playerId } = useParams();
   const [playerData, setPlayerData] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [visibleBattingStats, setVisibleBattingStats] = useState(new Set([ 'Team','AB', 'H', 'HR', 'RBI', 'AVG', "SO", "BB", "BABIP"]));
-  const [visiblePitchingStats, setVisiblePitchingStats] = useState(new Set([ 'Team','ERA',"G", 'W', "L" ,'IP', 'ER', 'SO', 'BB', 'WHIP']));
-
-  const query = useQuery();
-  const playerName = query.get('name');
+  const [teamData, setTeamData] = useState({});
+  const [battingStatsData, setBattingStatsData] = useState([]);
+  const [pitchingStatsData, setPitchingStatsData] = useState([]);
+  const [visiblePitchingStats, setVisiblePitchingStats] = useState(new Set(['Season', 'Team', 'ERA', 'SO', 'G', 'IP', 'H', 'ER', 'HR', 'BB', 'K/9', 'BB/9', "WHIP", "WAR"]));
+  const [visibleBattingStats, setVisibleBattingStats] = useState(new Set(['Season', 'G', 'OPS', 'AB', 'PA', 'H', 'HR', 'R', 'RBI', 'BB', 'SO', 'AVG', 'Team', 'WAR']));
 
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true); // Start loading
-      const encodedName = encodeURIComponent(playerName);
-      const apiUrl = `${process.env.REACT_APP_API_URL}/player-stats?name=${encodedName}`;
-      console.log(apiUrl)
+      const apiUrl = `${process.env.REACT_APP_API_URL}/playerData?playerId=${playerId}`;
       try {
         const response = await fetch(apiUrl);
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
-        console.log(data)
-        setPlayerData(data);
+        setPlayerData(data.playerInfo);
+        setTeamData(data.teamInfo);
+        setBattingStatsData(data.data.filter(stats => !stats.hasOwnProperty('ERA')));
       } catch (error) {
         console.error("Failed to fetch player data:", error);
-      } finally {
-        setIsLoading(false); // Stop loading regardless of success or failure
       }
     };
     fetchData();
-  }, [playerName]);
+  }, [playerId]);
 
-  if (isLoading) {
-    return (
-      <Container className="mt-4">
-        <Row>
-          <Col>
-            <h1>Loading player stats...</h1>
-          </Col>
-        </Row>
-      </Container>
-    );
-  }
-
-  const toggleStatVisibility = (setStatsFn, stat) => {
-    setStatsFn(prevStats => {
-      const updatedStats = new Set(prevStats);
-      if (updatedStats.has(stat)) updatedStats.delete(stat);
-      else updatedStats.add(stat);
-      return updatedStats;
-    });
-  };
-
-  const renderStatSelectionDropdown = (visibleStats, setStatsFn, allStats, category) => (
-    <Dropdown className="mb-3">
-      <Dropdown.Toggle variant="info" id={`dropdown-${category}`}>
-        Choose Stats
-      </Dropdown.Toggle>
-      <Dropdown.Menu>
-        {allStats.map(stat => (
-          // Use "div" instead of "Dropdown.Item" for custom handling
-          <div key={stat} className="dropdown-item">
-            <Form.Check 
-              type="checkbox" 
-              label={stat}
-              checked={visibleStats.has(stat)}
-              onChange={(e) => {
-                // Toggle stat visibility
-                toggleStatVisibility(setStatsFn, stat);
-                // Stop propagation to keep dropdown open
-                e.stopPropagation();
-              }}
-              // Clicks on the checkbox itself should not close the dropdown
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
-        ))}
-      </Dropdown.Menu>
-    </Dropdown>
-  );
-  
-  
-  
-
-
-  const renderTable = (category, visibleStats) => {
-    // Define the years you're interested in
-    const years = ['2024', '2023', '2022', '2021', '2020', '2019'];
-  
-    // Check if there is data for any year for the specific category (batting or pitching)
-    const hasDataForAnyYear = years.some(year => playerData[`${category}_${year}`] && Array.isArray(playerData[`${category}_${year}`]) && playerData[`${category}_${year}`].length > 0);
-    let dataYears = [];
-    for (let i = 0; i < years.length; i++) {
-      let tableName = `${category}_${years[i]}`
-      if (playerData[tableName] != null  && playerData[tableName].length > 0) {
-        dataYears.push(years[i]);
+  useEffect(() => {
+    const fetchData = async () => {
+      const apiUrl = `${process.env.REACT_APP_API_URL}/playerData?playerId=${playerId}&position=P`;
+      try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        console.log(data.data);
+        setPitchingStatsData(data.data);
+      } catch (error) {
+        console.error("Failed to fetch player data:", error);
       }
+    };
+    fetchData();
+  }, [playerId]);
+
+  const StatsTable = ({ statsData, visibleStatsSet }) => {
+    if (statsData.length === 0) {
+      return null; // Render nothing if statsData is empty
     }
-    console.log(dataYears.toString());
-    
-    // Early exit if there's no data for any year for the specific category
-    if (!hasDataForAnyYear) {
-      return (
-        <div>
-          <h2>{`${category.includes('Batting') ? 'Batting' : 'Pitching'} Stats`}</h2>
-          <p>No data available</p>
-        </div>
-      );
-    }
-    let latestYear = dataYears[0];
-    const allStats = Object.keys(playerData[`${category}_${latestYear}`] ? playerData[`${category}_${latestYear}`][0] : {}).concat(Array.from(visibleStats));
+  
+    // Filter out statsData where Season does not contain a four-digit year or where AbbLevel is "PROJ"
+    const filteredStatsData = statsData.filter(stats => {
+      const isYear = /\b\d{4}\b/.test(stats.Season);
+      const isNotProjection = stats.AbbLevel !== "PROJ";
+      const isNotROS = stats.AbbLevel !== 'ROS';
+      const moreAB = stats.AB > 0 || stats.hasOwnProperty('ERA');
+      return isYear && isNotProjection && isNotROS && moreAB && stats.Team !== "Average";
+    });
+  
+    // Separate "Total" entries from other entries
+    const totalStats = filteredStatsData.filter(stats => stats.Season.includes("Total"));
+    const otherStats = filteredStatsData.filter(stats => !stats.Season.includes("Total")).reverse();
+  
+    // Combine otherStats with totalStats at the end
+    const finalStatsData = [...otherStats, ...totalStats];
   
     return (
-      <>
-        <Row>
-          <Col>
-            <h2>{`${category.includes('Batting') ? 'Batting' : 'Pitching'} Stats`}</h2>
-          </Col>
-          <Col xs="auto">
-            {renderStatSelectionDropdown(visibleStats, category.includes('Batting') ? setVisibleBattingStats : setVisiblePitchingStats, allStats, category)}
-          </Col>
-        </Row>
-        <Table striped bordered hover className="mt-3">
-          <thead>
-            <tr>
-              {['Year', ...Array.from(visibleStats)].map(stat => <th key={stat}>{stat}</th>)}
+      <Table striped bordered hover responsive> 
+        <thead>
+          <tr>
+            {Array.from(visibleStatsSet).map((key, index) => (
+              <th key={index}>{key}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {finalStatsData.map((stats, index) => (
+            <tr key={index}>
+              {Array.from(visibleStatsSet).map((key, idx) => (
+                <td key={`${index}-${idx}`}>
+                  {stats[key] != null && stats[key] !== "" ? (
+                    key === "Season" && (typeof stats[key] === "string" && !stats[key].includes("<a")) ? (
+                      `${stats[key]} (Postseason)`
+                    ) : typeof stats[key] === "string" && stats[key].startsWith("<a") ? (
+                      <span dangerouslySetInnerHTML={{ __html: stats[key] }} />
+                    ) : typeof stats[key] === "number" && stats[key] % 1 !== 0 ? (
+                      stats[key].toFixed(3)
+                    ) : (
+                      stats[key]
+                    )
+                  ) : (
+                    "--"
+                  )}
+                </td>
+              ))}
             </tr>
-          </thead>
-          <tbody>
-            {years.map(year => {
-              if (dataYears.includes(year)) {
-                const dataKey = `${category}_${year}`;
-                const data = playerData[dataKey];
-                if (!data || !Array.isArray(data) || data.length === 0) {
-                  return (
-                    <tr key={`no-data-${year}`}>
-                      <td>{year}</td>
-                      <td colSpan={visibleStats.size}>No data available</td>
-                    </tr>
-                  );
-                }
-                return data.map((item, index) => (
-                  <tr key={`${year}-${index}`}>
-                    <td>{year}</td>
-                    {Array.from(visibleStats).map(stat => <td key={stat}>{item[stat]}</td>)}
-                  </tr>
-                ));
-              } else {
-                return  (
-                  <tr key={`${year}-null`}>
-                    <td>{year}</td>
-                    {<td key={year-null}>No data available</td>}
-                  </tr>
-                );
-              }
-              
-            })}
-          </tbody>
-        </Table>
-      </>
+          ))}
+        </tbody>
+      </Table>
     );
   };
   
-  
-  
-  
-  
-
   
   return (
     <Container className="mt-4">
+      <Row className="justify-content-between align-items-center mb-4">
+        <Col><h1>{`${playerData.firstLastName}`}</h1></Col>
+      </Row>
       <Row>
-        <Col>
-          <h1>{`Player Stats: ${playerName}`}</h1>
+        <Col xs={3} md={4}>
+          <Image src={playerData.urlHeadshot} alt={playerData.firstLastName} rounded fluid />
+        </Col>
+        <Col xs={9} md={4}>
+          <p><strong>Height:</strong> {playerData.HeightDisplay}</p>
+          <p><strong>Weight:</strong> {playerData.Weight} lbs</p>
+          <p><strong>Position:</strong> {playerData.Position}</p>
+          <p><strong>Team:</strong> {teamData.MLB_FullName} ({teamData.tlevel})</p>
+          <p><strong>Rookie Season:</strong> {playerData.RookieSeason}</p>
+        </Col>
+        <Col xs={9} md={4}>
+          <p><strong>Bats:</strong> {playerData.Bats}</p>
+          <p><strong>Throws:</strong> {playerData.Throws}</p>
+          <p><strong>Birth Date:</strong> {playerData.BirthDateDisplay}</p>
+          <p><strong>Age:</strong> {playerData.AgeDisplay}</p>
+          <p><strong>College:</strong> {playerData.College}</p>
         </Col>
       </Row>
-
-     {renderTable('playerBatting', visibleBattingStats)}
-     {renderTable('playerPitching', visiblePitchingStats)}
-      {/* Add additional years and pitching stats as needed */}
+      <Row>
+        <Col style={{ overflow: "auto"}}>
+          {pitchingStatsData.length > 0 && <h2>Pitching Stats</h2>}
+          {pitchingStatsData.length > 0 && <StatsTable statsData={pitchingStatsData} visibleStatsSet={visiblePitchingStats} />}
+          {battingStatsData.length > 0 && <h2>Batting Stats</h2>}
+          {battingStatsData.length > 0 && <StatsTable statsData={battingStatsData} visibleStatsSet={visibleBattingStats} />}
+          {pitchingStatsData.length === 0 && battingStatsData.length === 0 && <p>No stats available.</p>}
+        </Col>
+      </Row>
     </Container>
   );
 };

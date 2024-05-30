@@ -30,7 +30,8 @@ const PlayerBatting = () => {
 
   useEffect(() => {
     // Replace '/' with '%2f' in each stat and join with a comma
-    const encodedStats = Array.from(visibleStats).map(stat => stat.replace('/', '%2f')).join(',');
+    let encodedStats = Array.from(visibleStats).map(stat => stat.replace('/', '%2f')).join(',');
+    encodedStats = ['IDfg', encodedStats]
     const playerDataEndpoint = `${process.env.REACT_APP_API_URL}/PlayerBatting?year=${selectedYear}&stats=${encodedStats}&orderBy=${sortConfig.key}&direction=${sortConfig.direction}`;
     console.log('Fetching from:', playerDataEndpoint);
 
@@ -131,17 +132,25 @@ const PlayerBatting = () => {
               </tr>
             </thead>
             <tbody>
-              {playerData.map((team, idx) => (
-                <tr key={idx}>
-                  {Object.entries(team)
-                    .filter(([key]) => visibleStats.has(key))
-                    .map(([key, value], valueIdx) => (
-                      <td key={`${key}-${valueIdx}`}>
-                      {key === "Team" ? <Link to={`/team/${team.Team}`}>{value}</Link> : formatData(value, key)}
-                    </td>
-                    ))}
-                </tr>
-              ))}
+            {playerData.map((player, idx) => {
+  return (
+    <tr key={idx}>
+      {Object.entries(player)
+        .filter(([key]) => visibleStats.has(key))
+        .map(([key, value], valueIdx) => (
+          <td key={`${key}-${valueIdx}`}>
+            {key === "Team" ? (
+              <Link to={`/team/${value}`}>{value}</Link>
+            ) : key === "Name" ? (
+              <Link to={`/player/${player.IDfg}`}>{value}</Link>
+            ) : (
+              formatData(value, key)
+            )}
+          </td>
+        ))}
+    </tr>
+  );
+})}
             </tbody>
           </Table>
         </Col>
