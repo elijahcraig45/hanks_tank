@@ -4,12 +4,33 @@ import { Link } from 'react-router-dom';
 const PlayerPitching = () => {
   const [playerData, setPlayerData] = useState([]);
   const [selectedYear, setSelectedYear] = useState('2024');
+  const [availableStats, setAvailableStats] = useState([]);
   const [visibleStats, setVisibleStats] = useState(new Set(['Name', 'Team', 'ERA', 'SO', 'G', 'IP', 'H', 'ER', 'HR', 'BB', 'K/9', 'BB/9', "WHIP"])); // Assuming these are the "essentials"
+  const [sortConfig, setSortConfig] = useState({ key: 'ERA', direction: "asc" });
 
   useEffect(() => {
-    const playerDataEndpoint = `${process.env.REACT_APP_API_URL}/PlayerPitching?year=${selectedYear}`;
-    console.log('Fetching from:', playerDataEndpoint);
+    // Fetch available stats on component mount
+    const fetchAvailableStats = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/PlayerPitching/avaliableStats`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch available stats");
+        }
+        const stats = await response.json();
+        setAvailableStats(stats);
+      } catch (error) {
+        console.error("Error fetching available stats:", error);
+      }
+    };
 
+    fetchAvailableStats();
+  }, []);
+
+  useEffect(() => {
+    const encodedStats = Array.from(visibleStats).map(stat => stat.replace('/', '%2f')).join(',');
+    const playerDataEndpoint = `${process.env.REACT_APP_API_URL}/PlayerPitching?year=${selectedYear}&stats=${encodedStats}&orderBy=${sortConfig.key}&direction=${sortConfig.direction}`;
+    console.log('Fetching from:', playerDataEndpoint);
+    
     fetch(playerDataEndpoint)
     .then(response => {
       if (!response.ok) {
@@ -24,7 +45,14 @@ const PlayerPitching = () => {
       }
     })
     .catch(error => console.error("Failed to fetch player data:", error));
-  }, [selectedYear]);
+  }, [selectedYear,visibleStats, sortConfig]);
+
+  const requestSort = (key) => {
+    setSortConfig({
+      key,
+      direction: sortConfig.key === key && sortConfig.direction === "asc" ? "desc" : "asc"
+    });
+  };
 
   const toggleStatVisibility = (stat) => {
     setVisibleStats(prevStats => {
@@ -38,79 +66,80 @@ const PlayerPitching = () => {
     });
   };
 
-  const headers = playerData.length > 0 ? Object.keys(playerData[0]) : [];
+  const formatData = (data, key) => {
+    if (["HR", "RBI", "SB"].includes(key)) return parseInt(data).toLocaleString();
+    if (["AVG", "OBP", "SLG", "OPS"].includes(key)) return parseFloat(data).toFixed(3);
+    return data;
+  };
 
   return (
     <Container className="container-md">
-      <Row className="my-4 justify-content-between">
-        <Col xs="auto">
+      <Row className="justify-content-between align-items-center mb-3">
+        <Col>
           <h1>Player Pitching</h1>
         </Col>
         <Col xs="auto">
+          <Row>
+            <Col>
           <Dropdown>
             <Dropdown.Toggle variant="secondary" id="dropdown-year">
               Year: {selectedYear}
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              {[2019, 2020, 2021, 2022, 2023, 2024].map(year => (
-                <Dropdown.Item key={year} onClick={() => setSelectedYear(year.toString())}>
+              {["2019", "2020", "2021", "2022", "2023", "2024"].map(year => (
+                <Dropdown.Item key={year} onClick={() => setSelectedYear(year)}>
                   {year}
                 </Dropdown.Item>
               ))}
             </Dropdown.Menu>
           </Dropdown>
-        </Col>
-        <Col xs="auto">
+          </Col> <Col>
           <Dropdown>
-            <Dropdown.Toggle variant="info" id="dropdown-stats">
-              Customize Stats
-            </Dropdown.Toggle>
-            <Dropdown.Menu>
-              {headers.map(stat => (
-                <Dropdown.ItemText key={stat}>
-                  <Form.Check 
-                    type="checkbox"
-                    label={stat.toUpperCase()}
-                    checked={visibleStats.has(stat)}
-                    onChange={() => toggleStatVisibility(stat)}
-                  />
-                </Dropdown.ItemText>
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
+                <Dropdown.Toggle variant="info">Choose Stats</Dropdown.Toggle>
+                <Dropdown.Menu>
+                  {availableStats.map(key => (
+                    <Dropdown.ItemText key={key}>
+                      <Form.Check
+                        type="checkbox"
+                        label={key}
+                        checked={visibleStats.has(key)}
+                        onChange={() => toggleStatVisibility(key)}
+                      />
+                    </Dropdown.ItemText>
+                  ))}
+                </Dropdown.Menu>
+              </Dropdown>
+          </Col>
+          </Row>
         </Col>
       </Row>
-      <Row className="my-4">
-        <Col xs={12} style={{ overflow: 'auto', maxHeight: '500px' }}>
+      <Row>
+        <Col xs={12} style={{ overflow: "auto", maxHeight: "500px" }}>
           <Table striped bordered hover size="sm" className="mt-3">
             <thead>
               <tr>
-                {headers.filter(header => visibleStats.has(header)).map(key => (
-                  <th key={key}>{key.toUpperCase()}</th>
-                ))}
+                {playerData.length > 0 && Object.keys(playerData[0])
+                  .filter(key => visibleStats.has(key))
+                  .map(key => (
+                    <th key={key} onClick={() => requestSort(key)} style={{ cursor: "pointer" }}>
+                      {key}
+                    </th>
+                  ))}
               </tr>
             </thead>
             <tbody>
-  {playerData.map((player, idx) => (
-    <tr key={idx}>
-    {headers.filter(header => visibleStats.has(header)).map(key => {
-      // If the key is "Name", render it as a link
-      if (key === "Name") {
-        // Encode the player's name to ensure the URL is properly formatted
-        // player[key] is expected to be in "FirstName LastName" format or similar
-        const encodedName = encodeURIComponent(player[key]);
-        return (
-          <td key={`${key}-${idx}`}>
-            <Link to={`/player?name=${encodedName}`}>{player[key]}</Link>
-          </td>
-        );
-      } else {
-        return <td key={`${key}-${idx}`}>{player[key]}</td>;
-      }
-    })}
-  </tr>
-  ))}
-</tbody>
+              {playerData.map((team, idx) => (
+                <tr key={idx}>
+                  {Object.entries(team)
+                    .filter(([key]) => visibleStats.has(key))
+                    .map(([key, value], valueIdx) => (
+                      <td key={`${key}-${valueIdx}`}>
+                      {key === "Team" ? <Link to={`/team/${team.Team}`}>{value}</Link> : formatData(value, key)}
+                    </td>
+                    ))}
+                </tr>
+              ))}
+            </tbody>
           </Table>
         </Col>
       </Row>
