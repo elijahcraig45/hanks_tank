@@ -9,11 +9,14 @@ import Navbar from './components/Navbar';
 import TeamPitching from './components/TeamPitching';
 import TeamPage from './components/TeamPage';
 import PlayerPage from './components/PlayerPage';
+import TodaysGames from './components/GamesToday';
 
 function App() {
   return (
     <Router>
+      
       <Navbar />
+      <TodaysGames/>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/TeamBatting" element={<TeamBatting />} />
