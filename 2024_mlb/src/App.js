@@ -10,6 +10,7 @@ import TeamPitching from './components/TeamPitching';
 import TeamPage from './components/TeamPage';
 import PlayerPage from './components/PlayerPage';
 import TodaysGames from './components/GamesToday';
+import GameDetailsPage from './components/Game';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/AssistedAnalysis" element={<AssistedAnalysis />} />
         <Route path="/team/:teamAbbr" element={<TeamPage />} />
         <Route path="/player/:playerId" element={<PlayerPage />} />
+        <Route path="/game/:gamePk" element={<GameDetailsPage />} />
       </Routes>
     </Router>
   );
