@@ -1,0 +1,50 @@
+/* StrikeZone.css */
+
+/* Tooltip styling */
+.tooltip {
+    position: absolute;
+    background: white;
+    border: 1px solid black;
+    padding: 5px;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Legend styling */
+  .legend {
+    margin-top: 10px;
+  }
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+  
+  .legend-item span {
+    width: 12px;
+    height: 12px;
+    margin-right: 5px;
+    display: inline-block;
+  }
+  
+  /* Form control styling for consistency */
+  .dropdown-menu {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  .dropdown-item {
+    padding: 5px 10px;
+  }
+  
+  .dropdown-item .form-check {
+    margin: 0;
+  }
+  
+  .dropdown-item .form-check-input {
+    margin-left: 0;
+    margin-right: 10px;
+  }
+  
