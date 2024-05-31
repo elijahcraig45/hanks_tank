@@ -12,7 +12,7 @@
   .game-card {
     flex: 0 0 auto;
     margin: 0.25rem; /* Reduced margin */
-    width: 200px; /* Reduced width */
+    width: 250px; /* Reduced width */
   }
   
   .game-card .card-body {
@@ -40,6 +40,14 @@
   }
   
   .game-time {
+    height: fit-content;
+    font-size: 0.85rem; /* Reduced font size */
+    display: flex;
+    justify-content: right;
+    align-items: right;
+    margin-bottom: 10px;
+  }
+  .game-score {
     font-size: 0.85rem; /* Reduced font size */
     display: flex;
     justify-content: right;
