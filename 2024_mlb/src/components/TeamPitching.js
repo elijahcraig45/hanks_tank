@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Dropdown, Form } from "react-bootstrap";
 import {
   BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, CartesianGrid,
 } from "recharts";
 import Table from "react-bootstrap/Table";
 import {Link } from "react-router-dom"; // Assuming React Router is used for routing
-import { logDOM } from "@testing-library/react";
 
 
 const TeamPitching = () => {

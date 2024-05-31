@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Container, Row, Col, Table, Image } from 'react-bootstrap';
+import StrikeZone from './StrikeZone';
 
 const PlayerPage = () => {
   const { playerId } = useParams();
@@ -28,6 +29,7 @@ const PlayerPage = () => {
     fetchData();
   }, [playerId]);
 
+
   useEffect(() => {
     const fetchData = async () => {
       const apiUrl = `${process.env.REACT_APP_API_URL}/playerData?playerId=${playerId}&position=P`;
@@ -35,7 +37,6 @@ const PlayerPage = () => {
         const response = await fetch(apiUrl);
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
-        console.log(data.data);
         setPitchingStatsData(data.data);
       } catch (error) {
         console.error("Failed to fetch player data:", error);
@@ -43,6 +44,7 @@ const PlayerPage = () => {
     };
     fetchData();
   }, [playerId]);
+
 
   const StatsTable = ({ statsData, visibleStatsSet }) => {
     if (statsData.length === 0) {
@@ -130,8 +132,10 @@ const PlayerPage = () => {
         <Col style={{ overflow: "auto"}}>
           {pitchingStatsData.length > 0 && <h2>Pitching Stats</h2>}
           {pitchingStatsData.length > 0 && <StatsTable statsData={pitchingStatsData} visibleStatsSet={visiblePitchingStats} />}
+          {pitchingStatsData.length > 0 && <StrikeZone MLBAMId={playerData.MLBAMId} position={"pitcher"}/>}
           {battingStatsData.length > 0 && <h2>Batting Stats</h2>}
           {battingStatsData.length > 0 && <StatsTable statsData={battingStatsData} visibleStatsSet={visibleBattingStats} />}
+          {battingStatsData.length > 0 && <StrikeZone MLBAMId={playerData.MLBAMId} position={"batter"}/>}
           {pitchingStatsData.length === 0 && battingStatsData.length === 0 && <p>No stats available.</p>}
         </Col>
       </Row>
