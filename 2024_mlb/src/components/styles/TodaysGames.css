@@ -1,0 +1,59 @@
+.horizontal-scroll-container {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 0.25rem; /* Reduced padding */
+  }
+  
+  .flex-row {
+    display: flex;
+    flex-direction: row;
+  }
+  
+  .game-card {
+    flex: 0 0 auto;
+    margin: 0.25rem; /* Reduced margin */
+    width: 200px; /* Reduced width */
+  }
+  
+  .game-card .card-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .team-names {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+  }
+  
+  .team-name {
+    font-size: 0.85rem; /* Reduced font size */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .team-record {
+    font-size: 0.75rem; /* Reduced font size */
+    color: #6c757d; /* Optional: change the color to differentiate */
+  }
+  
+  .game-time {
+    font-size: 0.85rem; /* Reduced font size */
+    display: flex;
+    justify-content: right;
+    align-items: right;
+  }
+  
+  .game-time Row {
+    text-align: right;
+  }
+  
+  .toggle-button {
+    margin-bottom: 0.25rem; /* Add margin to the button */
+    color: #fff; /* Change color to white for better visibility */
+    font-size: 1rem; /* Reduce the font size of the button */
+    border: none; /* Remove the border */
+  }
+  

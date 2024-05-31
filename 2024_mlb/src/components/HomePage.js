@@ -9,7 +9,6 @@ import {
   Image,
   Table,
 } from "react-bootstrap";
-
 function HomePage() {
   const [newsData, setNewsData] = useState({ mlb: [], braves: [] });
   const [standings, setStandings] = useState([]);
