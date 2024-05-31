@@ -32,6 +32,8 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    display: flex;
+    justify-content: space-between;
   }
   
   .team-record {
@@ -52,6 +54,8 @@
     display: flex;
     justify-content: right;
     align-items: right;
+    font-weight: bold;
+  margin-left: 8px;
   }
   
   .game-time Row {

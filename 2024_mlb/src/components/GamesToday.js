@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Card, ListGroup, Container, Row, Col, Button } from "react-bootstrap";
+import { Link } from "react-router-dom";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import "./styles/TodaysGames.css"; // Make sure to create and import a CSS file for custom styles
 
 const TodaysGames = () => {
   const [games, setGames] = useState([]);
   const [collapsed, setCollapsed] = useState(true);
-  const [livefeed, setlivefeed] = useState([]);
+  const [livefeed, setLivefeed] = useState([]);
 
   useEffect(() => {
     const fetchTodaysGames = async () => {
@@ -42,13 +43,15 @@ const TodaysGames = () => {
             return response.json();
           })
         );
-        setlivefeed(responses);
+        setLivefeed(responses);
       } catch (error) {
-        console.error("Failed to fetch today's games:", error);
+        console.error("Failed to fetch game details:", error);
       }
     };
 
-    fetchGameDetails();
+    if (games.length) {
+      fetchGameDetails();
+    }
   }, [games]);
 
   return (
@@ -69,62 +72,62 @@ const TodaysGames = () => {
       {!collapsed && (
         <ListGroup horizontal className="flex-row">
           {games.map((game) => {
-  // Find the live feed data for the current game
-  const gameFeed = livefeed.find(feed => feed.gamePk === game.gamePk);
- console.log(livefeed)
-  // Calculate scores based on the live feed data
-  const awayScore = gameFeed ? gameFeed.liveData.linescore.teams.away.runs : '-';
-  const homeScore = gameFeed ? gameFeed.liveData.linescore.teams.home.runs : '-';
+            const gameFeed = livefeed.find(
+              (feed) => feed.gamePk === game.gamePk
+            );
+            const awayScore = gameFeed
+              ? gameFeed.liveData.linescore.teams.away.runs
+              : "-";
+            const homeScore = gameFeed
+              ? gameFeed.liveData.linescore.teams.home.runs
+              : "-";
+            const inProgress = game.status.statusCode !== "S" && game.status.statusCode !== "P" && game.status.statusCode !== "F";
 
-  return (
-    <Card key={game.gamePk} className="game-card">
-      <Card.Body className="d-flex justify-content-between">
-        <Col className="team-names">
-          <Row className="team-name">
-            {game.teams.away.team.name}
-            <Col className="game-score">
-            {game.status.statusCode === "F" && `${awayScore}`}
-            </Col>
-            <Row className="team-record">
-            ({game.teams.away.leagueRecord.wins}-{game.teams.away.leagueRecord.losses})
-          </Row>
-          </Row>
-          
-          <Col >
-            <Row className="game-time">
-              {game.status.statusCode === "S" &&
-                new Date(game.gameDate).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              {game.status.statusCode === "P" && "Pregame"}
-              {game.status.statusCode === "F" && "Final"}
-              {game.status.statusCode !== "S" &&
-                game.status.statusCode !== "P" &&
-                game.status.statusCode !== "F" && (
-                  <>
-                    {game.status.inningState} {game.status.inning}
-                  </>
-                )}
-            </Row>
-          </Col>
-
-          <Row className="team-name">
-            {game.teams.home.team.name}
-            <Col className="game-score">
-            {game.status.statusCode === "F" && `${homeScore}`}
-            </Col>
-            <Row className="team-record">
-            ({game.teams.home.leagueRecord.wins}-{game.teams.home.leagueRecord.losses})
-          </Row>
-          </Row>
-          
-        </Col>
-      </Card.Body>
-    </Card>
-  );
-})}
-
+            return (
+              <Link key={game.gamePk} to={`/game/${game.gamePk}`} className="text-decoration-none">
+                <Card className="game-card mb-2" style={{ minHeight : "182px"}}>
+                  <Card.Body className="d-flex justify-content-between">
+                    <Col className="team-names">
+                      <Row className="team-name align-items-center">
+                        <Col>
+                          {game.teams.away.team.name}{" "}
+                          <span className="game-score">{awayScore}</span>
+                        </Col>
+                      </Row>
+                      <Row className="team-record">
+                        ({game.teams.away.leagueRecord.wins}-
+                        {game.teams.away.leagueRecord.losses})
+                      </Row>
+                      <Row className="game-time">
+                        {game.status.statusCode === "S" &&
+                          new Date(game.gameDate).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        {game.status.statusCode === "P" && "Pregame"}
+                        {game.status.statusCode === "F" && "Final"}
+                        {inProgress && (
+                          <>
+                            {gameFeed.liveData.plays.currentPlay.about.halfInning} {gameFeed.liveData.plays.currentPlay.about.inning}
+                          </>
+                        )}
+                      </Row>
+                      <Row className="team-name align-items-center">
+                        <Col>
+                          {game.teams.home.team.name}{" "}
+                          <span className="game-score">{homeScore}</span>
+                        </Col>
+                      </Row>
+                      <Row className="team-record">
+                        ({game.teams.home.leagueRecord.wins}-
+                        {game.teams.home.leagueRecord.losses})
+                      </Row>
+                    </Col>
+                  </Card.Body>
+                </Card>
+              </Link>
+            );
+          })}
         </ListGroup>
       )}
     </Container>
