@@ -12,11 +12,12 @@ function BasicExample() {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
             <Nav.Link href="/">Home</Nav.Link>
+            <Nav.Link href="/games">Games</Nav.Link>
             <Nav.Link href="/TeamBatting">Team Batting</Nav.Link>
             <Nav.Link href="/TeamPitching">Team Pitching</Nav.Link>
             <Nav.Link href="/PlayerBatting">Player Batting</Nav.Link>
             <Nav.Link href="/PlayerPitching">Player Pitching</Nav.Link>
-            <Nav.Link href="/AssistedAnalysis">Assisted</Nav.Link>
+            
             
           </Nav>
         </Navbar.Collapse>

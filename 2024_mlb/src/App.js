@@ -17,7 +17,6 @@ function App() {
     <Router>
       
       <Navbar />
-      <TodaysGames/>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/TeamBatting" element={<TeamBatting />} />
@@ -27,6 +26,7 @@ function App() {
         <Route path="/AssistedAnalysis" element={<AssistedAnalysis />} />
         <Route path="/team/:teamAbbr" element={<TeamPage />} />
         <Route path="/player/:playerId" element={<PlayerPage />} />
+        <Route path="/games" element={<TodaysGames />} />
         <Route path="/game/:gamePk" element={<GameDetailsPage />} />
       </Routes>
     </Router>

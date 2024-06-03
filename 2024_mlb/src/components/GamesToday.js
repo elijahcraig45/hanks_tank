@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Card, ListGroup, Container, Row, Col, Button } from "react-bootstrap";
+import { Card, Container, Row, Col, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import "./styles/TodaysGames.css"; // Make sure to create and import a CSS file for custom styles
 
 const TodaysGames = () => {
   const [games, setGames] = useState([]);
-  const [collapsed, setCollapsed] = useState(true);
   const [livefeed, setLivefeed] = useState([]);
 
   useEffect(() => {
@@ -55,50 +53,96 @@ const TodaysGames = () => {
   }, [games]);
 
   return (
-    <Container
-      fluid
-      className="horizontal-scroll-container bg-body-secondary"
-      data-bs-theme="dark"
-    >
-      <Button
-        variant="link"
-        className="toggle-button"
-        onClick={() => setCollapsed(!collapsed)}
-      >
-        {collapsed ? <FaChevronDown size={15} /> : <FaChevronUp size={15} />}
-        Today's Games
-      </Button>
+    <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
+      <h1 className="my-4">Today's Games</h1>
+      <Row>
+        {games.map((game) => {
+          const gameFeed = livefeed.find((feed) => feed.gamePk === game.gamePk);
+          const inProgress =
+            game.status.statusCode !== "S" &&
+            game.status.statusCode !== "P" &&
+            game.status.statusCode !== "F";
 
-      {!collapsed && (
-        <ListGroup horizontal className="flex-row">
-          {games.map((game) => {
-            const gameFeed = livefeed.find(
-              (feed) => feed.gamePk === game.gamePk
-            );
-            const awayScore = gameFeed
-              ? gameFeed.liveData.linescore.teams.away.runs
-              : "-";
-            const homeScore = gameFeed
-              ? gameFeed.liveData.linescore.teams.home.runs
-              : "-";
-            const inProgress = game.status.statusCode !== "S" && game.status.statusCode !== "P" && game.status.statusCode !== "F";
+          const innings = gameFeed
+            ? gameFeed.liveData.linescore.innings
+            : [];
+          const awayTotals = gameFeed
+            ? gameFeed.liveData.linescore.teams.away
+            : { runs: "0", hits: "0", errors: "0" };
+          const homeTotals = gameFeed
+            ? gameFeed.liveData.linescore.teams.home
+            : { runs: "0", hits: "0", errors: "0" };
 
-            return (
-              <Link key={game.gamePk} to={`/game/${game.gamePk}`} className="text-decoration-none">
-                <Card className="game-card mb-2" style={{ minHeight : "182px"}}>
-                  <Card.Body className="d-flex justify-content-between">
-                    <Col className="team-names">
-                      <Row className="team-name align-items-center">
-                        <Col>
-                          {game.teams.away.team.name}{" "}
-                          <span className="game-score">{awayScore}</span>
-                        </Col>
-                      </Row>
-                      <Row className="team-record">
-                        ({game.teams.away.leagueRecord.wins}-
-                        {game.teams.away.leagueRecord.losses})
-                      </Row>
-                      <Row className="game-time">
+          return (
+            <Col key={game.gamePk} xs={12} md={6} lg={4} className="mb-3">
+              <Link to={`/game/${game.gamePk}`} className="text-decoration-none">
+                <Card className="game-card h-100 bg-white border-light shadow-sm">
+                  <Card.Body>
+                    <Row className="align-items-center">
+                      <Col>
+                        <h5 className="team-name">
+                          {game.teams.away.team.name}
+                        </h5>
+                        <p className="team-record text-muted">
+                          ({game.teams.away.leagueRecord.wins}-
+                          {game.teams.away.leagueRecord.losses})
+                        </p>
+                      </Col>
+                      <Col>
+                        <h5 className="team-name">
+                          {game.teams.home.team.name}
+                        </h5>
+                        <p className="team-record text-muted">
+                          ({game.teams.home.leagueRecord.wins}-
+                          {game.teams.home.leagueRecord.losses})
+                        </p>
+                      </Col>
+                    </Row>
+                    <Table striped bordered hover size="sm" className="mt-3">
+                      <thead>
+                        <tr>
+                          <th></th>
+                          {innings.map((inning, index) => (
+                            <th key={index}>{index + 1}</th>
+                          ))}
+                          <th>R</th>
+                          <th>H</th>
+                          <th>E</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>
+                          {gameFeed && (
+                          <>
+                            {gameFeed.gameData.teams.away.abbreviation}{" "}
+                          </>)}
+                            </td>
+                          {innings.map((inning, index) => (
+                            <td key={index}>{inning.away?.runs || "0"}</td>
+                          ))}
+                          <td>{awayTotals.runs}</td>
+                          <td>{awayTotals.hits}</td>
+                          <td>{awayTotals.errors}</td>
+                        </tr>
+                        <tr>
+                          <td>
+                            {gameFeed && (
+                          <>
+                            {gameFeed.gameData.teams.home.abbreviation}{" "}
+                          </>)}
+                          </td>
+                          {innings.map((inning, index) => (
+                            <td key={index}>{inning.home?.runs || "0"}</td>
+                          ))}
+                          <td>{homeTotals.runs}</td>
+                          <td>{homeTotals.hits}</td>
+                          <td>{homeTotals.errors}</td>
+                        </tr>
+                      </tbody>
+                    </Table>
+                    <Row className="game-status mt-3">
+                      <Col className="text-center">
                         {game.status.statusCode === "S" &&
                           new Date(game.gameDate).toLocaleTimeString([], {
                             hour: "2-digit",
@@ -106,30 +150,21 @@ const TodaysGames = () => {
                           })}
                         {game.status.statusCode === "P" && "Pregame"}
                         {game.status.statusCode === "F" && "Final"}
-                        {inProgress && (
+                        {inProgress && gameFeed && (
                           <>
-                            {gameFeed.liveData.plays.currentPlay.about.halfInning} {gameFeed.liveData.plays.currentPlay.about.inning}
+                            {gameFeed.liveData.plays.currentPlay.about.halfInning.toUpperCase()}{" "}
+                            {gameFeed.liveData.plays.currentPlay.about.inning}
                           </>
                         )}
-                      </Row>
-                      <Row className="team-name align-items-center">
-                        <Col>
-                          {game.teams.home.team.name}{" "}
-                          <span className="game-score">{homeScore}</span>
-                        </Col>
-                      </Row>
-                      <Row className="team-record">
-                        ({game.teams.home.leagueRecord.wins}-
-                        {game.teams.home.leagueRecord.losses})
-                      </Row>
-                    </Col>
+                      </Col>
+                    </Row>
                   </Card.Body>
                 </Card>
               </Link>
-            );
-          })}
-        </ListGroup>
-      )}
+            </Col>
+          );
+        })}
+      </Row>
     </Container>
   );
 };

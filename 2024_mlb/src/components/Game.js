@@ -93,11 +93,13 @@ const GameDetailsPage = () => {
   };
 
   const renderEvent = (event) => {
-    const { result, about, count } = event;
+    const { result, about, count, matchup } = event;
     return (
       <Card key={about.atBatIndex} className="mb-2" onClick={() => handleEventClick(event)} style={{ cursor: 'pointer' }}>
         <Card.Body>
           <h5>{result.description}</h5>
+          <p><strong>Batter:</strong> {matchup.batter.fullName}</p>
+          <p><strong>Pitcher:</strong> {matchup.pitcher.fullName}</p>
           <p><strong>Inning:</strong> {about.halfInning} {about.inning}</p>
           <p><strong>Count:</strong> {count.balls} Balls, {count.strikes} Strikes, {count.outs} Outs</p>
         </Card.Body>
