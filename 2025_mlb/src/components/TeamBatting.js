@@ -8,7 +8,7 @@ import {Link } from "react-router-dom"; // Assuming React Router is used for rou
 
 const TeamBatting = () => {
   const [teamData, setTeamData] = useState([]);
-  const [selectedYear, setSelectedYear] = useState("2024");
+  const [selectedYear, setSelectedYear] = useState("2025");
   const [availableStats, setAvailableStats] = useState([]);
   const [visibleStats, setVisibleStats] = useState(new Set(["Team", "HR", "AVG", "RBI", "OPS", 'H', 'HBP','HR'	,'R',	'RBI'	,'BB'	,'SO',	'AVG',])); // Initial visible stats
   const [sortConfig, setSortConfig] = useState({ key: 'OPS', direction: "desc" });
@@ -95,7 +95,7 @@ const TeamBatting = () => {
               Year: {selectedYear}
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              {["2019", "2020", "2021", "2022", "2023", "2024"].map(year => (
+              {["2020", "2021", "2022", "2023", "2024", "2025"].map(year => (
                 <Dropdown.Item key={year} onClick={() => setSelectedYear(year)}>
                   {year}
                 </Dropdown.Item>

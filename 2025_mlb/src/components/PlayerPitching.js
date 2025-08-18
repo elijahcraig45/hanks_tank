@@ -3,7 +3,7 @@ import { Container, Row, Col, Table, Dropdown, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 const PlayerPitching = () => {
   const [playerData, setPlayerData] = useState([]);
-  const [selectedYear, setSelectedYear] = useState('2024');
+  const [selectedYear, setSelectedYear] = useState('2025');
   const [availableStats, setAvailableStats] = useState([]);
   const [visibleStats, setVisibleStats] = useState(new Set(['Name', 'Team', 'ERA', 'SO', 'G', 'IP', 'H', 'ER', 'HR', 'BB', 'K/9', 'BB/9', "WHIP"])); // Assuming these are the "essentials"
   const [sortConfig, setSortConfig] = useState({ key: 'ERA', direction: "asc" });
@@ -87,7 +87,7 @@ const PlayerPitching = () => {
               Year: {selectedYear}
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              {["2019", "2020", "2021", "2022", "2023", "2024"].map(year => (
+              {["2020", "2021", "2022", "2023", "2024", "2025"].map(year => (
                 <Dropdown.Item key={year} onClick={() => setSelectedYear(year)}>
                   {year}
                 </Dropdown.Item>
