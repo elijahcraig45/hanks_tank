@@ -9,7 +9,7 @@ import {Link } from "react-router-dom"; // Assuming React Router is used for rou
 
 const TeamPitching = () => {
   const [teamData, setTeamData] = useState([]);
-  const [selectedYear, setSelectedYear] = useState("2024");
+  const [selectedYear, setSelectedYear] = useState("2025");
   const [availableStats, setAvailableStats] = useState([]);
   const [visibleStats, setVisibleStats] = useState(new Set(["Team", "HR", "AVG",'H'	,'HR'	,'R','ERA', 'IP', 'H', 'ER', 'K/9', 'BB/9', "WHIP"	,'BB'	,'SO'])); // Initial visible stats
   const [sortConfig, setSortConfig] = useState({ key: 'ERA', direction: "asc" });
@@ -96,7 +96,7 @@ const TeamPitching = () => {
               Year: {selectedYear}
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              {["2019", "2020", "2021", "2022", "2023", "2024"].map(year => (
+              {["2020", "2021", "2022", "2023", "2024", "2025"].map(year => (
                 <Dropdown.Item key={year} onClick={() => setSelectedYear(year)}>
                   {year}
                 </Dropdown.Item>

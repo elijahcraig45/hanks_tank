@@ -11,7 +11,7 @@ const StrikeZone = ({ MLBAMId, position }) => {
   const [pitchThrows, setPitchThrows] = useState('');
   const [batterStands, setBatterStands] = useState('');
   const [selectedEvent, setSelectedEvent] = useState('');
-  const [selectedYear, setSelectedYear] = useState('2024'); // Default to 2024
+  const [selectedYear, setSelectedYear] = useState('2025'); // Default to 2025
 
   useEffect(() => {
     const fetchData = async () => {
@@ -120,7 +120,7 @@ const StrikeZone = ({ MLBAMId, position }) => {
               Year: {selectedYear}
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              {["2019", "2020", "2021", "2022", "2023", "2024"].map(year => (
+              {["2020", "2021", "2022", "2023", "2024", "2025"].map(year => (
                 <Dropdown.Item key={year} onClick={() => setSelectedYear(year)}>
                   {year}
                 </Dropdown.Item>

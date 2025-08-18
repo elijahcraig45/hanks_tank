@@ -83,8 +83,8 @@ const TeamPage = () => {
 
 
   const renderTable = (category, visibleStats) => {
-    const years = ['2024', '2023', '2022', '2021', '2020', '2019'];
-    const allStats = Object.keys(teamData[`${category}_2024`] ? teamData[`${category}_2024`][0] : {}).concat(Array.from(visibleStats));
+    const years = ['2025', '2024', '2023', '2022', '2021', '2020'];
+    const allStats = Object.keys(teamData[`${category}_2025`] ? teamData[`${category}_2025`][0] : {}).concat(Array.from(visibleStats));
 
     return (
       <>
