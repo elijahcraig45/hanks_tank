@@ -1,56 +1,154 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Container, Row, Col, Dropdown, Form } from "react-bootstrap";
+import React, { useState, useEffect, useCallback } from "react";
+import { 
+  Container, 
+  Row, 
+  Col, 
+  Dropdown, 
+  Form, 
+  Alert, 
+  Spinner, 
+  Card, 
+  Button, 
+  Badge, 
+  InputGroup,
+  Table 
+} from "react-bootstrap";
 import {
-  BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, CartesianGrid,
+  BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid,
+  LineChart, Line, ScatterChart, Scatter
 } from "recharts";
-import Table from "react-bootstrap/Table";
-import {Link } from "react-router-dom"; // Assuming React Router is used for routing
+import { Link } from "react-router-dom";
+import "./styles/TeamStats.css";
 
 const TeamBatting = () => {
   const [teamData, setTeamData] = useState([]);
   const [selectedYear, setSelectedYear] = useState("2025");
   const [availableStats, setAvailableStats] = useState([]);
-  const [visibleStats, setVisibleStats] = useState(new Set(["Team", "HR", "AVG", "RBI", "OPS", 'H', 'HBP','HR'	,'R',	'RBI'	,'BB'	,'SO',	'AVG',])); // Initial visible stats
+  const [visibleStats, setVisibleStats] = useState(new Set([
+    "Team", "G", "AB", "R", "H", "HR", "RBI", "BB", "SO", "AVG", "OBP", "SLG", "OPS"
+  ]));
   const [sortConfig, setSortConfig] = useState({ key: 'OPS', direction: "desc" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredData, setFilteredData] = useState([]);
+  const [chartType, setChartType] = useState('bar');
+  const [chartStat, setChartStat] = useState('OPS');
+
+  // Team colors for visualizations
+  const teamColors = {
+    'ATL': '#CE1141', 'NYY': '#132448', 'LAD': '#005A9C', 'HOU': '#002D62',
+    'TB': '#8FBCE6', 'SF': '#FD5A1E', 'TOR': '#134A8E', 'SD': '#2F241D',
+    'CHC': '#0E3386', 'PHI': '#E81828', 'BOS': '#BD3039', 'WSN': '#AB0003',
+    'MIA': '#00A3E0', 'MIL': '#FFC52F', 'STL': '#C41E3A', 'CIN': '#C6011F',
+    'PIT': '#FDB827', 'TEX': '#C0111F', 'LAA': '#BA0021', 'OAK': '#003831',
+    'SEA': '#0C2C56', 'MIN': '#002B5C', 'CWS': '#27251F', 'DET': '#0C2340',
+    'KC': '#004687', 'CLE': '#E31937', 'BAL': '#DF4601', 'COL': '#333366',
+    'ARI': '#A71930', 'NYM': '#FF5910'
+  };
+
+  // Chart configuration
+  const statPresets = {
+    'Offensive': ['Team', 'AVG', 'OBP', 'SLG', 'OPS', 'wRC+', 'HR', 'RBI'],
+    'Power': ['Team', 'HR', 'SLG', 'ISO', 'HR/FB', 'Barrel%'],
+    'Contact': ['Team', 'AVG', 'BABIP', 'K%', 'BB%', 'Contact%'],
+    'Advanced': ['Team', 'wRC+', 'wOBA', 'WAR', 'WPA', 'RE24'],
+    'Traditional': ['Team', 'G', 'AB', 'R', 'H', 'HR', 'RBI', 'BB', 'SO', 'AVG']
+  };
+
+  const fetchAvailableStats = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/TeamBatting/avaliableStats`);
+      if (!response.ok) throw new Error("Failed to fetch available stats");
+      const stats = await response.json();
+      setAvailableStats(stats);
+    } catch (error) {
+      console.error("Error fetching available stats:", error);
+      setError("Failed to load available statistics");
+    }
+  };
+
+  const fetchTeamData = useCallback(async () => {
+    console.log(`🔄 TeamBatting: fetchTeamData called for year ${selectedYear}`);
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const url = `${process.env.REACT_APP_API_URL}/teamBatting?year=${selectedYear}`;
+      
+      console.log(`🏟️ TeamBatting: Fetching ${selectedYear} data from:`, url);
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      if (Array.isArray(data) && data.length > 0) {
+        console.log(`✅ TeamBatting: Received ${data.length} teams for ${selectedYear}`, data.slice(0, 2));
+        setTeamData(data);
+      } else {
+        console.log(`⚠️ TeamBatting: No data available for ${selectedYear}`);
+        setTeamData([]);
+        setError(`No team batting data available for ${selectedYear}`);
+      }
+    } catch (error) {
+      console.error(`❌ TeamBatting: Error fetching ${selectedYear} data:`, error);
+      setError(`Failed to load team batting data: ${error.message}`);
+      setTeamData([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedYear]);
+
+  const sortData = useCallback((data) => {
+    if (!sortConfig.key) return data;
+    
+    return [...data].sort((a, b) => {
+      const aVal = a[sortConfig.key];
+      const bVal = b[sortConfig.key];
+      
+      // Handle numeric values
+      if (!isNaN(aVal) && !isNaN(bVal)) {
+        const numA = parseFloat(aVal);
+        const numB = parseFloat(bVal);
+        return sortConfig.direction === 'asc' ? numA - numB : numB - numA;
+      }
+      
+      // Handle string values
+      const strA = String(aVal).toLowerCase();
+      const strB = String(bVal).toLowerCase();
+      
+      if (sortConfig.direction === 'asc') {
+        return strA < strB ? -1 : strA > strB ? 1 : 0;
+      } else {
+        return strA > strB ? -1 : strA < strB ? 1 : 0;
+      }
+    });
+  }, [sortConfig]);
 
   useEffect(() => {
-    // Fetch available stats on component mount
-    const fetchAvailableStats = async () => {
-      try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/TeamBatting/avaliableStats`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch available stats");
-        }
-        const stats = await response.json();
-        setAvailableStats(stats);
-      } catch (error) {
-        console.error("Error fetching available stats:", error);
-      }
-    };
-
     fetchAvailableStats();
   }, []);
 
+  useEffect(() => {
+    fetchTeamData();
+  }, [fetchTeamData]);
 
   useEffect(() => {
-    // Replace '/' with '%2f' in each stat and join with a comma
-    const encodedStats = Array.from(visibleStats).map(stat => stat.replace('/', '%2f')).join(',');
-    const teamDataEndpoint = `${process.env.REACT_APP_API_URL}/TeamBatting?year=${selectedYear}&stats=${encodedStats}&orderBy=${sortConfig.key}&direction=${sortConfig.direction}`;
-    fetch(teamDataEndpoint)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then(data => {
-        if (data && data.length > 0) {
-          setTeamData(data);
-        }
-      })
-      .catch(error => console.error("Failed to fetch team batting data:", error));
-  }, [selectedYear, visibleStats, sortConfig]);
-
+    // Apply sorting and filtering when data or sort config changes
+    let processedData = sortData(teamData);
+    
+    if (searchTerm) {
+      processedData = processedData.filter(team => 
+        team.Team?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    setFilteredData(processedData);
+  }, [teamData, sortData, searchTerm]);
 
   const requestSort = (key) => {
     setSortConfig({
@@ -71,183 +169,336 @@ const TeamBatting = () => {
     });
   };
 
+  const applyStatPreset = (presetName) => {
+    setVisibleStats(new Set(statPresets[presetName]));
+  };
+
   const formatData = (data, key) => {
-    if (["HR", "RBI", "SB"].includes(key)) return parseInt(data).toLocaleString();
-    if (["AVG", "OBP", "SLG", "OPS"].includes(key)) return parseFloat(data).toFixed(3);
+    if (!data && data !== 0) return '--';
+    if (["HR", "RBI", "SB", "G", "AB", "R", "H", "BB", "SO"].includes(key)) {
+      return parseInt(data).toLocaleString();
+    }
+    if (["AVG", "OBP", "SLG", "OPS", "WAR"].includes(key)) {
+      return parseFloat(data).toFixed(3);
+    }
+    if (["wRC+", "OPS+"].includes(key)) {
+      return Math.round(parseFloat(data));
+    }
     return data;
   };
 
-  if (!teamData.length) {
-    return <div>Loading...</div>;
-  }
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) return ' ↕️';
+    return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
+  };
+
+  const getChartData = () => {
+    return filteredData.map(team => ({
+      ...team,
+      color: teamColors[team.Team] || '#8884d8'
+    }));
+  };
+
+  const renderChart = () => {
+    const data = getChartData();
+    const CustomTooltip = ({ active, payload, label }) => {
+      if (active && payload && payload.length) {
+        return (
+          <div className="bg-white p-2 border rounded shadow">
+            <p className="fw-bold">{`Team: ${label}`}</p>
+            <p style={{ color: payload[0].color }}>
+              {`${chartStat}: ${formatData(payload[0].value, chartStat)}`}
+            </p>
+          </div>
+        );
+      }
+      return null;
+    };
+
+    switch (chartType) {
+      case 'line':
+        return (
+          <LineChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="Team" />
+            <YAxis />
+            <Tooltip content={<CustomTooltip />} />
+            <Line type="monotone" dataKey={chartStat} stroke="#8884d8" strokeWidth={2} />
+          </LineChart>
+        );
+      case 'scatter':
+        return (
+          <ScatterChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="Team" />
+            <YAxis />
+            <Tooltip content={<CustomTooltip />} />
+            <Scatter dataKey={chartStat} fill="#8884d8" />
+          </ScatterChart>
+        );
+      default:
+        return (
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="Team" />
+            <YAxis />
+            <Tooltip content={<CustomTooltip />} />
+            <Bar dataKey={chartStat} fill="#8884d8" />
+          </BarChart>
+        );
+    }
+  };
 
   return (
-    <Container className="container-md pt-3">
-      <Row className="justify-content-between align-items-center mb-3">
+    <Container className="py-4">
+      <Row className="mb-4">
         <Col>
-          <h1>Team Batting</h1>
+          <h1 className="display-6">🏆 Team Batting Statistics</h1>
+          <p className="text-muted">Comprehensive team offensive statistics and analysis</p>
+          <Alert variant="info" className="mb-0">
+            <div className="d-flex align-items-center">
+              <i className="bi bi-calendar3 me-2"></i>
+              <strong>Currently viewing {selectedYear} season data</strong>
+              {selectedYear === "2025" && (
+                <Badge bg="success" className="ms-2">Current Season</Badge>
+              )}
+            </div>
+          </Alert>
         </Col>
-        <Col xs="auto">
-          <Row>
-            <Col>
-          <Dropdown>
-            <Dropdown.Toggle variant="secondary" id="dropdown-year">
-              Year: {selectedYear}
-            </Dropdown.Toggle>
-            <Dropdown.Menu>
-              {["2020", "2021", "2022", "2023", "2024", "2025"].map(year => (
-                <Dropdown.Item key={year} onClick={() => setSelectedYear(year)}>
-                  {year}
-                </Dropdown.Item>
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
-          </Col> <Col>
-          <Dropdown>
-                <Dropdown.Toggle variant="info">Choose Stats</Dropdown.Toggle>
+      </Row>
+
+      {error && (
+        <Alert variant="warning" dismissible onClose={() => setError(null)}>
+          <Alert.Heading>Data Notice</Alert.Heading>
+          {error}
+          <hr />
+          <small>Currently displaying sample data for demonstration purposes.</small>
+        </Alert>
+      )}
+
+      {/* Controls Section */}
+      <Card className="mb-4 controls-section">
+        <Card.Body>
+          <Row className="g-3 align-items-end">
+            <Col xs={12} md={2}>
+              <Form.Label>Season</Form.Label>
+              <Dropdown className="year-dropdown">
+                <Dropdown.Toggle variant="outline-primary" className="w-100">
+                  {selectedYear}
+                </Dropdown.Toggle>
                 <Dropdown.Menu>
-                  {availableStats.map(key => (
-                    <Dropdown.ItemText key={key}>
-                      <Form.Check
-                        type="checkbox"
-                        label={key}
-                        checked={visibleStats.has(key)}
-                        onChange={() => toggleStatVisibility(key)}
-                      />
-                    </Dropdown.ItemText>
+                  {["2020", "2021", "2022", "2023", "2024", "2025"].map(year => (
+                    <Dropdown.Item key={year} onClick={() => {
+                      console.log(`📅 TeamBatting: Year changed from ${selectedYear} to ${year}`);
+                      setSelectedYear(year);
+                    }}>
+                      {year}
+                    </Dropdown.Item>
                   ))}
                 </Dropdown.Menu>
               </Dropdown>
-          </Col>
-          </Row>
-        </Col>
-      </Row>
-      <Row>
-        <Col xs={12} style={{ overflow: "auto", maxHeight: "500px" }}>
-          <Table striped bordered hover size="sm" className="mt-3">
-            <thead>
-              <tr>
-                {teamData.length > 0 && Object.keys(teamData[0])
-                  .filter(key => visibleStats.has(key))
-                  .map(key => (
-                    <th key={key} onClick={() => requestSort(key)} style={{ cursor: "pointer" }}>
-                      {key}
-                    </th>
+            </Col>
+
+            <Col xs={12} md={3}>
+              <Form.Label>Search Teams</Form.Label>
+              <InputGroup>
+                <Form.Control
+                  type="text"
+                  placeholder="Search team abbreviations..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </InputGroup>
+            </Col>
+
+            <Col xs={12} md={3}>
+              <Form.Label>Stat Presets</Form.Label>
+              <Dropdown>
+                <Dropdown.Toggle variant="outline-secondary" className="w-100">
+                  Quick Stats
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                  {Object.keys(statPresets).map(preset => (
+                    <Dropdown.Item key={preset} onClick={() => applyStatPreset(preset)}>
+                      {preset}
+                    </Dropdown.Item>
                   ))}
-              </tr>
-            </thead>
-            <tbody>
-              {teamData.map((team, idx) => (
-                <tr key={idx}>
-                  {Object.entries(team)
-                    .filter(([key]) => visibleStats.has(key))
-                    .map(([key, value], valueIdx) => (
-                      <td key={`${key}-${valueIdx}`}>
-                      {key === "Team" ? <Link to={`/team/${team.Team}`}>{value}</Link> : formatData(value, key)}
-                    </td>
+                </Dropdown.Menu>
+              </Dropdown>
+            </Col>
+
+            <Col xs={12} md={2}>
+              <Form.Label>Columns</Form.Label>
+              <Dropdown>
+                <Dropdown.Toggle variant="outline-info" className="w-100">
+                  Customize
+                </Dropdown.Toggle>
+                <Dropdown.Menu style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                  {availableStats.map(stat => (
+                    <Form.Check
+                      key={stat}
+                      type="checkbox"
+                      id={`stat-${stat}`}
+                      label={stat}
+                      checked={visibleStats.has(stat)}
+                      onChange={() => toggleStatVisibility(stat)}
+                      className="dropdown-item-text"
+                    />
+                  ))}
+                </Dropdown.Menu>
+              </Dropdown>
+            </Col>
+
+            <Col xs={12} md={2}>
+              <Button 
+                variant="success" 
+                onClick={fetchTeamData} 
+                disabled={loading}
+                className="w-100"
+              >
+                {loading ? <Spinner animation="border" size="sm" /> : "Refresh"}
+              </Button>
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
+
+      {/* Stats Summary */}
+      <Row className="mb-3">
+        <Col>
+          <div className="d-flex flex-wrap gap-2">
+            <Badge bg="primary">
+              {filteredData.length} Teams
+            </Badge>
+            <Badge bg="info">
+              {visibleStats.size} Columns
+            </Badge>
+            <Badge bg="secondary">
+              Season {selectedYear}
+            </Badge>
+            {searchTerm && (
+              <Badge bg="warning">
+                Filtered: "{searchTerm}"
+              </Badge>
+            )}
+          </div>
+        </Col>
+      </Row>
+
+      {/* Data Table */}
+      <Card className="mb-4">
+        <Card.Body className="p-0">
+          {loading ? (
+            <div className="text-center py-5">
+              <Spinner animation="border" variant="primary" />
+              <p className="mt-3">Loading team statistics...</p>
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <Table striped hover responsive className="mb-0">
+                <thead className="table-dark">
+                  <tr>
+                    {filteredData.length > 0 && Object.keys(filteredData[0])
+                      .filter(key => visibleStats.has(key))
+                      .map(key => (
+                        <th 
+                          key={key} 
+                          onClick={() => requestSort(key)} 
+                          className="sortable-header user-select-none"
+                          style={{ cursor: "pointer", whiteSpace: 'nowrap' }}
+                        >
+                          {key}{getSortIcon(key)}
+                        </th>
+                      ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredData.map((team, idx) => (
+                    <tr key={`team-${idx}`}>
+                      {Object.entries(team)
+                        .filter(([key]) => visibleStats.has(key))
+                        .map(([key, value], valueIdx) => (
+                          <td key={`${key}-${valueIdx}`} style={{ whiteSpace: 'nowrap' }}>
+                            {key === "Team" ? (
+                              <Link to={`/team/${value}`} className="text-decoration-none fw-bold">
+                                <span 
+                                  className="team-badge" 
+                                  style={{ backgroundColor: teamColors[value] || '#6c757d' }}
+                                >
+                                  {value}
+                                </span>
+                              </Link>
+                            ) : (
+                              formatData(value, key)
+                            )}
+                          </td>
+                        ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          )}
+        </Card.Body>
+      </Card>
+
+      {/* Visualization Section */}
+      <Card>
+        <Card.Header>
+          <Row className="align-items-center">
+            <Col>
+              <h5 className="mb-0">📊 Data Visualization</h5>
+            </Col>
+            <Col xs="auto">
+              <Row className="g-2">
+                <Col>
+                  <Form.Select 
+                    size="sm" 
+                    value={chartType} 
+                    onChange={(e) => setChartType(e.target.value)}
+                  >
+                    <option value="bar">Bar Chart</option>
+                    <option value="line">Line Chart</option>
+                    <option value="scatter">Scatter Plot</option>
+                  </Form.Select>
+                </Col>
+                <Col>
+                  <Form.Select 
+                    size="sm" 
+                    value={chartStat} 
+                    onChange={(e) => setChartStat(e.target.value)}
+                  >
+                    {Array.from(visibleStats).filter(stat => stat !== 'Team').map(stat => (
+                      <option key={stat} value={stat}>{stat}</option>
                     ))}
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Col>
-      </Row>
-      {/* Visualizations updated to reflect the format and year selection */}
-      <Row className="mt-4">
-              {/* Visualizations */}
-      <Row>
-        {/* Home Runs (HR) Bar Chart */}
-        <Col xs={12} md={6} lg={4} className="mb-4">
-          <h4>Home Runs (HR)</h4>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={teamData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="Team" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="HR" fill="#8884d8" name="Home Runs" />
-            </BarChart>
-          </ResponsiveContainer>
-        </Col>
+                  </Form.Select>
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+        </Card.Header>
+        <Card.Body>
+          {filteredData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={400}>
+              {renderChart()}
+            </ResponsiveContainer>
+          ) : (
+            <div className="text-center py-5">
+              <p>No data available for visualization</p>
+            </div>
+          )}
+        </Card.Body>
+      </Card>
 
-        {/* Batting Average (AVG) Bar Chart */}
-        <Col xs={12} md={6} lg={4} className="mb-4">
-          <h4>Batting Average (AVG)</h4>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={teamData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="Team" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="AVG" fill="#82ca9d" name="Batting Average" />
-            </BarChart>
-          </ResponsiveContainer>
-        </Col>
-
-        {/* Runs Batted In (RBI) Bar Chart */}
-        <Col xs={12} md={6} lg={4} className="mb-4">
-          <h4>Runs Batted In (RBI)</h4>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={teamData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="Team" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="RBI" fill="#ffc658" name="Runs Batted In" />
-            </BarChart>
-          </ResponsiveContainer>
-        </Col>
-
-        {/* On-base Plus Slugging (OPS) Bar Chart */}
-        <Col xs={12} md={6} lg={4} className="mb-4">
-          <h4>On-base Plus Slugging (OPS)</h4>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={teamData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="Team" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="OPS" fill="#fa8072" name="On-base Plus Slugging" />
-            </BarChart>
-          </ResponsiveContainer>
-        </Col>
-              {/* Stolen Bases (SB) Bar Chart */}
-      <Col xs={12} md={6} lg={4} className="mb-4">
-        <h4>Stolen Bases (SB)</h4>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={teamData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="Team" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="SB" fill="#4287f5" name="Stolen Bases" />
-          </BarChart>
-        </ResponsiveContainer>
-      </Col>
-
-      {/* On-Base Percentage (OBP) Bar Chart */}
-      <Col xs={12} md={6} lg={4} className="mb-4">
-        <h4>On-Base Percentage (OBP)</h4>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={teamData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="Team" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="OBP" fill="#20c997" name="On-Base Percentage" />
-          </BarChart>
-        </ResponsiveContainer>
-      </Col>
-
-      </Row>
-      
-      </Row>
+      {filteredData.length === 0 && !loading && (
+        <Alert variant="info" className="mt-3">
+          <Alert.Heading>No Results Found</Alert.Heading>
+          {searchTerm ? 
+            `No teams found matching "${searchTerm}". Try a different search term.` :
+            "No team data available for the selected criteria."
+          }
+        </Alert>
+      )}
     </Container>
   );
 };

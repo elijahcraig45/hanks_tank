@@ -1,0 +1,46 @@
+runtime: python39
+service: frontend
+
+env_variables:
+  NODE_ENV: production
+
+handlers:
+# Handle CSS and JS files with long cache
+- url: /static/css
+  static_dir: build/static/css
+  secure: always
+  expiration: 1d
+  
+- url: /static/js
+  static_dir: build/static/js
+  secure: always
+  expiration: 1d
+
+- url: /static/media
+  static_dir: build/static/media
+  secure: always
+  expiration: 7d
+
+# Handle other static assets
+- url: /static
+  static_dir: build/static
+  secure: always
+
+# Handle favicon and manifest files
+- url: /(.*\.(ico|png|json|txt))$
+  static_files: build/\1
+  upload: build/.*\.(ico|png|json|txt)$
+  secure: always
+
+# Handle all other requests with index.html (for React Router)
+- url: /.*
+  static_files: build/index.html
+  upload: build/index.html
+  secure: always
+
+automatic_scaling:
+  min_instances: 0
+  max_instances: 5
+  target_cpu_utilization: 0.6
+
+instance_class: F1
