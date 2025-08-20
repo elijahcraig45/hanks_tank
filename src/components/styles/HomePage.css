@@ -1,30 +1,237 @@
+/* HomePage Enhanced Styles */
+
 body.dark-theme {
-    background-color: #202124;
-    color: #fff;
+  background-color: #202124;
+  color: #fff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #fff;
+  font-weight: 600 !important;
+}
+
+p, ul li {
+  color: #eee;
+  font-weight: 500;
+}
+
+.card {
+  background-color: #303134;
+  border: 1px solid #404144;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.card-body {
+  padding: 20px;
+}
+
+/* News Section Enhancements */
+.hero-news {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+}
+
+.hero-news .card-header {
+  background: transparent;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  color: white;
+}
+
+.hero-news .list-group-item {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.1);
+  color: white;
+}
+
+.news-item {
+  transition: background-color 0.2s ease;
+}
+
+.news-item:hover {
+  background-color: rgba(0,0,0,0.05) !important;
+}
+
+.news-title {
+  font-size: 0.95rem;
+  line-height: 1.3;
+  margin-bottom: 0.25rem;
+}
+
+.news-title-small {
+  font-size: 0.85rem;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.news-section .card-body {
+  padding: 0.75rem;
+}
+
+/* Standings Table */
+.standings-table {
+  font-size: 0.85rem;
+}
+
+.standings-table th {
+  background-color: #f8f9fa;
+  font-weight: 700 !important;
+  border-top: none;
+  padding: 0.5rem 0.25rem;
+  color: #212529 !important;
+}
+
+.standings-table td {
+  padding: 0.5rem 0.25rem;
+  vertical-align: middle;
+  font-weight: 500;
+}
+
+.table-warning {
+  background-color: rgba(255, 193, 7, 0.2) !important;
+}
+
+/* Quick Analytics Section */
+.btn-outline-primary:hover, 
+.btn-outline-success:hover, 
+.btn-outline-info:hover, 
+.btn-outline-warning:hover, 
+.btn-outline-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Enhanced global styling for better readability */
+.table-dark th {
+  font-weight: 700 !important;
+  color: #fff !important;
+}
+
+.table-dark td {
+  font-weight: 500 !important;
+}
+
+.table th {
+  font-weight: 700 !important;
+  color: #212529 !important;
+}
+
+.table td {
+  font-weight: 500 !important;
+}
+
+.card-header h5 {
+  font-weight: 700 !important;
+}
+
+.badge {
+  font-weight: 600 !important;
+}
+
+.btn {
+  font-weight: 600 !important;
+}
+
+/* Loading and content improvements */
+.text-center p {
+  font-weight: 500 !important;
+}
+
+.user-select-none {
+  font-weight: 600 !important;
+}
+.spinner-border {
+  color: #667eea;
+}
+
+.alert {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .news-title {
+    font-size: 0.9rem;
   }
   
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    color: #fff;
-  }
-  
-  p,
-  ul li {
-    color: #eee;
-  }
-  
-  .card {
-    background-color: #303134;
-    border: 1px solid #404144;
+  .news-title-small {
+    font-size: 0.8rem;
   }
   
   .card-body {
-    padding: 20px;
+    padding: 15px;
   }
   
-  /* Add more styles as needed */
+  .standings-table {
+    font-size: 0.75rem;
+  }
+}
+
+/* Animation for loading states */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Custom scrollbar for news sections */
+.card-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.card-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.card-body::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.card-body::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* Enhanced link styles */
+a {
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #667eea !important;
+}
+
+/* Badge enhancements */
+.badge {
+  font-size: 0.7rem;
+  padding: 0.35em 0.65em;
+}
+
+/* Display title styling */
+.display-4 {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: bold;
+}
+
+.lead {
+  font-size: 1.1rem;
+}
   
