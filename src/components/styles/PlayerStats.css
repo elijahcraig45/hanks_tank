@@ -1,0 +1,225 @@
+/* Player Statistics Page Enhancements */
+
+/* Fix dropdown z-index and positioning issues */
+.dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  z-index: 1050 !important;
+  max-height: 300px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border: 1px solid #dee2e6;
+  position: fixed !important;
+}
+
+.dropdown-menu.show {
+  display: block !important;
+}
+
+.dropdown-toggle {
+  border: 1px solid #ced4da;
+  background-color: #fff;
+  font-weight: 500;
+}
+
+.dropdown-toggle:focus {
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+
+/* Ensure controls section has proper spacing and doesn't clip dropdowns */
+.controls-section {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+  overflow: visible !important;
+  position: relative;
+  z-index: 100;
+}
+
+/* Fix table header styling */
+.table thead th {
+  background-color: #343a40 !important;
+  color: #fff !important;
+  border-bottom: 2px solid #495057;
+  font-weight: 600;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Sortable header indicators */
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.sortable-header:hover {
+  background-color: #495057 !important;
+  transform: translateY(-1px);
+}
+
+.sortable-header.sorted-asc::after {
+  content: ' ↑';
+  font-weight: bold;
+  color: #28a745;
+}
+
+.sortable-header.sorted-desc::after {
+  content: ' ↓';
+  font-weight: bold;
+  color: #28a745;
+}
+
+/* Player table enhancements */
+.player-table {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.player-table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.player-table tbody tr:hover {
+  background-color: rgba(0,123,255,0.05);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Player name styling */
+.player-name {
+  font-weight: 600;
+  color: #495057;
+}
+
+.player-name:hover {
+  color: #007bff;
+  text-decoration: none;
+}
+
+/* Team badge styling */
+.team-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Stat value styling */
+.stat-value {
+  font-weight: 500;
+  font-family: 'Courier New', monospace;
+}
+
+.stat-value.highlight {
+  background-color: rgba(40, 167, 69, 0.1);
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+/* Loading states */
+.loading-overlay {
+  position: relative;
+}
+
+.loading-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255,255,255,0.8);
+  z-index: 1000;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .controls-section {
+    padding: 15px;
+  }
+  
+  .dropdown-toggle {
+    font-size: 0.875rem;
+  }
+  
+  .table {
+    font-size: 0.875rem;
+  }
+  
+  .player-table {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Filter section styling */
+.filter-section {
+  background-color: #e9ecef;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.filter-section .form-check {
+  margin-bottom: 0;
+}
+
+.filter-section .form-check-label {
+  font-weight: 500;
+  color: #495057;
+}
+
+/* Qualified player indicator */
+.qualified-indicator {
+  font-size: 0.7rem;
+  margin-left: 4px;
+  opacity: 0.8;
+}
+
+/* Column customization improvements */
+.dropdown-item-text {
+  padding: 0.25rem 1rem !important;
+}
+
+.dropdown-item-text:hover {
+  background-color: rgba(0,123,255,0.1) !important;
+}
+
+.form-check-input:checked {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+/* Performance and visual improvements */
+.table-container {
+  position: relative;
+  overflow-x: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.table-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

@@ -14,6 +14,7 @@ import {
   InputGroup 
 } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import './styles/PlayerStats.css';
 
 const PlayerPitching = () => {
   const [playerData, setPlayerData] = useState([]);
@@ -27,6 +28,7 @@ const PlayerPitching = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredData, setFilteredData] = useState([]);
+  const [showQualifiedOnly, setShowQualifiedOnly] = useState(false);
 
   // Pitching stats presets for MLB API data
   const statPresets = {
@@ -128,6 +130,12 @@ const PlayerPitching = () => {
       'BB%': (Math.random() * 5 + 5).toFixed(1) + '%'
     }));
   };
+
+  // Determine if a pitcher is qualified for ERA title (162 innings pitched in a 162-game season)
+  const isQualifiedPitcher = (player) => {
+    const inningsPitched = parseFloat(player.IP) || 0;
+    return inningsPitched >= 162;
+  };
   useEffect(() => {
     fetchAvailableStats();
   }, []);
@@ -137,17 +145,24 @@ const PlayerPitching = () => {
   }, [selectedYear, visibleStats, sortConfig]);
 
   useEffect(() => {
-    // Filter data based on search term
+    // Filter data based on search term and qualification status
+    let filtered = playerData;
+    
+    // Apply search filter
     if (searchTerm) {
-      const filtered = playerData.filter(player => 
+      filtered = filtered.filter(player => 
         player.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         player.Team?.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredData(filtered);
-    } else {
-      setFilteredData(playerData);
     }
-  }, [searchTerm, playerData]);
+    
+    // Apply qualification filter
+    if (showQualifiedOnly) {
+      filtered = filtered.filter(player => isQualifiedPitcher(player));
+    }
+    
+    setFilteredData(filtered);
+  }, [searchTerm, playerData, showQualifiedOnly]);
 
   const requestSort = (key) => {
     setSortConfig({
@@ -220,7 +235,7 @@ const PlayerPitching = () => {
       )}
 
       {/* Controls Section */}
-      <Card className="mb-4">
+      <Card className="mb-4 controls-section">
         <Card.Body>
           <Row className="g-3 align-items-end">
             <Col xs={12} md={2}>
@@ -239,7 +254,7 @@ const PlayerPitching = () => {
               </Dropdown>
             </Col>
 
-            <Col xs={12} md={3}>
+            <Col xs={12} md={2}>
               <Form.Label>Search Players</Form.Label>
               <InputGroup>
                 <Form.Control
@@ -251,7 +266,7 @@ const PlayerPitching = () => {
               </InputGroup>
             </Col>
 
-            <Col xs={12} md={3}>
+            <Col xs={12} md={2}>
               <Form.Label>Stat Presets</Form.Label>
               <Dropdown>
                 <Dropdown.Toggle variant="outline-secondary" className="w-100">
@@ -265,6 +280,20 @@ const PlayerPitching = () => {
                   ))}
                 </Dropdown.Menu>
               </Dropdown>
+            </Col>
+
+            <Col xs={12} md={2}>
+              <Form.Label>Player Filter</Form.Label>
+              <div className="filter-section">
+                <Form.Check
+                  type="switch"
+                  id="qualified-switch-pitching"
+                  label="Qualified Only"
+                  checked={showQualifiedOnly}
+                  onChange={(e) => setShowQualifiedOnly(e.target.checked)}
+                />
+                <small className="text-muted">162+ IP</small>
+              </div>
             </Col>
 
             <Col xs={12} md={2}>
@@ -334,8 +363,8 @@ const PlayerPitching = () => {
               <p className="mt-3">Loading pitching statistics...</p>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <Table striped hover responsive className="mb-0">
+            <div className="table-container">
+              <Table striped hover responsive className="mb-0 player-table">
                 <thead className="table-dark">
                   <tr>
                     {filteredData.length > 0 && Object.keys(filteredData[0])
@@ -368,9 +397,14 @@ const PlayerPitching = () => {
                                 {value}
                               </Link>
                             ) : key === "Name" ? (
-                              <Link to={`/player/${player.IDfg}`} className="text-decoration-none fw-bold">
-                                {value}
-                              </Link>
+                              <span>
+                                <Link to={`/player/${player.IDfg}`} className="text-decoration-none fw-bold player-name">
+                                  {value}
+                                </Link>
+                                {isQualifiedPitcher(player) && (
+                                  <Badge bg="success" className="qualified-indicator">Q</Badge>
+                                )}
+                              </span>
                             ) : (
                               formatData(value, key)
                             )}
