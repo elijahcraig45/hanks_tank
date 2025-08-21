@@ -14,6 +14,7 @@ import {
   InputGroup 
 } from 'react-bootstrap';
 import { Link } from "react-router-dom";
+import './styles/PlayerStats.css';
 
 const PlayerBatting = () => {
   const [playerData, setPlayerData] = useState([]);
@@ -27,6 +28,7 @@ const PlayerBatting = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredData, setFilteredData] = useState([]);
+  const [showQualifiedOnly, setShowQualifiedOnly] = useState(false);
 
   // Essential stats presets for MLB API data
   const statPresets = {
@@ -126,6 +128,12 @@ const PlayerBatting = () => {
     }));
   };
 
+  // Determine if a player is qualified for batting title (502 plate appearances in a 162-game season)
+  const isQualifiedBatter = (player) => {
+    const plateAppearances = player.PA || (player.AB + player.BB + player.HBP + player.SF + player.SH) || 0;
+    return plateAppearances >= 502;
+  };
+
   useEffect(() => {
     fetchAvailableStats();
   }, []);
@@ -135,17 +143,24 @@ const PlayerBatting = () => {
   }, [selectedYear, visibleStats, sortConfig]);
 
   useEffect(() => {
-    // Filter data based on search term
+    // Filter data based on search term and qualification status
+    let filtered = playerData;
+    
+    // Apply search filter
     if (searchTerm) {
-      const filtered = playerData.filter(player => 
+      filtered = filtered.filter(player => 
         player.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         player.Team?.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredData(filtered);
-    } else {
-      setFilteredData(playerData);
     }
-  }, [searchTerm, playerData]);
+    
+    // Apply qualification filter
+    if (showQualifiedOnly) {
+      filtered = filtered.filter(player => isQualifiedBatter(player));
+    }
+    
+    setFilteredData(filtered);
+  }, [searchTerm, playerData, showQualifiedOnly]);
 
   const requestSort = (key) => {
     setSortConfig({
@@ -208,7 +223,7 @@ const PlayerBatting = () => {
       )}
 
       {/* Controls Section */}
-      <Card className="mb-4">
+      <Card className="mb-4 controls-section">
         <Card.Body>
           <Row className="g-3 align-items-end">
             <Col xs={12} md={2}>
@@ -227,7 +242,7 @@ const PlayerBatting = () => {
               </Dropdown>
             </Col>
 
-            <Col xs={12} md={3}>
+            <Col xs={12} md={2}>
               <Form.Label>Search Players</Form.Label>
               <InputGroup>
                 <Form.Control
@@ -239,7 +254,7 @@ const PlayerBatting = () => {
               </InputGroup>
             </Col>
 
-            <Col xs={12} md={3}>
+            <Col xs={12} md={2}>
               <Form.Label>Stat Presets</Form.Label>
               <Dropdown>
                 <Dropdown.Toggle variant="outline-secondary" className="w-100">
@@ -253,6 +268,20 @@ const PlayerBatting = () => {
                   ))}
                 </Dropdown.Menu>
               </Dropdown>
+            </Col>
+
+            <Col xs={12} md={2}>
+              <Form.Label>Player Filter</Form.Label>
+              <div className="filter-section">
+                <Form.Check
+                  type="switch"
+                  id="qualified-switch"
+                  label="Qualified Only"
+                  checked={showQualifiedOnly}
+                  onChange={(e) => setShowQualifiedOnly(e.target.checked)}
+                />
+                <small className="text-muted">502+ PA</small>
+              </div>
             </Col>
 
             <Col xs={12} md={2}>
@@ -322,8 +351,8 @@ const PlayerBatting = () => {
               <p className="mt-3">Loading player statistics...</p>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <Table striped hover responsive className="mb-0">
+            <div className="table-container">
+              <Table striped hover responsive className="mb-0 player-table">
                 <thead className="table-dark">
                   <tr>
                     {filteredData.length > 0 && Object.keys(filteredData[0])
@@ -352,9 +381,14 @@ const PlayerBatting = () => {
                                 {value}
                               </Link>
                             ) : key === "Name" ? (
-                              <Link to={`/player/${player.IDfg}`} className="text-decoration-none fw-bold">
-                                {value}
-                              </Link>
+                              <span>
+                                <Link to={`/player/${player.IDfg}`} className="text-decoration-none fw-bold player-name">
+                                  {value}
+                                </Link>
+                                {isQualifiedBatter(player) && (
+                                  <Badge bg="success" className="qualified-indicator">Q</Badge>
+                                )}
+                              </span>
                             ) : (
                               formatData(value, key)
                             )}
