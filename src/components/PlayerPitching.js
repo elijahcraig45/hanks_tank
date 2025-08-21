@@ -17,10 +17,10 @@ import { Link } from 'react-router-dom';
 
 const PlayerPitching = () => {
   const [playerData, setPlayerData] = useState([]);
-  const [selectedYear, setSelectedYear] = useState('2025');
+  const [selectedYear, setSelectedYear] = useState('2024');
   const [availableStats, setAvailableStats] = useState([]);
   const [visibleStats, setVisibleStats] = useState(new Set([
-    'Name', 'Team', 'GS', 'IP', 'ERA', 'WHIP', 'SO', 'BB', 'H', 'HR', 'K/9', 'BB/9', 'FIP'
+    'Name', 'Team', 'G', 'GS', 'W', 'L', 'SV', 'IP', 'H', 'R', 'ER', 'HR', 'BB', 'SO', 'ERA', 'WHIP'
   ]));
   const [sortConfig, setSortConfig] = useState({ key: 'ERA', direction: "asc" });
   const [loading, setLoading] = useState(false);
@@ -28,23 +28,26 @@ const PlayerPitching = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredData, setFilteredData] = useState([]);
 
-  // Pitching stats presets
+  // Pitching stats presets for MLB API data
   const statPresets = {
-    'Essential': ['Name', 'Team', 'GS', 'IP', 'ERA', 'WHIP', 'SO', 'K/9', 'FIP'],
-    'Advanced': ['Name', 'Team', 'FIP', 'xFIP', 'SIERA', 'WAR', 'WPA', 'ERA-', 'FIP-'],
-    'Sabermetrics': ['Name', 'Team', 'WAR', 'FIP', 'xFIP', 'BABIP', 'LOB%', 'HR/FB', 'SIERA'],
-    'Traditional': ['Name', 'Team', 'W', 'L', 'ERA', 'GS', 'CG', 'SHO', 'SV', 'IP', 'H', 'R', 'ER', 'HR', 'BB', 'SO'],
-    'Rate Stats': ['Name', 'Team', 'ERA', 'WHIP', 'K/9', 'BB/9', 'HR/9', 'K%', 'BB%', 'K-BB%']
+    'Essential': ['Name', 'Team', 'G', 'GS', 'W', 'L', 'ERA', 'WHIP', 'SO', 'IP'],
+    'Traditional': ['Name', 'Team', 'W', 'L', 'ERA', 'GS', 'SV', 'IP', 'H', 'R', 'ER', 'HR', 'BB', 'SO'],
+    'Rate Stats': ['Name', 'Team', 'ERA', 'WHIP', 'K/9', 'BB/9', 'HR/9', 'BF'],
+    'Control': ['Name', 'Team', 'BB', 'SO', 'HBP', 'WP', 'BK', 'BB/9', 'K/9'],
+    'Workload': ['Name', 'Team', 'G', 'GS', 'IP', 'BF', 'H', 'R', 'ER']
   };
 
   const fetchAvailableStats = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/PlayerPitching/avaliableStats`);
-      if (!response.ok) throw new Error("Failed to fetch available stats");
-      const stats = await response.json();
-      setAvailableStats(stats);
+      // For Phase 1, we'll use a predefined set of MLB API pitching stats
+      const mlbApiStats = [
+        'Name', 'Team', 'G', 'GS', 'W', 'L', 'SV', 'IP', 'H', 'R', 'ER', 
+        'HR', 'BB', 'SO', 'ERA', 'WHIP', 'K/9', 'BB/9', 'HR/9', 'BF', 
+        'HBP', 'WP', 'BK'
+      ];
+      setAvailableStats(mlbApiStats);
     } catch (error) {
-      console.error("Error fetching available stats:", error);
+      console.error("Error setting available stats:", error);
       setError("Failed to load available statistics");
     }
   };
@@ -54,33 +57,35 @@ const PlayerPitching = () => {
     setError(null);
     
     try {
-      const statsParam = Array.from(visibleStats).join(',');
-      const url = `${process.env.REACT_APP_API_URL}/PlayerPitching?year=${selectedYear}&stats=${statsParam}&orderBy=${sortConfig.key}&direction=${sortConfig.direction}`;
+      console.log(`🔄 PlayerPitching: Fetching ${selectedYear} player pitching data`);
       
-      console.log('Fetching from:', url);
+      // Use the new player-pitching endpoint with leaderboard data
+      const url = `${process.env.REACT_APP_API_URL}/player-pitching?year=${selectedYear}&limit=50&sortStat=${sortConfig.key}&direction=${sortConfig.direction}`;
+      
+      console.log(`⚾ PlayerPitching: Fetching from:`, url);
       
       const response = await fetch(url);
       
       if (!response.ok) {
-        if (response.status === 500) {
-          throw new Error("Player pitching data requires specific implementation. Using mock data for now.");
-        }
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(`HTTP ${response.status}: Failed to fetch player pitching data`);
       }
       
       const data = await response.json();
       
       if (Array.isArray(data) && data.length > 0) {
+        console.log(`✅ PlayerPitching: Received ${data.length} players`);
         setPlayerData(data);
         setFilteredData(data);
       } else {
-        // Generate mock data for demonstration
-        setPlayerData(generateMockPlayerData());
-        setFilteredData(generateMockPlayerData());
+        console.warn('⚠️ PlayerPitching: No data received, using fallback');
+        // Generate mock data for demonstration if no data
+        const mockData = generateMockPlayerData();
+        setPlayerData(mockData);
+        setFilteredData(mockData);
       }
     } catch (error) {
-      console.error("Error fetching player data:", error);
-      setError(error.message);
+      console.error("❌ PlayerPitching: Error fetching player data:", error);
+      setError(`Failed to load player pitching data: ${error.message}`);
       // Use mock data as fallback
       const mockData = generateMockPlayerData();
       setPlayerData(mockData);
