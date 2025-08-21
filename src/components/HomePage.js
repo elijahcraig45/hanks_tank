@@ -142,16 +142,32 @@ function HomePage() {
       ]
     };
 
+    // Flatten all team records from all divisions/leagues
+    const allTeamRecords = [];
+    rawData.forEach(record => {
+      if (record.teamRecords) {
+        record.teamRecords.forEach(teamRecord => {
+          allTeamRecords.push({
+            Tm: teamRecord.team.name,
+            W: teamRecord.wins,
+            L: teamRecord.losses,
+            winPct: teamRecord.winningPercentage || ((teamRecord.wins / (teamRecord.wins + teamRecord.losses)) || 0).toFixed(3),
+            GB: teamRecord.gamesBack || (teamRecord.divisionRank === 1 ? '--' : teamRecord.gamesBack)
+          });
+        });
+      }
+    });
+
     const sortedStandings = {};
     
     Object.entries(mlbDivisions).forEach(([division, teams]) => {
-      sortedStandings[division] = rawData
+      sortedStandings[division] = allTeamRecords
         .filter(team => teams.includes(team.Tm))
         .sort((a, b) => (b.W || 0) - (a.W || 0))
         .map(team => ({
           ...team,
           L: team.L === false ? 0 : team.L === true ? 1 : team.L || 0,
-          winPct: team['W-L%'] || (team.W / (team.W + team.L)).toFixed(3)
+          winPct: team.winPct || (team.W / (team.W + team.L)).toFixed(3)
         }));
     });
 

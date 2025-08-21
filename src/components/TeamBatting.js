@@ -394,8 +394,8 @@ const TeamBatting = () => {
               <p className="mt-3">Loading team statistics...</p>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <Table striped hover responsive className="mb-0">
+            <div className="table-responsive">
+              <Table striped hover className="mb-0">
                 <thead className="table-dark">
                   <tr>
                     {filteredData.length > 0 && Object.keys(filteredData[0])

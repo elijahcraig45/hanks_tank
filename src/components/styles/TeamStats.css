@@ -11,6 +11,7 @@
   overflow-y: auto;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   border: 1px solid #dee2e6;
+  position: fixed !important;
 }
 
 .dropdown-menu.show {
@@ -27,12 +28,15 @@
   box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
 }
 
-/* Ensure controls section has proper spacing */
+/* Ensure controls section has proper spacing and doesn't clip dropdowns */
 .controls-section {
   background-color: #f8f9fa;
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 24px;
+  overflow: visible !important;
+  position: relative;
+  z-index: 100;
 }
 
 /* Fix table header styling */
@@ -62,10 +66,27 @@
   color: #007bff !important;
 }
 
-/* Responsive table container */
+/* Responsive table container - ensure it doesn't clip dropdowns */
 .table-responsive {
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow-x: auto;
+  overflow-y: visible !important;
+}
+
+/* Ensure table containers don't clip dropdowns */
+.card-body {
+  overflow: visible !important;
+}
+
+/* For elements with overflowX auto, ensure dropdowns still work */
+div[style*="overflowX"] {
+  overflow: visible !important;
+}
+
+/* Ensure Card and Container elements allow dropdown overflow */
+.card, .container, .container-fluid {
+  overflow: visible !important;
 }
 
 /* Team badges in table */
