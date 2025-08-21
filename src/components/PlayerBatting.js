@@ -17,7 +17,7 @@ import { Link } from "react-router-dom";
 
 const PlayerBatting = () => {
   const [playerData, setPlayerData] = useState([]);
-  const [selectedYear, setSelectedYear] = useState('2025');
+  const [selectedYear, setSelectedYear] = useState('2024'); // Updated to use 2024 season
   const [availableStats, setAvailableStats] = useState([]);
   const [visibleStats, setVisibleStats] = useState(new Set([
     'Name', 'Team', 'G', 'AB', 'R', 'H', 'HR', 'RBI', 'BB', 'SO', 'AVG', 'OBP', 'SLG', 'OPS'
@@ -28,23 +28,27 @@ const PlayerBatting = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredData, setFilteredData] = useState([]);
 
-  // Essential stats presets
+  // Essential stats presets for MLB API data
   const statPresets = {
     'Essential': ['Name', 'Team', 'G', 'AB', 'R', 'H', 'HR', 'RBI', 'AVG', 'OPS'],
-    'Advanced': ['Name', 'Team', 'wRC+', 'OPS+', 'WAR', 'wOBA', 'ISO', 'BABIP', 'BB%', 'K%'],
-    'Sabermetrics': ['Name', 'Team', 'WAR', 'wRC+', 'FIP', 'xFIP', 'SIERA', 'WHIP', 'K/9', 'BB/9'],
-    'Power': ['Name', 'Team', 'HR', 'RBI', 'SLG', 'ISO', 'HR/FB', 'Pull%', 'Hard%', 'Barrel%'],
-    'Contact': ['Name', 'Team', 'AVG', 'BABIP', 'Contact%', 'SwStr%', 'O-Swing%', 'Z-Swing%']
+    'Traditional': ['Name', 'Team', 'G', 'AB', 'R', 'H', '2B', '3B', 'HR', 'RBI', 'BB', 'SO', 'AVG'],
+    'Advanced': ['Name', 'Team', 'PA', 'TB', 'SLG', 'OBP', 'OPS', 'BABIP', 'HBP', 'SF'],
+    'Power': ['Name', 'Team', 'HR', 'RBI', 'SLG', 'TB', 'H', 'G'],
+    'Plate Discipline': ['Name', 'Team', 'PA', 'BB', 'SO', 'HBP', 'AVG', 'OBP']
   };
 
   const fetchAvailableStats = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/PlayerBatting/avaliableStats`);
-      if (!response.ok) throw new Error("Failed to fetch available stats");
-      const stats = await response.json();
-      setAvailableStats(stats);
+      // For Phase 1, we'll use a predefined set of MLB API stats
+      // This matches what's available from the MLB Stats API player leaderboards
+      const mlbApiStats = [
+        'Name', 'Team', 'G', 'AB', 'R', 'H', '2B', '3B', 'HR', 'RBI', 
+        'SB', 'CS', 'BB', 'SO', 'AVG', 'OBP', 'SLG', 'OPS', 'TB', 'HBP', 
+        'SF', 'SH', 'BABIP', 'PA'
+      ];
+      setAvailableStats(mlbApiStats);
     } catch (error) {
-      console.error("Error fetching available stats:", error);
+      console.error("Error setting available stats:", error);
       setError("Failed to load available statistics");
     }
   };
@@ -54,36 +58,35 @@ const PlayerBatting = () => {
     setError(null);
     
     try {
-      // Note: The backend shows that PlayerBatting requires specific player ID
-      // For now, we'll try to get aggregate data or implement a different approach
-      const statsParam = Array.from(visibleStats).join(',');
-      const url = `${process.env.REACT_APP_API_URL}/PlayerBatting?year=${selectedYear}&stats=${statsParam}&orderBy=${sortConfig.key}&direction=${sortConfig.direction}`;
+      console.log(`🔄 PlayerBatting: Fetching ${selectedYear} player batting data`);
       
-      console.log('Fetching from:', url);
+      // Use the new player-batting endpoint with leaderboard data
+      const url = `${process.env.REACT_APP_API_URL}/player-batting?year=${selectedYear}&limit=50&sortStat=${sortConfig.key}&direction=${sortConfig.direction}`;
+      
+      console.log(`⚾ PlayerBatting: Fetching from:`, url);
       
       const response = await fetch(url);
       
       if (!response.ok) {
-        if (response.status === 500) {
-          // Try alternative approach for getting multiple players
-          throw new Error("Player batting data requires specific implementation. Using mock data for now.");
-        }
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(`HTTP ${response.status}: Failed to fetch player batting data`);
       }
       
       const data = await response.json();
       
       if (Array.isArray(data) && data.length > 0) {
+        console.log(`✅ PlayerBatting: Received ${data.length} players`);
         setPlayerData(data);
         setFilteredData(data);
       } else {
-        // Generate mock data for demonstration
-        setPlayerData(generateMockPlayerData());
-        setFilteredData(generateMockPlayerData());
+        console.warn('⚠️ PlayerBatting: No data received, using fallback');
+        // Generate mock data for demonstration if no data
+        const mockData = generateMockPlayerData();
+        setPlayerData(mockData);
+        setFilteredData(mockData);
       }
     } catch (error) {
-      console.error("Error fetching player data:", error);
-      setError(error.message);
+      console.error("❌ PlayerBatting: Error fetching player data:", error);
+      setError(`Failed to load player batting data: ${error.message}`);
       // Use mock data as fallback
       const mockData = generateMockPlayerData();
       setPlayerData(mockData);
