@@ -18,6 +18,7 @@ import './styles/PlayerStats.css';
 
 const PlayerPitching = () => {
   const [playerData, setPlayerData] = useState([]);
+  const [teamData, setTeamData] = useState([]);
   const [selectedYear, setSelectedYear] = useState('2024');
   const [availableStats, setAvailableStats] = useState([]);
   const [visibleStats, setVisibleStats] = useState(new Set([
@@ -59,25 +60,40 @@ const PlayerPitching = () => {
     setError(null);
     
     try {
-      console.log(`🔄 PlayerPitching: Fetching ${selectedYear} player pitching data`);
+      console.log(`🔄 PlayerPitching: Fetching ${selectedYear} player and team pitching data`);
       
-      // Use the new player-pitching endpoint with leaderboard data
-      const url = `${process.env.REACT_APP_API_URL}/player-pitching?year=${selectedYear}&limit=50&sortStat=${sortConfig.key}&direction=${sortConfig.direction}`;
+      // Fetch both player and team data in parallel
+      const playerUrl = `${process.env.REACT_APP_API_URL}/player-pitching?year=${selectedYear}&limit=1000&sortStat=${sortConfig.key}&direction=${sortConfig.direction}`;
+      const teamUrl = `${process.env.REACT_APP_API_URL}/team-pitching?year=${selectedYear}`;
       
-      console.log(`⚾ PlayerPitching: Fetching from:`, url);
+      console.log(`⚾ PlayerPitching: Fetching player data from:`, playerUrl);
+      console.log(`⚾ PlayerPitching: Fetching team data from:`, teamUrl);
       
-      const response = await fetch(url);
+      const [playerResponse, teamResponse] = await Promise.all([
+        fetch(playerUrl),
+        fetch(teamUrl)
+      ]);
       
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: Failed to fetch player pitching data`);
+      if (!playerResponse.ok) {
+        throw new Error(`HTTP ${playerResponse.status}: Failed to fetch player pitching data`);
       }
       
-      const data = await response.json();
+      const playerData = await playerResponse.json();
       
-      if (Array.isArray(data) && data.length > 0) {
-        console.log(`✅ PlayerPitching: Received ${data.length} players`);
-        setPlayerData(data);
-        setFilteredData(data);
+      // Team data is optional - if it fails, we'll use fallback
+      let teamDataResult = [];
+      if (teamResponse.ok) {
+        teamDataResult = await teamResponse.json();
+        console.log(`✅ PlayerPitching: Received ${teamDataResult.length} teams`);
+        setTeamData(teamDataResult);
+      } else {
+        console.warn('⚠️ PlayerPitching: Team data fetch failed, using fallback');
+      }
+      
+      if (Array.isArray(playerData) && playerData.length > 0) {
+        console.log(`✅ PlayerPitching: Received ${playerData.length} players`);
+        setPlayerData(playerData);
+        setFilteredData(playerData);
       } else {
         console.warn('⚠️ PlayerPitching: No data received, using fallback');
         // Generate mock data for demonstration if no data
@@ -131,10 +147,29 @@ const PlayerPitching = () => {
     }));
   };
 
-  // Determine if a pitcher is qualified for ERA title (162 innings pitched in a 162-game season)
+  // Determine if a pitcher is qualified for ERA title (1 IP per team game)
   const isQualifiedPitcher = (player) => {
     const inningsPitched = parseFloat(player.IP) || 0;
-    return inningsPitched >= 162;
+    
+    // Try to get team games played from team data
+    let teamGamesPlayed = 162; // Default fallback
+    
+    if (teamData && teamData.length > 0) {
+      // Find the player's team in team data
+      const playerTeam = teamData.find(team => 
+        team.Team === player.Team || 
+        team.Tm === player.Team ||
+        team.Name === player.Team
+      );
+      
+      if (playerTeam && playerTeam.G) {
+        teamGamesPlayed = parseInt(playerTeam.G);
+        console.log(`⚾ Found ${player.Team} games played: ${teamGamesPlayed}`);
+      }
+    }
+    
+    const requiredIP = 1.0 * teamGamesPlayed;
+    return inningsPitched >= requiredIP;
   };
   useEffect(() => {
     fetchAvailableStats();
@@ -292,7 +327,6 @@ const PlayerPitching = () => {
                   checked={showQualifiedOnly}
                   onChange={(e) => setShowQualifiedOnly(e.target.checked)}
                 />
-                <small className="text-muted">162+ IP</small>
               </div>
             </Col>
 

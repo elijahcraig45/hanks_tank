@@ -18,6 +18,7 @@ import './styles/PlayerStats.css';
 
 const PlayerBatting = () => {
   const [playerData, setPlayerData] = useState([]);
+  const [teamData, setTeamData] = useState([]);
   const [selectedYear, setSelectedYear] = useState('2024'); // Updated to use 2024 season
   const [availableStats, setAvailableStats] = useState([]);
   const [visibleStats, setVisibleStats] = useState(new Set([
@@ -60,27 +61,42 @@ const PlayerBatting = () => {
     setError(null);
     
     try {
-      console.log(`🔄 PlayerBatting: Fetching ${selectedYear} player batting data`);
+      console.log(`🔄 PlayerBatting: Fetching ${selectedYear} player and team batting data`);
       
-      // Use the new player-batting endpoint with leaderboard data
-      const url = `${process.env.REACT_APP_API_URL}/player-batting?year=${selectedYear}&limit=50&sortStat=${sortConfig.key}&direction=${sortConfig.direction}`;
+      // Fetch both player and team data in parallel
+      const playerUrl = `${process.env.REACT_APP_API_URL}/player-batting?year=${selectedYear}&limit=1000&sortStat=${sortConfig.key}&direction=${sortConfig.direction}`;
+      const teamUrl = `${process.env.REACT_APP_API_URL}/team-batting?year=${selectedYear}`;
       
-      console.log(`⚾ PlayerBatting: Fetching from:`, url);
+      console.log(`⚾ PlayerBatting: Fetching player data from:`, playerUrl);
+      console.log(`⚾ PlayerBatting: Fetching team data from:`, teamUrl);
       
-      const response = await fetch(url);
+      const [playerResponse, teamResponse] = await Promise.all([
+        fetch(playerUrl),
+        fetch(teamUrl)
+      ]);
       
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: Failed to fetch player batting data`);
+      if (!playerResponse.ok) {
+        throw new Error(`HTTP ${playerResponse.status}: Failed to fetch player batting data`);
       }
       
-      const data = await response.json();
+      const playerData = await playerResponse.json();
       
-      if (Array.isArray(data) && data.length > 0) {
-        console.log(`✅ PlayerBatting: Received ${data.length} players`);
-        setPlayerData(data);
-        setFilteredData(data);
+      // Team data is optional - if it fails, we'll use fallback
+      let teamDataResult = [];
+      if (teamResponse.ok) {
+        teamDataResult = await teamResponse.json();
+        console.log(`✅ PlayerBatting: Received ${teamDataResult.length} teams`);
+        setTeamData(teamDataResult);
       } else {
-        console.warn('⚠️ PlayerBatting: No data received, using fallback');
+        console.warn('⚠️ PlayerBatting: Team data fetch failed, using fallback');
+      }
+      
+      if (Array.isArray(playerData) && playerData.length > 0) {
+        console.log(`✅ PlayerBatting: Received ${playerData.length} players`);
+        setPlayerData(playerData);
+        setFilteredData(playerData);
+      } else {
+        console.warn('⚠️ PlayerBatting: No player data received, using fallback');
         // Generate mock data for demonstration if no data
         const mockData = generateMockPlayerData();
         setPlayerData(mockData);
@@ -128,10 +144,29 @@ const PlayerBatting = () => {
     }));
   };
 
-  // Determine if a player is qualified for batting title (502 plate appearances in a 162-game season)
+  // Determine if a player is qualified for batting title (3.1 PA per team game)
   const isQualifiedBatter = (player) => {
     const plateAppearances = player.PA || (player.AB + player.BB + player.HBP + player.SF + player.SH) || 0;
-    return plateAppearances >= 502;
+    
+    // Try to get team games played from team data
+    let teamGamesPlayed = 162; // Default fallback
+    
+    if (teamData && teamData.length > 0) {
+      // Find the player's team in team data
+      const playerTeam = teamData.find(team => 
+        team.Team === player.Team || 
+        team.Tm === player.Team ||
+        team.Name === player.Team
+      );
+      
+      if (playerTeam && playerTeam.G) {
+        teamGamesPlayed = parseInt(playerTeam.G);
+        console.log(`📊 Found ${player.Team} games played: ${teamGamesPlayed}`);
+      }
+    }
+    
+    const requiredPA = 3.1 * teamGamesPlayed;
+    return plateAppearances >= Math.floor(requiredPA);
   };
 
   useEffect(() => {
@@ -280,7 +315,6 @@ const PlayerBatting = () => {
                   checked={showQualifiedOnly}
                   onChange={(e) => setShowQualifiedOnly(e.target.checked)}
                 />
-                <small className="text-muted">502+ PA</small>
               </div>
             </Col>
 
