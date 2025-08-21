@@ -1,142 +1,216 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Container, Row, Col, Table, Image } from 'react-bootstrap';
-import StrikeZone from './StrikeZone';
+import { useParams, Link } from 'react-router-dom';
+import { Container, Row, Col, Card, Alert, Spinner, Badge, Button, Tab, Tabs } from 'react-bootstrap';
 
 const PlayerPage = () => {
   const { playerId } = useParams();
-  const [playerData, setPlayerData] = useState({});
-  const [teamData, setTeamData] = useState({});
-  const [battingStatsData, setBattingStatsData] = useState([]);
-  const [pitchingStatsData, setPitchingStatsData] = useState([]);
-  const [visiblePitchingStats, setVisiblePitchingStats] = useState(new Set(['Season', 'Team', 'ERA', 'SO', 'G', 'IP', 'H', 'ER', 'HR', 'BB', 'K/9', 'BB/9', "WHIP", "WAR"]));
-  const [visibleBattingStats, setVisibleBattingStats] = useState(new Set(['Season', 'G', 'OPS', 'AB', 'PA', 'H', 'HR', 'R', 'RBI', 'BB', 'SO', 'AVG', 'Team', 'WAR']));
+  const [battingData, setBattingData] = useState(null);
+  const [pitchingData, setPitchingData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const apiUrl = `${process.env.REACT_APP_API_URL}/playerData?playerId=${playerId}`;
+    const fetchPlayerData = async () => {
+      if (!playerId) return;
+      
+      setLoading(true);
+      setError(null);
+      
       try {
-        const response = await fetch(apiUrl);
-        if (!response.ok) throw new Error('Network response was not ok');
-        const data = await response.json();
-        setPlayerData(data.playerInfo);
-        setTeamData(data.teamInfo);
-        setBattingStatsData(data.data.filter(stats => !stats.hasOwnProperty('ERA')));
+        // Fetch both batting and pitching data to see if player exists in either
+        const [battingResponse, pitchingResponse] = await Promise.all([
+          fetch(`${process.env.REACT_APP_API_URL}/player-batting?year=2024&limit=1000`),
+          fetch(`${process.env.REACT_APP_API_URL}/player-pitching?year=2024&limit=1000`)
+        ]);
+
+        if (!battingResponse.ok || !pitchingResponse.ok) {
+          throw new Error('Failed to fetch player data');
+        }
+
+        const allBattingData = await battingResponse.json();
+        const allPitchingData = await pitchingResponse.json();
+
+        // Find player in both datasets
+        const playerBatting = allBattingData.find(player => 
+          player.playerId && player.playerId.toString() === playerId
+        );
+        
+        const playerPitching = allPitchingData.find(player => 
+          player.playerId && player.playerId.toString() === playerId
+        );
+
+        setBattingData(playerBatting);
+        setPitchingData(playerPitching);
+
+        if (!playerBatting && !playerPitching) {
+          setError(`No player found with ID: ${playerId}`);
+        }
+
       } catch (error) {
-        console.error("Failed to fetch player data:", error);
+        console.error('Error fetching player data:', error);
+        setError(`Failed to load player data: ${error.message}`);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchData();
+
+    fetchPlayerData();
   }, [playerId]);
 
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const apiUrl = `${process.env.REACT_APP_API_URL}/playerData?playerId=${playerId}&position=P`;
-      try {
-        const response = await fetch(apiUrl);
-        if (!response.ok) throw new Error('Network response was not ok');
-        const data = await response.json();
-        setPitchingStatsData(data.data);
-      } catch (error) {
-        console.error("Failed to fetch player data:", error);
-      }
-    };
-    fetchData();
-  }, [playerId]);
-
-
-  const StatsTable = ({ statsData, visibleStatsSet }) => {
-    if (statsData.length === 0) {
-      return null; // Render nothing if statsData is empty
-    }
-  
-    // Filter out statsData where Season does not contain a four-digit year or where AbbLevel is "PROJ"
-    const filteredStatsData = statsData.filter(stats => {
-      const isYear = /\b\d{4}\b/.test(stats.Season);
-      const isNotProjection = stats.AbbLevel !== "PROJ";
-      const isNotROS = stats.AbbLevel !== 'ROS';
-      const moreAB = stats.AB > 0 || stats.hasOwnProperty('ERA');
-      return isYear && isNotProjection && isNotROS && moreAB && stats.Team !== "Average";
-    });
-  
-    // Separate "Total" entries from other entries
-    const totalStats = filteredStatsData.filter(stats => stats.Season.includes("Total"));
-    const otherStats = filteredStatsData.filter(stats => !stats.Season.includes("Total")).reverse();
-  
-    // Combine otherStats with totalStats at the end
-    const finalStatsData = [...otherStats, ...totalStats];
-  
+  if (loading) {
     return (
-      <Table striped bordered hover responsive> 
-        <thead>
-          <tr>
-            {Array.from(visibleStatsSet).map((key, index) => (
-              <th key={index}>{key}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {finalStatsData.map((stats, index) => (
-            <tr key={index}>
-              {Array.from(visibleStatsSet).map((key, idx) => (
-                <td key={`${index}-${idx}`}>
-                  {stats[key] != null && stats[key] !== "" ? (
-                    key === "Season" && (typeof stats[key] === "string" && !stats[key].includes("<a")) ? (
-                      `${stats[key]} (Postseason)`
-                    ) : typeof stats[key] === "string" && stats[key].startsWith("<a") ? (
-                      <span dangerouslySetInnerHTML={{ __html: stats[key] }} />
-                    ) : typeof stats[key] === "number" && stats[key] % 1 !== 0 ? (
-                      stats[key].toFixed(3)
-                    ) : (
-                      stats[key]
-                    )
-                  ) : (
-                    "--"
-                  )}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+      <Container className="py-4 text-center">
+        <Spinner animation="border" role="status" />
+        <p className="mt-2">Loading player data...</p>
+      </Container>
     );
-  };
-  
-  
+  }
+
+  if (error) {
+    return (
+      <Container className="py-4">
+        <Alert variant="danger">
+          <Alert.Heading>Error Loading Player Data</Alert.Heading>
+          {error}
+          <hr />
+          <p className="mb-0">
+            <Button as={Link} to="/players/batting" variant="primary" className="me-2">
+              Browse All Players
+            </Button>
+            <Button as={Link} to="/" variant="outline-secondary">
+              Back to Home
+            </Button>
+          </p>
+        </Alert>
+      </Container>
+    );
+  }
+
+  const playerName = battingData?.Name || pitchingData?.Name || 'Unknown Player';
+  const team = battingData?.Team || pitchingData?.Team || 'Unknown Team';
+
   return (
-    <Container className="mt-4">
-      <Row className="justify-content-between align-items-center mb-4">
-        <Col><h1>{`${playerData.firstLastName}`}</h1></Col>
-      </Row>
-      <Row>
-        <Col xs={3} md={4}>
-          <Image src={playerData.urlHeadshot} alt={playerData.firstLastName} rounded fluid />
-        </Col>
-        <Col xs={9} md={4}>
-          <p><strong>Height:</strong> {playerData.HeightDisplay}</p>
-          <p><strong>Weight:</strong> {playerData.Weight} lbs</p>
-          <p><strong>Position:</strong> {playerData.Position}</p>
-          <p><strong>Team:</strong> {teamData.MLB_FullName} ({teamData.tlevel})</p>
-          <p><strong>Rookie Season:</strong> {playerData.RookieSeason}</p>
-        </Col>
-        <Col xs={9} md={4}>
-          <p><strong>Bats:</strong> {playerData.Bats}</p>
-          <p><strong>Throws:</strong> {playerData.Throws}</p>
-          <p><strong>Birth Date:</strong> {playerData.BirthDateDisplay}</p>
-          <p><strong>Age:</strong> {playerData.AgeDisplay}</p>
-          <p><strong>College:</strong> {playerData.College}</p>
+    <Container className="py-4">
+      <Row className="mb-4">
+        <Col>
+          <div className="d-flex align-items-center mb-3">
+            <Badge bg="primary" className="me-3 fs-5 p-3">
+              {team}
+            </Badge>
+            <div>
+              <h1 className="display-6 mb-0">{playerName}</h1>
+              <p className="text-muted mb-0">
+                Player ID: {playerId} • 2024 Season Stats
+              </p>
+            </div>
+          </div>
         </Col>
       </Row>
-      <Row>
-        <Col style={{ overflow: "auto"}}>
-          {pitchingStatsData.length > 0 && <h2>Pitching Stats</h2>}
-          {pitchingStatsData.length > 0 && <StatsTable statsData={pitchingStatsData} visibleStatsSet={visiblePitchingStats} />}
-          {pitchingStatsData.length > 0 && <StrikeZone MLBAMId={playerData.MLBAMId} position={"pitcher"}/>}
-          {battingStatsData.length > 0 && <h2>Batting Stats</h2>}
-          {battingStatsData.length > 0 && <StatsTable statsData={battingStatsData} visibleStatsSet={visibleBattingStats} />}
-          {battingStatsData.length > 0 && <StrikeZone MLBAMId={playerData.MLBAMId} position={"batter"}/>}
-          {pitchingStatsData.length === 0 && battingStatsData.length === 0 && <p>No stats available.</p>}
+
+      <Tabs defaultActiveKey={battingData ? "batting" : "pitching"} className="mb-4">
+        {battingData && (
+          <Tab eventKey="batting" title="🏏 Batting Stats">
+            <Card>
+              <Card.Header>
+                <h5 className="mb-0">Batting Statistics</h5>
+              </Card.Header>
+              <Card.Body>
+                <Row>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <h6 className="text-muted">Basic Stats</h6>
+                      <p><strong>Games:</strong> {battingData.G}</p>
+                      <p><strong>At Bats:</strong> {battingData.AB}</p>
+                      <p><strong>Plate Appearances:</strong> {battingData.PA}</p>
+                      <p><strong>Runs:</strong> {battingData.R}</p>
+                      <p><strong>Hits:</strong> {battingData.H}</p>
+                      <p><strong>Doubles:</strong> {battingData['2B']}</p>
+                      <p><strong>Triples:</strong> {battingData['3B']}</p>
+                      <p><strong>Home Runs:</strong> {battingData.HR}</p>
+                      <p><strong>RBIs:</strong> {battingData.RBI}</p>
+                    </div>
+                  </Col>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <h6 className="text-muted">Advanced Stats</h6>
+                      <p><strong>Batting Average:</strong> {battingData.AVG}</p>
+                      <p><strong>On-Base %:</strong> {battingData.OBP}</p>
+                      <p><strong>Slugging %:</strong> {battingData.SLG}</p>
+                      <p><strong>OPS:</strong> {battingData.OPS}</p>
+                      <p><strong>Walks:</strong> {battingData.BB}</p>
+                      <p><strong>Strikeouts:</strong> {battingData.SO}</p>
+                      <p><strong>Stolen Bases:</strong> {battingData.SB}</p>
+                      <p><strong>Caught Stealing:</strong> {battingData.CS}</p>
+                      <p><strong>BABIP:</strong> {battingData.BABIP}</p>
+                    </div>
+                  </Col>
+                </Row>
+              </Card.Body>
+            </Card>
+          </Tab>
+        )}
+
+        {pitchingData && (
+          <Tab eventKey="pitching" title="⚾ Pitching Stats">
+            <Card>
+              <Card.Header>
+                <h5 className="mb-0">Pitching Statistics</h5>
+              </Card.Header>
+              <Card.Body>
+                <Row>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <h6 className="text-muted">Basic Stats</h6>
+                      <p><strong>Games:</strong> {pitchingData.G}</p>
+                      <p><strong>Games Started:</strong> {pitchingData.GS}</p>
+                      <p><strong>Wins:</strong> {pitchingData.W}</p>
+                      <p><strong>Losses:</strong> {pitchingData.L}</p>
+                      <p><strong>Saves:</strong> {pitchingData.SV}</p>
+                      <p><strong>Innings Pitched:</strong> {pitchingData.IP}</p>
+                      <p><strong>Hits Allowed:</strong> {pitchingData.H}</p>
+                      <p><strong>Runs Allowed:</strong> {pitchingData.R}</p>
+                      <p><strong>Earned Runs:</strong> {pitchingData.ER}</p>
+                    </div>
+                  </Col>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <h6 className="text-muted">Advanced Stats</h6>
+                      <p><strong>ERA:</strong> {pitchingData.ERA}</p>
+                      <p><strong>WHIP:</strong> {pitchingData.WHIP}</p>
+                      <p><strong>Strikeouts:</strong> {pitchingData.SO}</p>
+                      <p><strong>Walks:</strong> {pitchingData.BB}</p>
+                      <p><strong>Home Runs Allowed:</strong> {pitchingData.HR}</p>
+                      <p><strong>Hit Batters:</strong> {pitchingData.HBP}</p>
+                      <p><strong>Wild Pitches:</strong> {pitchingData.WP}</p>
+                      <p><strong>Balks:</strong> {pitchingData.BK}</p>
+                      <p><strong>Batters Faced:</strong> {pitchingData.BF}</p>
+                    </div>
+                  </Col>
+                </Row>
+              </Card.Body>
+            </Card>
+          </Tab>
+        )}
+      </Tabs>
+
+      {!battingData && !pitchingData && (
+        <Alert variant="info">
+          <Alert.Heading>No Statistics Available</Alert.Heading>
+          <p>This player does not have batting or pitching statistics for the 2024 season.</p>
+        </Alert>
+      )}
+
+      <Row className="mt-4">
+        <Col className="d-flex gap-3 justify-content-center">
+          <Button as={Link} to="/players/batting" variant="primary">
+            View All Batting Stats
+          </Button>
+          <Button as={Link} to="/players/pitching" variant="outline-primary">
+            View All Pitching Stats
+          </Button>
+          <Button as={Link} to="/teams/batting" variant="outline-secondary">
+            View Team Stats
+          </Button>
         </Col>
       </Row>
     </Container>
