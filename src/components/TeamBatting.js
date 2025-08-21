@@ -22,7 +22,7 @@ import "./styles/TeamStats.css";
 
 const TeamBatting = () => {
   const [teamData, setTeamData] = useState([]);
-  const [selectedYear, setSelectedYear] = useState("2025");
+  const [selectedYear, setSelectedYear] = useState("2024"); // Updated to use 2024 season
   const [availableStats, setAvailableStats] = useState([]);
   const [visibleStats, setVisibleStats] = useState(new Set([
     "Team", "G", "AB", "R", "H", "HR", "RBI", "BB", "SO", "AVG", "OBP", "SLG", "OPS"
@@ -47,21 +47,25 @@ const TeamBatting = () => {
     'ARI': '#A71930', 'NYM': '#FF5910'
   };
 
-  // Chart configuration
+  // Available stats based on MLB API team data structure
   const statPresets = {
-    'Offensive': ['Team', 'AVG', 'OBP', 'SLG', 'OPS', 'wRC+', 'HR', 'RBI'],
-    'Power': ['Team', 'HR', 'SLG', 'ISO', 'HR/FB', 'Barrel%'],
-    'Contact': ['Team', 'AVG', 'BABIP', 'K%', 'BB%', 'Contact%'],
-    'Advanced': ['Team', 'wRC+', 'wOBA', 'WAR', 'WPA', 'RE24'],
-    'Traditional': ['Team', 'G', 'AB', 'R', 'H', 'HR', 'RBI', 'BB', 'SO', 'AVG']
+    'Essential': ['Team', 'G', 'AB', 'R', 'H', 'HR', 'RBI', 'AVG', 'OPS'],
+    'Traditional': ['Team', 'G', 'AB', 'R', 'H', '2B', '3B', 'HR', 'RBI', 'BB', 'SO', 'AVG'],
+    'Advanced': ['Team', 'TB', 'SLG', 'OBP', 'OPS', 'HBP', 'SF'],
+    'Power': ['Team', 'HR', 'RBI', 'SLG', 'TB', 'H', 'G'],
+    'Speed': ['Team', 'SB', 'CS', 'R', 'H', 'G']
   };
 
   const fetchAvailableStats = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/TeamBatting/avaliableStats`);
-      if (!response.ok) throw new Error("Failed to fetch available stats");
-      const stats = await response.json();
-      setAvailableStats(stats);
+      // For Phase 1, we'll use a predefined set of MLB API stats
+      // This matches what's available from the MLB Stats API team leaderboards
+      const mlbApiStats = [
+        'Team', 'G', 'AB', 'R', 'H', '2B', '3B', 'HR', 'RBI', 
+        'SB', 'CS', 'BB', 'SO', 'AVG', 'OBP', 'SLG', 'OPS', 'TB', 'HBP', 
+        'SF', 'SH'
+      ];
+      setAvailableStats(mlbApiStats);
     } catch (error) {
       console.error("Error fetching available stats:", error);
       setError("Failed to load available statistics");
@@ -74,7 +78,8 @@ const TeamBatting = () => {
     setError(null);
     
     try {
-      const url = `${process.env.REACT_APP_API_URL}/teamBatting?year=${selectedYear}`;
+      // Use the new team-batting endpoint
+      const url = `${process.env.REACT_APP_API_URL}/team-batting?year=${selectedYear}&limit=30&sortStat=${sortConfig.key}&direction=${sortConfig.direction}`;
       
       console.log(`🏟️ TeamBatting: Fetching ${selectedYear} data from:`, url);
       
@@ -89,6 +94,7 @@ const TeamBatting = () => {
       if (Array.isArray(data) && data.length > 0) {
         console.log(`✅ TeamBatting: Received ${data.length} teams for ${selectedYear}`, data.slice(0, 2));
         setTeamData(data);
+        setFilteredData(data);
       } else {
         console.log(`⚠️ TeamBatting: No data available for ${selectedYear}`);
         setTeamData([]);
@@ -195,7 +201,7 @@ const TeamBatting = () => {
   const getChartData = () => {
     return filteredData.map(team => ({
       ...team,
-      color: teamColors[team.Team] || '#8884d8'
+      color: teamColors[team.Team] || '#ffffffff'
     }));
   };
 

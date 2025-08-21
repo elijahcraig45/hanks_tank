@@ -22,10 +22,10 @@ import "./styles/TeamStats.css";
 
 const TeamPitching = () => {
   const [teamData, setTeamData] = useState([]);
-  const [selectedYear, setSelectedYear] = useState("2025");
+  const [selectedYear, setSelectedYear] = useState("2024"); // Updated to use 2024 season
   const [availableStats, setAvailableStats] = useState([]);
   const [visibleStats, setVisibleStats] = useState(new Set([
-    "Team", "GS", "IP", "ERA", "WHIP", "SO", "BB", "H", "HR", "K/9", "BB/9", "FIP"
+    "Team", "G", "GS", "IP", "ERA", "WHIP", "SO", "BB", "H", "HR", "W", "L"
   ]));
   const [sortConfig, setSortConfig] = useState({ key: 'ERA', direction: "asc" });
   const [loading, setLoading] = useState(false);
@@ -47,21 +47,24 @@ const TeamPitching = () => {
     'ARI': '#A71930', 'NYM': '#FF5910'
   };
 
-  // Pitching stats presets
+  // Available stats based on MLB API team pitching data structure
   const statPresets = {
-    'Essential': ['Team', 'GS', 'IP', 'ERA', 'WHIP', 'SO', 'K/9', 'FIP'],
-    'Advanced': ['Team', 'FIP', 'xFIP', 'SIERA', 'WAR', 'WPA', 'ERA-', 'FIP-'],
-    'Traditional': ['Team', 'W', 'L', 'ERA', 'GS', 'CG', 'SHO', 'SV', 'IP', 'H', 'R', 'ER', 'HR', 'BB', 'SO'],
-    'Rate Stats': ['Team', 'ERA', 'WHIP', 'K/9', 'BB/9', 'HR/9', 'K%', 'BB%', 'K-BB%'],
-    'Sabermetrics': ['Team', 'WAR', 'FIP', 'xFIP', 'BABIP', 'LOB%', 'HR/FB', 'SIERA']
+    'Essential': ['Team', 'G', 'GS', 'IP', 'ERA', 'WHIP', 'SO', 'W', 'L'],
+    'Traditional': ['Team', 'W', 'L', 'W-L%', 'ERA', 'GS', 'CG', 'SHO', 'SV', 'IP', 'H', 'R', 'ER', 'HR', 'BB', 'SO'],
+    'Advanced': ['Team', 'WHIP', 'BF', 'HBP', 'WP', 'BK'],
+    'Relief': ['Team', 'SV', 'SVO', 'BS', 'HLD', 'GF'],
+    'Rate Stats': ['Team', 'ERA', 'WHIP', 'H', 'BB', 'HR', 'SO']
   };
 
   const fetchAvailableStats = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/TeamPitching/avaliableStats`);
-      if (!response.ok) throw new Error("Failed to fetch available stats");
-      const stats = await response.json();
-      setAvailableStats(stats);
+      // For Phase 1, we'll use a predefined set of MLB API stats
+      // This matches what's available from the MLB Stats API team pitching leaderboards
+      const mlbApiStats = [
+        'Team', 'G', 'GS', 'W', 'L', 'W-L%', 'ERA', 'IP', 'H', 'R', 'ER', 'HR', 'BB', 'SO',
+        'WHIP', 'BF', 'HBP', 'WP', 'BK', 'SV', 'SVO', 'BS', 'HLD', 'GF', 'CG', 'SHO'
+      ];
+      setAvailableStats(mlbApiStats);
     } catch (error) {
       console.error("Error fetching available stats:", error);
       setError("Failed to load available statistics");
@@ -73,7 +76,8 @@ const TeamPitching = () => {
     setError(null);
     
     try {
-      const url = `${process.env.REACT_APP_API_URL}/teamPitching?year=${selectedYear}`;
+      // Use the new team-pitching endpoint
+      const url = `${process.env.REACT_APP_API_URL}/team-pitching?year=${selectedYear}&limit=30&sortStat=${sortConfig.key}&direction=${sortConfig.direction}`;
       
       console.log(`⚾ TeamPitching: Fetching ${selectedYear} data from:`, url);
       
@@ -88,6 +92,7 @@ const TeamPitching = () => {
       if (Array.isArray(data) && data.length > 0) {
         console.log(`✅ TeamPitching: Received ${data.length} teams for ${selectedYear}`, data);
         setTeamData(data);
+        setFilteredData(data);
       } else {
         console.log(`⚠️ TeamPitching: No data available for ${selectedYear}`);
         setTeamData([]);
