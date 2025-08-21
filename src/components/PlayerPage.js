@@ -11,7 +11,11 @@ const PlayerPage = () => {
 
   useEffect(() => {
     const fetchPlayerData = async () => {
-      if (!playerId) return;
+      if (!playerId || playerId === 'undefined') {
+        setError('No player ID provided');
+        setLoading(false);
+        return;
+      }
       
       setLoading(true);
       setError(null);
@@ -30,6 +34,10 @@ const PlayerPage = () => {
         const allBattingData = await battingResponse.json();
         const allPitchingData = await pitchingResponse.json();
 
+        console.log(`🔍 PlayerPage: Looking for player ID ${playerId}`);
+        console.log(`📊 Available batting players:`, allBattingData.slice(0, 3).map(p => ({ name: p.Name, id: p.playerId })));
+        console.log(`⚾ Available pitching players:`, allPitchingData.slice(0, 3).map(p => ({ name: p.Name, id: p.playerId })));
+
         // Find player in both datasets
         const playerBatting = allBattingData.find(player => 
           player.playerId && player.playerId.toString() === playerId
@@ -39,11 +47,14 @@ const PlayerPage = () => {
           player.playerId && player.playerId.toString() === playerId
         );
 
+        console.log(`🏏 Found batting data:`, playerBatting ? playerBatting.Name : 'None');
+        console.log(`⚾ Found pitching data:`, playerPitching ? playerPitching.Name : 'None');
+
         setBattingData(playerBatting);
         setPitchingData(playerPitching);
 
         if (!playerBatting && !playerPitching) {
-          setError(`No player found with ID: ${playerId}`);
+          setError(`No player found with ID: ${playerId}. Check the browser console for available player IDs.`);
         }
 
       } catch (error) {

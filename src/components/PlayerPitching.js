@@ -432,7 +432,7 @@ const PlayerPitching = () => {
                               </Link>
                             ) : key === "Name" ? (
                               <span>
-                                <Link to={`/player/${player.IDfg}`} className="text-decoration-none fw-bold player-name">
+                                <Link to={`/player/${player.playerId}`} className="text-decoration-none fw-bold player-name">
                                   {value}
                                 </Link>
                                 {isQualifiedPitcher(player) && (

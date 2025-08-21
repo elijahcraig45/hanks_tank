@@ -427,12 +427,7 @@ const TeamBatting = () => {
                           <td key={`${key}-${valueIdx}`} style={{ whiteSpace: 'nowrap' }}>
                             {key === "Team" ? (
                               <Link to={`/team/${value}`} className="text-decoration-none fw-bold">
-                                <span 
-                                  className="team-badge" 
-                                  style={{ backgroundColor: teamColors[value] || '#6c757d' }}
-                                >
-                                  {value}
-                                </span>
+                                {value}
                               </Link>
                             ) : (
                               formatData(value, key)
