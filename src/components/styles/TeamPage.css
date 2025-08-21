@@ -1,0 +1,117 @@
+/* Team Page Styles - Light theme with enhanced readability */
+
+.team-page {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  color: #212529;
+}
+
+.team-page .container {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-top: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+}
+
+/* Team header styling */
+.team-header h1 {
+  color: #212529 !important;
+  font-weight: 700 !important;
+  font-size: 2.5rem !important;
+  margin-bottom: 0.5rem;
+}
+
+.team-header .text-muted {
+  color: #6c757d !important;
+  font-size: 1.1rem !important;
+  font-weight: 500 !important;
+}
+
+/* Tab styling */
+.team-page .nav-tabs {
+  border-bottom: 2px solid #dee2e6;
+}
+
+.team-page .nav-tabs .nav-link {
+  color: #495057 !important;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.team-page .nav-tabs .nav-link:hover {
+  color: #212529 !important;
+  background-color: #e9ecef;
+}
+
+.team-page .nav-tabs .nav-link.active {
+  color: #ffffff !important;
+  background-color: #007bff !important;
+  border-color: #007bff !important;
+}
+
+/* Card styling */
+.team-page .card {
+  background-color: #ffffff !important;
+  border: 1px solid #dee2e6 !important;
+  color: #212529 !important;
+}
+
+.team-page .card-header {
+  background-color: #f8f9fa !important;
+  border-bottom: 1px solid #dee2e6 !important;
+  color: #212529 !important;
+}
+
+.team-page .card-header h5 {
+  color: #212529 !important;
+  font-weight: 600 !important;
+  font-size: 1.3rem !important;
+}
+
+/* Table styling */
+.team-page .table {
+  color: #212529 !important;
+  margin-bottom: 0;
+}
+
+.team-page .table td {
+  color: #212529 !important;
+  font-size: 1rem !important;
+  padding: 0.75rem !important;
+  border-color: #dee2e6 !important;
+}
+
+.team-page .table td strong {
+  color: #495057 !important;
+  font-weight: 600 !important;
+}
+
+.team-page .table-striped tbody tr:nth-of-type(odd) td {
+  background-color: rgba(0, 123, 255, 0.05) !important;
+}
+
+/* Badge styling */
+.team-page .badge {
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+}
+
+/* Alert styling */
+.team-page .alert-danger {
+  background-color: #f8d7da !important;
+  border-color: #f5c6cb !important;
+  color: #721c24 !important;
+}
+
+.team-page .spinner-border {
+  color: #007bff !important;
+}
+
+.team-page p {
+  color: #6c757d !important;
+  font-size: 1.1rem !important;
+}

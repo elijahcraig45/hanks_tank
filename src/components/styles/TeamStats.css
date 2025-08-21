@@ -1,4 +1,51 @@
-/* Team Statistics Page Enhancements */
+/* Team Statistics Page Enhancements - Light Theme */
+
+/* Main page styling - only for main content containers, not navbar */
+.container:not(.navbar .container) {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 2rem;
+  margin-top: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border: 1px solid #e9ecef;
+}
+
+/* Page headers */
+.display-6 {
+  color: #212529 !important;
+  font-weight: 700 !important;
+  margin-bottom: 1.5rem;
+}
+
+/* Team name links - match player page styling */
+.fw-bold, 
+.text-decoration-none.fw-bold,
+.table .fw-bold,
+.table td .fw-bold,
+.table a.fw-bold,
+a.fw-bold,
+Link.fw-bold {
+  font-weight: 600 !important;
+  color: #495057 !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  background: none !important;
+}
+
+.fw-bold:hover, 
+.text-decoration-none.fw-bold:hover,
+.table .fw-bold:hover,
+.table td .fw-bold:hover,
+.table a.fw-bold:hover,
+a.fw-bold:hover {
+  color: #007bff !important;
+  text-decoration: none !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  background: none !important;
+}
 
 /* Fix dropdown z-index and positioning issues */
 .dropdown {
@@ -39,11 +86,11 @@
   z-index: 100;
 }
 
-/* Fix table header styling */
+/* Fix table header styling - Light theme with softer colors */
 .table thead th {
-  background-color: #343a40 !important;
-  color: #fff !important;
-  border-bottom: 2px solid #495057;
+  background-color: #f8f9fa !important;
+  color: #495057 !important;
+  border-bottom: 2px solid #dee2e6;
   font-weight: 600;
   white-space: nowrap;
   position: sticky;
@@ -89,7 +136,7 @@ div[style*="overflowX"] {
   overflow: visible !important;
 }
 
-/* Team badges in table */
+/* Team badges in table - remove background colors */
 .team-badge {
   display: inline-block;
   padding: 0.25em 0.6em;
@@ -101,6 +148,9 @@ div[style*="overflowX"] {
   border-radius: 0.375rem;
   margin-right: 0.5rem;
   min-width: 45px;
+  background-color: transparent !important;
+  background: none !important;
+  color: #007bff !important;
 }
 
 /* Loading states */
