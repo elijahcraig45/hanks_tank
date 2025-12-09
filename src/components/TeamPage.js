@@ -91,6 +91,7 @@ const TeamPage = () => {
     };
 
     fetchTeamData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [teamAbbr]);
 
   // Helper function to get team abbreviation from full name

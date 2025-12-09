@@ -11,6 +11,9 @@ import TeamPage from './components/TeamPage';
 import PlayerPage from './components/PlayerPage';
 import TodaysGames from './components/GamesToday';
 import GameDetailsPage from './components/Game';
+import SeasonComparison from './components/SeasonComparison';
+import PlayerComparison from './components/PlayerComparison';
+import TeamComparison from './components/TeamComparison';
 
 function App() {
   return (
@@ -24,6 +27,9 @@ function App() {
         <Route path="/PlayerBatting" element={<PlayerBatting />} />
         <Route path="/PlayerPitching" element={<PlayerPitching />} />
         <Route path="/AssistedAnalysis" element={<AssistedAnalysis />} />
+        <Route path="/season-comparison" element={<SeasonComparison />} />
+        <Route path="/player-comparison" element={<PlayerComparison />} />
+        <Route path="/team-comparison" element={<TeamComparison />} />
         <Route path="/team/:teamAbbr" element={<TeamPage />} />
         <Route path="/player/:playerId" element={<PlayerPage />} />
         <Route path="/games" element={<TodaysGames />} />
