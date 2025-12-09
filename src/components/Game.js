@@ -25,6 +25,7 @@ const GameDetailsPage = () => {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchGameDetails();
   }, [gamePk]);
