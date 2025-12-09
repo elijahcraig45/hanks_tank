@@ -18,11 +18,13 @@ import {
   LineChart, Line, ScatterChart, Scatter
 } from "recharts";
 import { Link } from "react-router-dom";
+import apiService from '../services/api';
+import { SEASONS, AVAILABLE_SEASONS } from '../config/constants';
 import "./styles/TeamStats.css";
 
 const TeamPitching = () => {
   const [teamData, setTeamData] = useState([]);
-  const [selectedYear, setSelectedYear] = useState("2024"); // Updated to use 2024 season
+  const [selectedYear, setSelectedYear] = useState(SEASONS.CURRENT.toString());
   const [availableStats, setAvailableStats] = useState([]);
   const [visibleStats, setVisibleStats] = useState(new Set([
     "Team", "G", "GS", "IP", "ERA", "WHIP", "SO", "BB", "H", "HR", "W", "L"
@@ -76,36 +78,27 @@ const TeamPitching = () => {
     setError(null);
     
     try {
-      // Use the new team-pitching endpoint
-      const url = `${process.env.REACT_APP_API_URL}/team-pitching?year=${selectedYear}&limit=30&sortStat=${sortConfig.key}&direction=${sortConfig.direction}`;
-      
-      console.log(`⚾ TeamPitching: Fetching ${selectedYear} data from:`, url);
-      
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
+      const data = await apiService.getTeamPitching(parseInt(selectedYear), {
+        sortStat: sortConfig.key,
+        direction: sortConfig.direction,
+        limit: 30
+      });
       
       if (Array.isArray(data) && data.length > 0) {
-        console.log(`✅ TeamPitching: Received ${data.length} teams for ${selectedYear}`, data);
         setTeamData(data);
         setFilteredData(data);
       } else {
-        console.log(`⚠️ TeamPitching: No data available for ${selectedYear}`);
         setTeamData([]);
         setError(`No team pitching data available for ${selectedYear}`);
       }
     } catch (error) {
-      console.error(`❌ TeamPitching: Error fetching ${selectedYear} data:`, error);
-      setError(`Failed to load team pitching data: ${error.message}`);
+      console.error(`Error fetching ${selectedYear} data:`, error);
+      setError(error.message || 'Failed to load team pitching data');
       setTeamData([]);
     } finally {
       setLoading(false);
     }
-  }, [selectedYear]);
+  }, [selectedYear, sortConfig.key, sortConfig.direction]);
 
   const sortData = useCallback((data) => {
     if (!sortConfig.key) return data;
@@ -301,8 +294,8 @@ const TeamPitching = () => {
                   {selectedYear}
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
-                  {["2020", "2021", "2022", "2023", "2024", "2025"].map(year => (
-                    <Dropdown.Item key={year} onClick={() => setSelectedYear(year)}>
+                  {AVAILABLE_SEASONS.map(year => (
+                    <Dropdown.Item key={year} onClick={() => setSelectedYear(year.toString())}>
                       {year}
                     </Dropdown.Item>
                   ))}

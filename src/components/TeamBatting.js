@@ -18,11 +18,13 @@ import {
   LineChart, Line, ScatterChart, Scatter
 } from "recharts";
 import { Link } from "react-router-dom";
+import apiService from '../services/api';
+import { SEASONS, AVAILABLE_SEASONS } from '../config/constants';
 import "./styles/TeamStats.css";
 
 const TeamBatting = () => {
   const [teamData, setTeamData] = useState([]);
-  const [selectedYear, setSelectedYear] = useState("2024"); // Updated to use 2024 season
+  const [selectedYear, setSelectedYear] = useState(SEASONS.CURRENT.toString());
   const [availableStats, setAvailableStats] = useState([]);
   const [visibleStats, setVisibleStats] = useState(new Set([
     "Team", "G", "AB", "R", "H", "HR", "RBI", "BB", "SO", "AVG", "OBP", "SLG", "OPS"
@@ -73,41 +75,31 @@ const TeamBatting = () => {
   };
 
   const fetchTeamData = useCallback(async () => {
-    console.log(`🔄 TeamBatting: fetchTeamData called for year ${selectedYear}`);
     setLoading(true);
     setError(null);
     
     try {
-      // Use the new team-batting endpoint
-      const url = `${process.env.REACT_APP_API_URL}/team-batting?year=${selectedYear}&limit=30&sortStat=${sortConfig.key}&direction=${sortConfig.direction}`;
-      
-      console.log(`🏟️ TeamBatting: Fetching ${selectedYear} data from:`, url);
-      
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
+      const data = await apiService.getTeamBatting(parseInt(selectedYear), {
+        sortStat: sortConfig.key,
+        direction: sortConfig.direction,
+        limit: 30
+      });
       
       if (Array.isArray(data) && data.length > 0) {
-        console.log(`✅ TeamBatting: Received ${data.length} teams for ${selectedYear}`, data.slice(0, 2));
         setTeamData(data);
         setFilteredData(data);
       } else {
-        console.log(`⚠️ TeamBatting: No data available for ${selectedYear}`);
         setTeamData([]);
         setError(`No team batting data available for ${selectedYear}`);
       }
     } catch (error) {
-      console.error(`❌ TeamBatting: Error fetching ${selectedYear} data:`, error);
-      setError(`Failed to load team batting data: ${error.message}`);
+      console.error(`Error fetching team batting data:`, error);
+      setError(error.message || 'Failed to load team batting data');
       setTeamData([]);
     } finally {
       setLoading(false);
     }
-  }, [selectedYear]);
+  }, [selectedYear, sortConfig.key, sortConfig.direction]);
 
   const sortData = useCallback((data) => {
     if (!sortConfig.key) return data;
@@ -177,6 +169,45 @@ const TeamBatting = () => {
 
   const applyStatPreset = (presetName) => {
     setVisibleStats(new Set(statPresets[presetName]));
+  };
+
+  const exportToCSV = () => {
+    const headers = Array.from(visibleStats);
+    const rows = filteredData.map(team => 
+      headers.map(stat => team[stat] ?? '')
+    );
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `team_batting_${selectedYear}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const exportToJSON = () => {
+    const exportData = filteredData.map(team => {
+      const obj = {};
+      Array.from(visibleStats).forEach(stat => {
+        obj[stat] = team[stat];
+      });
+      return obj;
+    });
+    
+    const jsonContent = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonContent], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `team_batting_${selectedYear}.json`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   const formatData = (data, key) => {
@@ -293,10 +324,9 @@ const TeamBatting = () => {
                   {selectedYear}
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
-                  {["2020", "2021", "2022", "2023", "2024", "2025"].map(year => (
+                  {AVAILABLE_SEASONS.map(year => (
                     <Dropdown.Item key={year} onClick={() => {
-                      console.log(`📅 TeamBatting: Year changed from ${selectedYear} to ${year}`);
-                      setSelectedYear(year);
+                      setSelectedYear(year.toString());
                     }}>
                       {year}
                     </Dropdown.Item>
@@ -364,6 +394,19 @@ const TeamBatting = () => {
               >
                 {loading ? <Spinner animation="border" size="sm" /> : "Refresh"}
               </Button>
+            </Col>
+
+            <Col xs={12} md={2}>
+              <Form.Label>Export</Form.Label>
+              <Dropdown>
+                <Dropdown.Toggle variant="outline-success" className="w-100">
+                  Download
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                  <Dropdown.Item onClick={exportToCSV}>Export as CSV</Dropdown.Item>
+                  <Dropdown.Item onClick={exportToJSON}>Export as JSON</Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
             </Col>
           </Row>
         </Card.Body>
