@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Container, 
   Row, 
@@ -13,13 +13,15 @@ import {
   Badge, 
   InputGroup 
 } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
+import apiService from '../services/api';
+import { SEASONS, AVAILABLE_SEASONS } from '../config/constants';
 import './styles/PlayerStats.css';
 
 const PlayerPitching = () => {
   const [playerData, setPlayerData] = useState([]);
   const [teamData, setTeamData] = useState([]);
-  const [selectedYear, setSelectedYear] = useState('2024');
+  const [selectedYear, setSelectedYear] = useState(SEASONS.CURRENT.toString());
   const [availableStats, setAvailableStats] = useState([]);
   const [visibleStats, setVisibleStats] = useState(new Set([
     'Name', 'Team', 'G', 'GS', 'W', 'L', 'SV', 'IP', 'H', 'R', 'ER', 'HR', 'BB', 'SO', 'ERA', 'WHIP'
@@ -60,91 +62,33 @@ const PlayerPitching = () => {
     setError(null);
     
     try {
-      console.log(`🔄 PlayerPitching: Fetching ${selectedYear} player and team pitching data`);
-      
-      // Fetch both player and team data in parallel
-      const playerUrl = `${process.env.REACT_APP_API_URL}/player-pitching?year=${selectedYear}&limit=1000&sortStat=${sortConfig.key}&direction=${sortConfig.direction}`;
-      const teamUrl = `${process.env.REACT_APP_API_URL}/team-pitching?year=${selectedYear}`;
-      
-      console.log(`⚾ PlayerPitching: Fetching player data from:`, playerUrl);
-      console.log(`⚾ PlayerPitching: Fetching team data from:`, teamUrl);
-      
-      const [playerResponse, teamResponse] = await Promise.all([
-        fetch(playerUrl),
-        fetch(teamUrl)
+      const [playerData, teamDataResult] = await Promise.allSettled([
+        apiService.getPlayerPitching(parseInt(selectedYear), {
+          sortStat: sortConfig.key,
+          direction: sortConfig.direction,
+          limit: 1000
+        }),
+        apiService.getTeamPitching(parseInt(selectedYear))
       ]);
       
-      if (!playerResponse.ok) {
-        throw new Error(`HTTP ${playerResponse.status}: Failed to fetch player pitching data`);
+      if (playerData.status === 'fulfilled' && Array.isArray(playerData.value) && playerData.value.length > 0) {
+        setPlayerData(playerData.value);
+        setFilteredData(playerData.value);
+      } else {
+        setPlayerData([]);
+        setError(`No player pitching data available for ${selectedYear}`);
       }
       
-      const playerData = await playerResponse.json();
-      
-      // Team data is optional - if it fails, we'll use fallback
-      let teamDataResult = [];
-      if (teamResponse.ok) {
-        teamDataResult = await teamResponse.json();
-        console.log(`✅ PlayerPitching: Received ${teamDataResult.length} teams`);
-        setTeamData(teamDataResult);
-      } else {
-        console.warn('⚠️ PlayerPitching: Team data fetch failed, using fallback');
-      }
-      
-      if (Array.isArray(playerData) && playerData.length > 0) {
-        console.log(`✅ PlayerPitching: Received ${playerData.length} players`);
-        setPlayerData(playerData);
-        setFilteredData(playerData);
-      } else {
-        console.warn('⚠️ PlayerPitching: No data received, using fallback');
-        // Generate mock data for demonstration if no data
-        const mockData = generateMockPlayerData();
-        setPlayerData(mockData);
-        setFilteredData(mockData);
+      if (teamDataResult.status === 'fulfilled' && Array.isArray(teamDataResult.value)) {
+        setTeamData(teamDataResult.value);
       }
     } catch (error) {
-      console.error("❌ PlayerPitching: Error fetching player data:", error);
-      setError(`Failed to load player pitching data: ${error.message}`);
-      // Use mock data as fallback
-      const mockData = generateMockPlayerData();
-      setPlayerData(mockData);
-      setFilteredData(mockData);
+      console.error("Error fetching player data:", error);
+      setError(error.message || 'Failed to load player pitching data');
+      setPlayerData([]);
     } finally {
       setLoading(false);
     }
-  };
-
-  // Generate mock data for demonstration
-  const generateMockPlayerData = () => {
-    const teams = ['ATL', 'NYY', 'LAD', 'HOU', 'TB', 'SF', 'TOR', 'SD', 'CHC', 'PHI'];
-    const names = [
-      'Spencer Strider', 'Gerrit Cole', 'Walker Buehler', 'Justin Verlander', 
-      'Shane Baz', 'Logan Webb', 'Alek Manoah', 'Yu Darvish',
-      'Marcus Stroman', 'Zack Wheeler', 'Corbin Burnes', 'Sandy Alcantara'
-    ];
-    
-    return names.map((name, i) => ({
-      IDfg: 2000 + i,
-      Name: name,
-      Team: teams[i % teams.length],
-      GS: Math.floor(Math.random() * 10) + 25,
-      IP: (Math.random() * 50 + 150).toFixed(1),
-      W: Math.floor(Math.random() * 8) + 8,
-      L: Math.floor(Math.random() * 8) + 4,
-      ERA: (Math.random() * 2.5 + 2.00).toFixed(2),
-      WHIP: (Math.random() * 0.4 + 1.0).toFixed(2),
-      SO: Math.floor(Math.random() * 100) + 180,
-      BB: Math.floor(Math.random() * 30) + 35,
-      H: Math.floor(Math.random() * 50) + 130,
-      HR: Math.floor(Math.random() * 15) + 15,
-      'K/9': (Math.random() * 4 + 8).toFixed(1),
-      'BB/9': (Math.random() * 2 + 2).toFixed(1),
-      'HR/9': (Math.random() * 0.8 + 0.8).toFixed(1),
-      FIP: (Math.random() * 2 + 3.0).toFixed(2),
-      xFIP: (Math.random() * 2 + 3.5).toFixed(2),
-      WAR: (Math.random() * 4 + 2).toFixed(1),
-      'K%': (Math.random() * 10 + 20).toFixed(1) + '%',
-      'BB%': (Math.random() * 5 + 5).toFixed(1) + '%'
-    }));
   };
 
   // Determine if a pitcher is qualified for ERA title (1 IP per team game)
@@ -164,23 +108,50 @@ const PlayerPitching = () => {
       
       if (playerTeam && playerTeam.G) {
         teamGamesPlayed = parseInt(playerTeam.G);
-        console.log(`⚾ Found ${player.Team} games played: ${teamGamesPlayed}`);
       }
     }
     
     const requiredIP = 1.0 * teamGamesPlayed;
     return inningsPitched >= requiredIP;
   };
+  
+  const sortData = useCallback((data) => {
+    if (!sortConfig.key) return data;
+    
+    return [...data].sort((a, b) => {
+      const aVal = a[sortConfig.key];
+      const bVal = b[sortConfig.key];
+      
+      // Handle numeric values
+      if (!isNaN(aVal) && !isNaN(bVal)) {
+        const numA = parseFloat(aVal);
+        const numB = parseFloat(bVal);
+        return sortConfig.direction === 'asc' ? numA - numB : numB - numA;
+      }
+      
+      // Handle string values
+      const strA = String(aVal).toLowerCase();
+      const strB = String(bVal).toLowerCase();
+      
+      if (sortConfig.direction === 'asc') {
+        return strA < strB ? -1 : strA > strB ? 1 : 0;
+      } else {
+        return strA > strB ? -1 : strA < strB ? 1 : 0;
+      }
+    });
+  }, [sortConfig]);
+
   useEffect(() => {
     fetchAvailableStats();
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchPlayerData();
-  }, [selectedYear, visibleStats, sortConfig]);
+  }, [selectedYear]);
 
   useEffect(() => {
-    // Filter data based on search term and qualification status
+    // Filter and sort data
     let filtered = playerData;
     
     // Apply search filter
@@ -196,8 +167,12 @@ const PlayerPitching = () => {
       filtered = filtered.filter(player => isQualifiedPitcher(player));
     }
     
+    // Apply sorting
+    filtered = sortData(filtered);
+    
     setFilteredData(filtered);
-  }, [searchTerm, playerData, showQualifiedOnly]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, playerData, showQualifiedOnly, sortData]);
 
   const requestSort = (key) => {
     setSortConfig({
@@ -280,8 +255,8 @@ const PlayerPitching = () => {
                   {selectedYear}
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
-                  {["2020", "2021", "2022", "2023", "2024", "2025"].map(year => (
-                    <Dropdown.Item key={year} onClick={() => setSelectedYear(year)}>
+                  {AVAILABLE_SEASONS.map(year => (
+                    <Dropdown.Item key={year} onClick={() => setSelectedYear(year.toString())}>
                       {year}
                     </Dropdown.Item>
                   ))}
