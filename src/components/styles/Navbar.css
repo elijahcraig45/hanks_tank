@@ -1,0 +1,39 @@
+/* Ensure navbar dropdowns are visible and properly styled */
+.navbar .dropdown-menu {
+  background-color: #212529;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  z-index: 1050;
+  position: absolute;
+  display: none;
+}
+
+.navbar .dropdown-menu.show {
+  display: block;
+}
+
+.navbar .dropdown-item {
+  color: rgba(255, 255, 255, 0.85);
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  display: block;
+}
+
+.navbar .dropdown-item:hover,
+.navbar .dropdown-item:focus {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.navbar .nav-link {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link:focus {
+  color: #ffffff;
+}
+
+.navbar .dropdown-toggle::after {
+  margin-left: 0.5rem;
+}
