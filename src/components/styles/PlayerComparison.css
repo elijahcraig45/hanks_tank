@@ -1,0 +1,77 @@
+.player-comparison {
+  min-height: 100vh;
+}
+
+.search-results {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  background-color: #fff;
+}
+
+.search-result-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.search-result-item:hover {
+  background-color: #f8f9fa;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.selected-players {
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+}
+
+.player-comparison .card {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.player-comparison .card-header {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.player-comparison .table {
+  font-size: 0.9rem;
+}
+
+.player-comparison .table th {
+  background-color: #e9ecef;
+  font-weight: 600;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.player-comparison .table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.player-comparison .badge {
+  font-size: 0.85rem;
+  transition: opacity 0.2s;
+}
+
+.player-comparison .badge:hover {
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .player-comparison .table {
+    font-size: 0.8rem;
+  }
+  
+  .search-result-item {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+}
