@@ -1,0 +1,54 @@
+.season-comparison {
+  min-height: 100vh;
+}
+
+.season-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+}
+
+.season-selector .form-check {
+  margin: 0;
+}
+
+.season-comparison .card {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.season-comparison .card-header {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.season-comparison .table {
+  font-size: 0.9rem;
+}
+
+.season-comparison .table th {
+  background-color: #e9ecef;
+  font-weight: 600;
+  text-align: center;
+}
+
+.season-comparison .table td {
+  text-align: center;
+}
+
+.season-comparison .badge {
+  font-size: 0.85rem;
+  padding: 0.35rem 0.65rem;
+}
+
+@media (max-width: 768px) {
+  .season-selector {
+    flex-direction: column;
+  }
+  
+  .season-comparison .table {
+    font-size: 0.8rem;
+  }
+}
