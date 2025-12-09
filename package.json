@@ -23,9 +23,11 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "build:prod": "REACT_APP_API_URL=https://hankstank.uc.r.appspot.com/api REACT_APP_ENV=production REACT_APP_DEBUG=false npm run build",
-    "deploy": "npm run build:prod && gcloud app deploy --quiet",
-    "deploy:service": "npm run build:prod && gcloud app deploy --quiet --service=frontend"
+    "build:prod": "REACT_APP_API_URL=https://hankstank.uc.r.appspot.com/api REACT_APP_ENV=production REACT_APP_DEBUG=false REACT_APP_DEFAULT_SEASON=2026 npm run build",
+    "deploy": "npm run build:prod && gcloud app deploy --quiet --project=hankstank",
+    "deploy:service": "npm run build:prod && gcloud app deploy --quiet --service=frontend --project=hankstank",
+    "clean": "rm -rf build node_modules/.cache",
+    "analyze": "source-map-explorer 'build/static/js/*.js'"
   },
   "eslintConfig": {
     "extends": [

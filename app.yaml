@@ -1,4 +1,4 @@
-runtime: python39
+runtime: python312
 service: frontend
 
 env_variables:
