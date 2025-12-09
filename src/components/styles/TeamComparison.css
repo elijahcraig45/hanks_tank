@@ -1,0 +1,68 @@
+.team-comparison {
+  min-height: 100vh;
+}
+
+.search-results {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  background-color: #fff;
+}
+
+.search-result-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.search-result-item:hover {
+  background-color: #f8f9fa;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.selected-teams {
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+}
+
+.team-comparison .card {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.team-comparison .card-header {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.team-comparison .table {
+  font-size: 0.9rem;
+}
+
+.team-comparison .table th {
+  background-color: #e9ecef;
+  font-weight: 600;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.team-comparison .table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+  .team-comparison .table {
+    font-size: 0.8rem;
+  }
+  
+  .search-result-item {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+}
