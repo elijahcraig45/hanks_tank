@@ -7,24 +7,36 @@
 
 .search-results {
   position: relative;
-  background-color: #fff;
-  border: 1px solid #dee2e6;
+  background-color: #ffffff;
+  border: 2px solid #3b82f6;
   border-radius: 0.375rem;
   max-height: 300px;
   overflow-y: auto;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
   z-index: 1000;
 }
 
 .search-result-item {
   padding: 0.75rem 1rem;
   cursor: pointer;
-  border-bottom: 1px solid #f1f3f5;
+  border-bottom: 1px solid #e5e7eb;
   transition: background-color 0.2s;
+  color: #1f2937;
+  background-color: #ffffff;
 }
 
 .search-result-item:hover {
-  background-color: #f8f9fa;
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+.search-result-item strong {
+  color: inherit;
+  font-weight: 600;
+}
+
+.search-result-item .text-muted {
+  opacity: 0.7;
 }
 
 .search-result-item:last-child {
@@ -42,9 +54,9 @@
 
 .stat-card {
   padding: 1rem;
-  background-color: #f8f9fa;
+  background-color: #ffffff;
   border-radius: 0.5rem;
-  border: 1px solid #e9ecef;
+  border: 1px solid #dee2e6;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -56,37 +68,29 @@
 .stat-value {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #212529;
+  color: #1a1a1a;
 }
 
 .composite-score {
   padding: 0.75rem;
-  background-color: #f8f9fa;
+  background-color: #f0f9ff;
   border-radius: 0.375rem;
   border-left: 4px solid #3b82f6;
 }
 
 .winner-cell {
   position: relative;
-}
-
-.winner-cell::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background-color: #10b981;
+  transition: all 0.2s ease;
 }
 
 .h2h-record {
   padding: 1rem;
-  background-color: #f8f9fa;
+  background-color: #ffffff;
   border-radius: 0.5rem;
-  border: 1px solid #e9ecef;
+  border: 1px solid #dee2e6;
   flex: 1;
   min-width: 200px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .record-badge {
@@ -160,22 +164,51 @@
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .stat-card {
-    background-color: #2d3748;
-    border-color: #4a5568;
-    color: #e2e8f0;
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #e5e7eb;
   }
   
   .stat-value {
-    color: #f7fafc;
+    color: #f9fafb;
   }
   
   .search-results {
-    background-color: #2d3748;
-    border-color: #4a5568;
+    background-color: #1f2937;
+    border-color: #374151;
   }
   
   .search-result-item:hover {
-    background-color: #4a5568;
+    background-color: #374151;
+  }
+  
+  .h2h-record {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
+  
+  .table {
+    background-color: #1f2937;
+    color: #e5e7eb;
+  }
+  
+  .table thead th {
+    background-color: #374151;
+    color: #f9fafb;
+  }
+  
+  .table tbody td {
+    background-color: #1f2937;
+    color: #e5e7eb;
+    border-color: #374151;
+  }
+  
+  .table tbody tr:nth-of-type(odd) {
+    background-color: #111827;
+  }
+  
+  .table tbody tr:nth-of-type(odd) td {
+    background-color: #111827;
   }
 }
 
@@ -214,10 +247,12 @@
 .table-responsive {
   border-radius: 0.5rem;
   overflow: hidden;
+  background-color: #ffffff;
 }
 
 .table {
   margin-bottom: 0;
+  background-color: #ffffff;
 }
 
 .table thead th {
@@ -227,6 +262,20 @@
   position: sticky;
   top: 0;
   z-index: 10;
+  color: #1a1a1a;
+}
+
+.table tbody td {
+  background-color: #ffffff;
+  color: #1a1a1a;
+}
+
+.table tbody tr:nth-of-type(odd) {
+  background-color: #f8f9fa;
+}
+
+.table tbody tr:nth-of-type(odd) td {
+  background-color: #f8f9fa;
 }
 
 /* Scatter plot tooltip */

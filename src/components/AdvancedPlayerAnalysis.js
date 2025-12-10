@@ -77,7 +77,84 @@ const AdvancedPlayerAnalysis = () => {
         : await apiService.getPlayerPitching(year, { limit: 1000 });
 
       if (Array.isArray(data)) {
-        setAllPlayers(data);
+        // Calculate missing advanced stats if not present
+        const enrichedData = data.map(player => {
+          const enriched = { ...player };
+          
+          if (statType === 'batting') {
+            // Calculate ISO (Isolated Power) if missing
+            if (!enriched.ISO && enriched.SLG && enriched.AVG) {
+              enriched.ISO = (parseFloat(enriched.SLG) - parseFloat(enriched.AVG)).toFixed(3);
+            }
+            
+            // Calculate wOBA if missing (simplified version)
+            if (!enriched.wOBA) {
+              enriched.wOBA = enriched.OBP || 0; // Fallback to OBP if wOBA not available
+            }
+            
+            // Calculate wRC+ if missing (simplified - would need league average)
+            if (!enriched['wRC+']) {
+              enriched['wRC+'] = enriched.OPS ? Math.round((parseFloat(enriched.OPS) / 0.730) * 100) : 0;
+            }
+            
+            // Calculate K% and BB% if missing
+            if (!enriched['K%'] && enriched.SO && enriched.PA) {
+              enriched['K%'] = ((parseFloat(enriched.SO) / parseFloat(enriched.PA)) * 100).toFixed(1);
+            }
+            if (!enriched['BB%'] && enriched.BB && enriched.PA) {
+              enriched['BB%'] = ((parseFloat(enriched.BB) / parseFloat(enriched.PA)) * 100).toFixed(1);
+            }
+            
+            // Calculate SB% if missing
+            if (!enriched['SB%'] && enriched.SB && enriched.CS) {
+              const attempts = parseFloat(enriched.SB) + parseFloat(enriched.CS);
+              if (attempts > 0) {
+                enriched['SB%'] = ((parseFloat(enriched.SB) / attempts) * 100).toFixed(1);
+              }
+            }
+          } else {
+            // Pitching stats
+            // Calculate K/9 if missing
+            if (!enriched['K/9'] && enriched.SO && enriched.IP) {
+              enriched['K/9'] = ((parseFloat(enriched.SO) / parseFloat(enriched.IP)) * 9).toFixed(2);
+            }
+            
+            // Calculate BB/9 if missing
+            if (!enriched['BB/9'] && enriched.BB && enriched.IP) {
+              enriched['BB/9'] = ((parseFloat(enriched.BB) / parseFloat(enriched.IP)) * 9).toFixed(2);
+            }
+            
+            // Calculate HR/9 if missing
+            if (!enriched['HR/9'] && enriched.HR && enriched.IP) {
+              enriched['HR/9'] = ((parseFloat(enriched.HR) / parseFloat(enriched.IP)) * 9).toFixed(2);
+            }
+            
+            // Calculate K% and BB% if missing
+            if (!enriched['K%'] && enriched.SO && enriched.BF) {
+              enriched['K%'] = ((parseFloat(enriched.SO) / parseFloat(enriched.BF)) * 100).toFixed(1);
+            }
+            if (!enriched['BB%'] && enriched.BB && enriched.BF) {
+              enriched['BB%'] = ((parseFloat(enriched.BB) / parseFloat(enriched.BF)) * 100).toFixed(1);
+            }
+            
+            // Calculate K-BB% if missing
+            if (!enriched['K-BB%'] && enriched['K%'] && enriched['BB%']) {
+              enriched['K-BB%'] = (parseFloat(enriched['K%']) - parseFloat(enriched['BB%'])).toFixed(1);
+            }
+            
+            // FIP and xFIP would need league constants, so we'll leave those if missing
+            if (!enriched.FIP) {
+              enriched.FIP = enriched.ERA || 0; // Fallback
+            }
+            if (!enriched.xFIP) {
+              enriched.xFIP = enriched.FIP || enriched.ERA || 0; // Fallback
+            }
+          }
+          
+          return enriched;
+        });
+        
+        setAllPlayers(enrichedData);
       } else {
         setAllPlayers([]);
         setError(`No ${statType} data available for ${selectedYear}`);
@@ -95,6 +172,9 @@ const AdvancedPlayerAnalysis = () => {
   const calculatePercentile = (value, stat) => {
     if (!allPlayers.length || value === null || value === undefined) return 0;
     
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) return 0;
+    
     const values = allPlayers
       .map(p => parseFloat(p[stat]))
       .filter(v => !isNaN(v) && v !== null && v !== undefined);
@@ -102,20 +182,21 @@ const AdvancedPlayerAnalysis = () => {
     if (!values.length) return 0;
     
     // For stats where lower is better (ERA, WHIP, etc.)
-    const lowerIsBetter = ['ERA', 'WHIP', 'BB/9', 'HR/9', 'BB%', 'K%', 'FIP', 'xFIP'];
+    const lowerIsBetter = ['ERA', 'WHIP', 'BB/9', 'HR/9', 'BB%', 'FIP', 'xFIP', 'SO'];
     
-    const sortedValues = [...values].sort((a, b) => 
-      lowerIsBetter.includes(stat) ? a - b : b - a
-    );
+    // Count how many players are WORSE than this player
+    let worseThanPlayer = 0;
+    if (lowerIsBetter.includes(stat)) {
+      // Lower is better, so count players with HIGHER values
+      worseThanPlayer = values.filter(v => v > numValue).length;
+    } else {
+      // Higher is better, so count players with LOWER values
+      worseThanPlayer = values.filter(v => v < numValue).length;
+    }
     
-    const numValue = parseFloat(value);
-    let rank = sortedValues.findIndex(v => 
-      lowerIsBetter.includes(stat) ? v >= numValue : v <= numValue
-    );
-    
-    if (rank === -1) rank = sortedValues.length - 1;
-    
-    return Math.round((rank / sortedValues.length) * 100);
+    // Percentile = (number of players worse than you / total players) * 100
+    const percentile = (worseThanPlayer / values.length) * 100;
+    return Math.round(percentile);
   };
 
   // Get percentile color
@@ -172,17 +253,23 @@ const AdvancedPlayerAnalysis = () => {
         row[`player${idx}_name`] = player.Name;
       });
 
-      // Find winner
+      // Find winner(s) - could be multiple in case of tie
       const values = selectedPlayers.map((p, idx) => ({
         idx,
         value: parseFloat(p[stat]) || 0
       }));
       
-      const winner = lowerIsBetter.includes(stat)
-        ? values.reduce((min, curr) => curr.value < min.value ? curr : min)
-        : values.reduce((max, curr) => curr.value > max.value ? curr : max);
+      // Find the best value
+      const bestValue = lowerIsBetter.includes(stat)
+        ? Math.min(...values.map(v => v.value))
+        : Math.max(...values.map(v => v.value));
       
-      row.winner = winner.idx;
+      // Get all winners (in case of tie) - use larger tolerance for ties
+      const tolerance = 0.001; // Adjust for stat precision
+      const winners = values.filter(v => Math.abs(v.value - bestValue) <= tolerance).map(v => v.idx);
+      
+      row.winners = winners; // Array of winner indices
+      row.isTie = winners.length > 1;
       
       return row;
     });
@@ -315,20 +402,26 @@ const AdvancedPlayerAnalysis = () => {
                     <td><strong>{row.stat}</strong></td>
                     {selectedPlayers.map((player, playerIdx) => {
                       const value = row[`player${playerIdx}`];
-                      const isWinner = row.winner === playerIdx;
+                      const isWinner = row.winners.includes(playerIdx);
+                      const isTie = row.isTie && isWinner;
                       return (
                         <td 
                           key={playerIdx}
                           className={isWinner ? 'winner-cell' : ''}
                           style={{ 
                             fontWeight: isWinner ? 'bold' : 'normal',
-                            backgroundColor: isWinner ? `${colors[playerIdx]}20` : 'transparent'
+                            backgroundColor: isWinner && !isTie ? `${colors[playerIdx]}15` : 
+                                           isTie ? '#fbbf2420' : 'transparent',
+                            borderLeft: isWinner ? `3px solid ${colors[playerIdx]}` : 'none',
+                            paddingLeft: isWinner ? '0.5rem' : '0.75rem'
                           }}
                         >
-                          {isWinner && '✓ '}
+                          {isTie ? '🤝 ' : isWinner ? '✓ ' : ''}
                           {value.toFixed(
-                            row.stat === 'AVG' || row.stat === 'OBP' || row.stat === 'SLG' || row.stat === 'ERA' || row.stat === 'WHIP' ? 3 : 
-                            row.stat.includes('%') ? 1 : 0
+                            row.stat === 'AVG' || row.stat === 'OBP' || row.stat === 'SLG' || row.stat === 'OPS' || 
+                            row.stat === 'ERA' || row.stat === 'WHIP' || row.stat === 'ISO' || row.stat === 'BABIP' ||
+                            row.stat === 'wOBA' ? 3 : 
+                            row.stat.includes('%') || row.stat.includes('/9') ? 1 : 0
                           )}
                         </td>
                       );
@@ -344,16 +437,19 @@ const AdvancedPlayerAnalysis = () => {
             <h6>Head-to-Head Record</h6>
             <div className="d-flex flex-wrap gap-3">
               {selectedPlayers.map((player, playerIdx) => {
-                const wins = data.filter(row => row.winner === playerIdx).length;
+                const wins = data.filter(row => row.winners.includes(playerIdx) && !row.isTie).length;
+                const ties = data.filter(row => row.winners.includes(playerIdx) && row.isTie).length;
                 const total = data.length;
+                const losses = total - wins - ties;
                 return (
                   <div key={playerIdx} className="h2h-record">
                     <strong style={{ color: colors[playerIdx] }}>{player.Name}</strong>
                     <div className="record-badge">
-                      <Badge bg="primary" className="me-1">{wins}W</Badge>
-                      <Badge bg="secondary">{total - wins}L</Badge>
+                      <Badge bg="success" className="me-1">{wins}W</Badge>
+                      <Badge bg="warning" className="me-1">{ties}T</Badge>
+                      <Badge bg="secondary">{losses}L</Badge>
                       <span className="ms-2 text-muted">
-                        ({((wins / total) * 100).toFixed(0)}%)
+                        ({((wins / total) * 100).toFixed(0)}% win)
                       </span>
                     </div>
                   </div>
@@ -379,43 +475,60 @@ const AdvancedPlayerAnalysis = () => {
         </Card.Header>
         <Card.Body>
           <ResponsiveContainer width="100%" height={500}>
-            <ScatterChart>
-              <CartesianGrid strokeDasharray="3 3" />
+            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis 
                 dataKey="x" 
                 type="number" 
                 name={xStat}
-                label={{ value: xStat, position: 'insideBottom', offset: -5 }}
+                label={{ value: xStat, position: 'insideBottom', offset: -5, fill: '#6b7280', fontWeight: 600 }}
+                tick={{ fill: '#374151' }}
               />
               <YAxis 
                 dataKey="y" 
                 type="number" 
                 name={yStat}
-                label={{ value: yStat, angle: -90, position: 'insideLeft' }}
+                label={{ value: yStat, angle: -90, position: 'insideLeft', fill: '#6b7280', fontWeight: 600 }}
+                tick={{ fill: '#374151' }}
               />
-              <ZAxis dataKey="z" type="number" range={[100, 1000]} />
+              <ZAxis dataKey="z" type="number" range={[200, 1200]} />
               <Tooltip 
-                cursor={{ strokeDasharray: '3 3' }}
+                cursor={{ strokeDasharray: '3 3', stroke: '#9ca3af' }}
+                contentStyle={{ 
+                  backgroundColor: '#ffffff', 
+                  border: '2px solid #3b82f6',
+                  borderRadius: '8px',
+                  padding: '12px'
+                }}
+                labelStyle={{ fontWeight: 'bold', color: '#1f2937' }}
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     return (
                       <div className="custom-tooltip bg-white p-3 border rounded shadow">
-                        <p className="font-weight-bold">{payload[0].payload.name}</p>
-                        <p>{xStat}: {payload[0].value.toFixed(3)}</p>
-                        <p>{yStat}: {payload[1].value.toFixed(3)}</p>
+                        <p style={{ fontWeight: 'bold', color: payload[0].payload.color, marginBottom: '8px' }}>
+                          {payload[0].payload.name}
+                        </p>
+                        <p style={{ margin: '4px 0' }}>{xStat}: <strong>{payload[0].value.toFixed(0)}</strong></p>
+                        <p style={{ margin: '4px 0' }}>{yStat}: <strong>{payload[1].value.toFixed(3)}</strong></p>
                       </div>
                     );
                   }
                   return null;
                 }}
               />
-              <Legend />
+              <Legend 
+                wrapperStyle={{ paddingTop: '20px' }}
+                iconType="circle"
+              />
               {selectedPlayers.map((player, idx) => (
                 <Scatter
                   key={idx}
                   name={player.Name}
                   data={[getScatterData()[idx]]}
                   fill={colors[idx]}
+                  fillOpacity={0.7}
+                  stroke={colors[idx]}
+                  strokeWidth={2}
                 />
               ))}
             </ScatterChart>
