@@ -17,7 +17,11 @@ const TodaysGames = () => {
           throw new Error("Network response was not ok");
         }
         const data = await response.json();
-        setGames(data.dates[0].games);
+        if (data.dates && data.dates.length > 0 && data.dates[0].games) {
+          setGames(data.dates[0].games);
+        } else {
+          setGames([]);
+        }
       } catch (error) {
         console.error("Failed to fetch today's games:", error);
       }
