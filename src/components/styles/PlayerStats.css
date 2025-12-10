@@ -149,14 +149,54 @@
   
   .dropdown-toggle {
     font-size: 0.875rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .table {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
   }
   
   .player-table {
     margin-bottom: 1rem;
+  }
+  
+  /* Better mobile table scrolling */
+  .table-responsive {
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1.5rem;
+  }
+  
+  .table th,
+  .table td {
+    padding: 0.5rem 0.25rem;
+    white-space: nowrap;
+  }
+  
+  /* Stack controls vertically on mobile */
+  .controls-section .row > div {
+    margin-bottom: 0.75rem;
+  }
+  
+  /* Better dropdown positioning on mobile */
+  .dropdown-menu {
+    max-height: 60vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Improve touch targets */
+  .btn,
+  .form-control,
+  .dropdown-toggle {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+  
+  .form-check-input {
+    width: 1.25rem;
+    height: 1.25rem;
   }
 }
 

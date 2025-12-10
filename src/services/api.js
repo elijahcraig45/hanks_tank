@@ -4,7 +4,7 @@
  */
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com/api';
-const API_TIMEOUT = 30000; // 30 seconds
+const API_TIMEOUT = 60000; // 60 seconds for mobile networks
 const RETRY_ATTEMPTS = 3;
 const RETRY_DELAY = 1000; // 1 second
 
@@ -91,9 +91,16 @@ class ApiService {
     } catch (error) {
       clearTimeout(timeoutId);
 
+      // Handle timeout specifically for mobile
+      if (error.name === 'AbortError') {
+        console.warn('Request timeout - slow network detected');
+      }
+
       // Retry on network errors or 5xx errors
       if (retryCount < RETRY_ATTEMPTS && 
-          (error.name === 'AbortError' || error.message.includes('Server error'))) {
+          (error.name === 'AbortError' || 
+           error.message.includes('Server error') ||
+           error.message.includes('Failed to fetch'))) {
         console.warn(`Request failed, retrying (${retryCount + 1}/${RETRY_ATTEMPTS})...`, error.message);
         await this.sleep(RETRY_DELAY * Math.pow(2, retryCount)); // Exponential backoff
         return this.request(endpoint, options, retryCount + 1);
