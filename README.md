@@ -2,6 +2,12 @@
 
 A comprehensive React-based baseball analytics dashboard for the 2025 MLB season. This frontend application provides interactive visualizations and detailed statistics for players, teams, and games.
 
+## 🌐 Live Application
+
+**🔗 [View Live App on Google Cloud Platform](https://hankstank.ue.r.appspot.com/)**
+
+The application is deployed and running on Google Cloud App Engine with continuous deployment.
+
 ## 🚀 Features
 
 - **Player Analytics**: Detailed batting and pitching statistics with interactive visualizations
