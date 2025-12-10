@@ -4,7 +4,7 @@ A comprehensive React-based baseball analytics dashboard for the 2025 MLB season
 
 ## 🌐 Live Application
 
-**🔗 [View Live App on Google Cloud Platform](https://hankstank.uc.r.appspot.com/)**
+**🔗 [View Live App on Google Cloud Platform](https://frontend-dot-hankstank.uc.r.appspot.com/)**
 
 The application is deployed and running on Google Cloud App Engine with continuous deployment.
 
