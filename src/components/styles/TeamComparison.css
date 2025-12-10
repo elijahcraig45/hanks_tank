@@ -58,11 +58,43 @@
 
 @media (max-width: 768px) {
   .team-comparison .table {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+  }
+  
+  .team-comparison .table th,
+  .team-comparison .table td {
+    padding: 0.4rem 0.2rem;
   }
   
   .search-result-item {
-    padding: 0.5rem;
+    padding: 0.75rem;
     font-size: 0.9rem;
+    touch-action: manipulation;
+  }
+  
+  /* Make charts responsive on mobile */
+  .recharts-wrapper {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 300px;
+  }
+  
+  /* Stack badges vertically on very small screens */
+  .team-comparison .badge {
+    margin-bottom: 0.5rem;
+    display: inline-block;
+  }
+  
+  /* Better touch targets for remove buttons */
+  .team-comparison .badge button {
+    min-width: 24px;
+    min-height: 24px;
+    padding: 0.25rem;
+  }
+  
+  /* Improve form controls */
+  .team-comparison .form-control,
+  .team-comparison .form-select {
+    min-height: 44px;
   }
 }

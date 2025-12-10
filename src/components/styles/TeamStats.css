@@ -210,14 +210,53 @@ div[style*="overflowX"] {
     top: 100% !important;
     left: 0 !important;
     width: 100% !important;
+    max-height: 60vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   
   .table-responsive {
     border: 0;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1.5rem;
+  }
+  
+  .table {
+    font-size: 0.75rem;
+  }
+  
+  .table th,
+  .table td {
+    padding: 0.5rem 0.25rem;
+    white-space: nowrap;
   }
   
   .controls-section .row {
     gap: 1rem;
+  }
+  
+  /* Stack controls vertically */
+  .controls-section .col,
+  .controls-section .col-auto {
+    width: 100%;
+    margin-bottom: 0.75rem;
+  }
+  
+  /* Better touch targets */
+  .btn,
+  .form-control,
+  .dropdown-toggle,
+  .form-select {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* Improve visibility on small screens */
+  .team-table th {
+    position: sticky;
+    left: 0;
+    background-color: #fff;
+    z-index: 1;
   }
   
   .controls-section .col-12 {

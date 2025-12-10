@@ -27,6 +27,7 @@
 
 .navbar .nav-link {
   color: rgba(255, 255, 255, 0.85);
+  padding: 0.5rem 1rem;
 }
 
 .navbar .nav-link:hover,
@@ -36,4 +37,46 @@
 
 .navbar .dropdown-toggle::after {
   margin-left: 0.5rem;
+}
+
+/* Mobile responsive navbar fixes */
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    background-color: #212529;
+    padding: 1rem;
+    margin-top: 0.5rem;
+    border-radius: 0.25rem;
+  }
+  
+  .navbar .nav-link {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .navbar .nav-link:last-child {
+    border-bottom: none;
+  }
+  
+  .navbar .dropdown-menu {
+    position: static;
+    float: none;
+    width: auto;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+  }
+}
+
+/* Ensure navbar is fixed and doesn't cause layout shifts */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  width: 100%;
+}
+
+/* Fix for iOS Safari touch issues */
+.navbar .nav-link {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
