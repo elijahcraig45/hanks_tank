@@ -19,7 +19,10 @@ const GameDetailsPage = () => {
       }
       const data = await response.json();
       setGameDetails(data);
-      setSelectedAtBat(gameDetails.liveData.plays.currentPlay);
+      // Add null checks for nested object access
+      if (data?.liveData?.plays?.currentPlay) {
+        setSelectedAtBat(data.liveData.plays.currentPlay);
+      }
     } catch (error) {
       console.error("Failed to fetch game details:", error);
     }

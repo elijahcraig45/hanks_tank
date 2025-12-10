@@ -26,8 +26,8 @@ const BoxScore = ({ linescore, awayTeam, homeTeam }) => {
           {[...Array(totalInnings)].map((_, index) => (
             <td key={index}>{innings[index] ? innings[index].away.runs : ''}</td>
           ))}
-          {extraInnings > 0 && innings.slice(totalInnings).map((inning, index) => (
-            <td key={index}>{inning.away.runs}</td>
+          {extraInnings > 0 && innings.slice(totalInnings).map((inning) => (
+            <td key={`away-extra-${inning.num}`}>{inning.away.runs}</td>
           ))}
           <td style={{borderLeft: "2px solid black"}}>{linescore.teams.away.runs}</td>
           <td>{linescore.teams.away.hits}</td>

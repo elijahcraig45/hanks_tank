@@ -146,7 +146,7 @@ const TeamBatting = () => {
     }
     
     setFilteredData(processedData);
-  }, [teamData, sortData, searchTerm]);
+  }, [teamData, sortData, searchTerm, sortConfig]);
 
   const requestSort = (key) => {
     setSortConfig({

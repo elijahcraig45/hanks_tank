@@ -30,8 +30,8 @@ function HomePage() {
         method: 'POST'
       });
       if (response.ok) {
-        // Refetch news data
-        fetchNewsData();
+        // Refetch news data after refresh completes
+        await fetchNewsData();
       }
     } catch (error) {
       console.error('Error refreshing news:', error);
