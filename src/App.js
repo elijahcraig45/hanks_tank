@@ -14,6 +14,7 @@ import GameDetailsPage from './components/Game';
 import SeasonComparison from './components/SeasonComparison';
 import PlayerComparison from './components/PlayerComparison';
 import TeamComparison from './components/TeamComparison';
+import AdvancedPlayerAnalysis from './components/AdvancedPlayerAnalysis';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
         <Route path="/season-comparison" element={<SeasonComparison />} />
         <Route path="/player-comparison" element={<PlayerComparison />} />
         <Route path="/team-comparison" element={<TeamComparison />} />
+        <Route path="/advanced-analysis" element={<AdvancedPlayerAnalysis />} />
         <Route path="/team/:teamAbbr" element={<TeamPage />} />
         <Route path="/player/:playerId" element={<PlayerPage />} />
         <Route path="/games" element={<TodaysGames />} />

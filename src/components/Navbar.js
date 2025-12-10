@@ -22,6 +22,7 @@ function BasicExample() {
             <Nav.Link as={Link} to="/season-comparison">Season Comparison</Nav.Link>
             <Nav.Link as={Link} to="/team-comparison">Team Comparison</Nav.Link>
             <Nav.Link as={Link} to="/player-comparison">Player Comparison</Nav.Link>
+            <Nav.Link as={Link} to="/advanced-analysis">Advanced Analysis</Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>

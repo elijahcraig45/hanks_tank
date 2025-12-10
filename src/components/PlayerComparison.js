@@ -38,9 +38,11 @@ const PlayerComparison = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [viewMode, setViewMode] = useState('radar'); // 'radar', 'percentile', 'headtohead'
+  const [selectedStat, setSelectedStat] = useState('OPS');
 
-  const battingStats = ['AVG', 'OBP', 'SLG', 'HR', 'RBI', 'R', 'SB'];
-  const pitchingStats = ['ERA', 'WHIP', 'SO', 'W', 'IP'];
+  const battingStats = ['AVG', 'OBP', 'SLG', 'OPS', 'HR', 'RBI', 'R', 'SB', 'BB', 'SO'];
+  const pitchingStats = ['ERA', 'WHIP', 'SO', 'W', 'IP', 'K/9', 'BB/9', 'HR/9'];
   const comparisonStats = statType === 'batting' ? battingStats : pitchingStats;
 
   const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#a4de6c'];
@@ -95,6 +97,32 @@ const PlayerComparison = () => {
       return name.includes(search) || team.includes(search);
     })
     .slice(0, 10);
+
+  const calculatePercentile = (value, stat) => {
+    if (!allPlayers.length || value === null || value === undefined) return 0;
+    
+    const values = allPlayers
+      .map(p => parseFloat(p[stat]))
+      .filter(v => !isNaN(v) && v !== null && v !== undefined);
+    
+    if (!values.length) return 0;
+    
+    // For stats where lower is better (ERA, WHIP, etc.)
+    const lowerIsBetter = ['ERA', 'WHIP', 'BB/9', 'HR/9'];
+    
+    const sortedValues = [...values].sort((a, b) => 
+      lowerIsBetter.includes(stat) ? a - b : b - a
+    );
+    
+    const numValue = parseFloat(value);
+    let rank = sortedValues.findIndex(v => 
+      lowerIsBetter.includes(stat) ? v >= numValue : v <= numValue
+    );
+    
+    if (rank === -1) rank = sortedValues.length - 1;
+    
+    return Math.round((rank / sortedValues.length) * 100);
+  };
 
   const normalizeValue = (value, stat) => {
     if (!allPlayers.length) return 0;
