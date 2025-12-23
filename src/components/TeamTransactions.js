@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Container } from 'react-bootstrap';
 import axios from 'axios';
 import '../App.css';
 
@@ -120,7 +121,7 @@ const TeamTransactions = ({ teamId, teamName }) => {
   }
 
   return (
-    <div className="team-transactions">
+    <Container className="team-transactions my-4">
       <div className="transactions-header">
         <h2>{teamName} Transactions</h2>
         
@@ -386,7 +387,7 @@ const TeamTransactions = ({ teamId, teamName }) => {
           color: #dc3545;
         }
       `}</style>
-    </div>
+    </Container>
   );
 };
 
