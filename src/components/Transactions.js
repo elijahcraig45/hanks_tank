@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Container } from 'react-bootstrap';
 import axios from 'axios';
 import '../App.css';
 
@@ -123,22 +124,22 @@ const Transactions = () => {
 
   if (loading && transactions.length === 0) {
     return (
-      <div className="container">
+      <Container className="my-4">
         <div className="loading">Loading transactions...</div>
-      </div>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <div className="container">
+      <Container className="my-4">
         <div className="error">{error}</div>
-      </div>
+      </Container>
     );
   }
 
   return (
-    <div className="container">
+    <Container className="my-4">
       <h1>MLB Transactions</h1>
 
       {/* Filter Section */}
@@ -453,7 +454,7 @@ const Transactions = () => {
           color: #dc3545;
         }
       `}</style>
-    </div>
+    </Container>
   );
 };
 
