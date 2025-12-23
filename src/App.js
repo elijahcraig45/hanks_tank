@@ -15,6 +15,8 @@ import SeasonComparison from './components/SeasonComparison';
 import PlayerComparison from './components/PlayerComparison';
 import TeamComparison from './components/TeamComparison';
 import AdvancedPlayerAnalysis from './components/AdvancedPlayerAnalysis';
+import Transactions from './components/Transactions';
+import TeamTransactions from './components/TeamTransactions';
 
 function App() {
   return (
@@ -36,6 +38,8 @@ function App() {
         <Route path="/player/:playerId" element={<PlayerPage />} />
         <Route path="/games" element={<TodaysGames />} />
         <Route path="/game/:gamePk" element={<GameDetailsPage />} />
+        <Route path="/transactions" element={<Transactions />} />
+        <Route path="/transactions/:teamAbbr" element={<TeamTransactions />} />
       </Routes>
     </Router>
   );
