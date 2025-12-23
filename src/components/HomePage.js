@@ -26,7 +26,7 @@ function HomePage() {
   const refreshNews = async () => {
     setNewsLoading(true);
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/news/refresh`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/news/refresh`, {
         method: 'POST'
       });
       if (response.ok) {
@@ -43,8 +43,8 @@ function HomePage() {
   const fetchNewsData = async () => {
     const apiUrl = process.env.REACT_APP_API_URL;
     const [mlbNews, bravesNews] = await Promise.all([
-      fetch(`${apiUrl}/mlb-news`),
-      fetch(`${apiUrl}/braves-news`)
+      fetch(`${apiUrl}/api/mlb-news`),
+      fetch(`${apiUrl}/api/braves-news`)
     ]);
 
     if (mlbNews.ok && bravesNews.ok) {
@@ -68,9 +68,9 @@ function HomePage() {
         // Fetch all data concurrently
         const currentYear = new Date().getFullYear();
         const [mlbNews, bravesNews, standingsData] = await Promise.all([
-          fetch(`${apiUrl}/mlb-news`).catch(() => ({ ok: false })),
-          fetch(`${apiUrl}/braves-news`).catch(() => ({ ok: false })),
-          fetch(`${apiUrl}/standings?year=${currentYear}`).catch(() => ({ ok: false }))
+          fetch(`${apiUrl}/api/mlb-news`).catch(() => ({ ok: false })),
+          fetch(`${apiUrl}/api/braves-news`).catch(() => ({ ok: false })),
+          fetch(`${apiUrl}/api/Standings?year=${currentYear}`).catch(() => ({ ok: false }))
         ]);
 
         // Handle news data (optional)
