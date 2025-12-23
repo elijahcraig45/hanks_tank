@@ -19,6 +19,7 @@ function BasicExample() {
             <Nav.Link as={Link} to="/TeamPitching">Team Pitching</Nav.Link>
             <Nav.Link as={Link} to="/PlayerBatting">Player Batting</Nav.Link>
             <Nav.Link as={Link} to="/PlayerPitching">Player Pitching</Nav.Link>
+            <Nav.Link as={Link} to="/transactions">Transactions</Nav.Link>
             <Nav.Link as={Link} to="/season-comparison">Season Comparison</Nav.Link>
             <Nav.Link as={Link} to="/team-comparison">Team Comparison</Nav.Link>
             <Nav.Link as={Link} to="/player-comparison">Player Comparison</Nav.Link>
