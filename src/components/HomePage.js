@@ -27,9 +27,8 @@ function HomePage() {
   const refreshNews = async () => {
     setNewsLoading(true);
     try {
-      const BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com';
-      const API_URL = BASE_URL.endsWith('/api') ? BASE_URL : `${BASE_URL}/api`;
-      const response = await fetch(`${API_URL}/news/refresh`, {
+      const BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com/api';
+      const response = await fetch(`${BASE_URL}/news/refresh`, {
         method: 'POST'
       });
       if (response.ok) {
@@ -45,10 +44,9 @@ function HomePage() {
 
   const fetchNewsData = async () => {
     const BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com';
-    const API_URL = BASE_URL.endsWith('/api') ? BASE_URL : `${BASE_URL}/api`;
     const [mlbNews, bravesNews] = await Promise.all([
-      fetch(`${API_URL}/mlb-news`),
-      fetch(`${API_URL}/braves-news`)
+      fetch(`${BASE_URL}/api/mlb-news`),
+      fetch(`${BASE_URL}/api/braves-news`)
     ]);
 
     if (mlbNews.ok && bravesNews.ok) {
@@ -68,13 +66,12 @@ function HomePage() {
       
       try {
         const BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com';
-        const API_URL = BASE_URL.endsWith('/api') ? BASE_URL : `${BASE_URL}/api`;
         
         // Fetch all data concurrently
         const currentYear = new Date().getFullYear();
         const [mlbNews, bravesNews, standingsData] = await Promise.all([
-          fetch(`${API_URL}/mlb-news`).catch(() => ({ ok: false })),
-          fetch(`${API_URL}/braves-news`).catch(() => ({ ok: false })),
+          fetch(`${BASE_URL}/api/mlb-news`).catch(() => ({ ok: false })),
+          fetch(`${BASE_URL}/api/braves-news`).catch(() => ({ ok: false })),
           apiService.getStandings(currentYear).catch(() => null)
         ]);
 
