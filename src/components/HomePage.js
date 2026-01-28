@@ -65,13 +65,13 @@ function HomePage() {
       setError(null);
       
       try {
-        const BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com';
+        const BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com/api';
         
         // Fetch all data concurrently
         const currentYear = new Date().getFullYear();
         const [mlbNews, bravesNews, standingsData] = await Promise.all([
-          fetch(`${BASE_URL}/api/mlb-news`).catch(() => ({ ok: false })),
-          fetch(`${BASE_URL}/api/braves-news`).catch(() => ({ ok: false })),
+          fetch(`${BASE_URL}/mlb-news`).catch(() => ({ ok: false })),
+          fetch(`${BASE_URL}/braves-news`).catch(() => ({ ok: false })),
           apiService.getStandings(currentYear).catch(() => null)
         ]);
 
