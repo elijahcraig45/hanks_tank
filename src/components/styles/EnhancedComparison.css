@@ -1,0 +1,90 @@
+/* Enhanced Comparison Widget Styles */
+
+.enhanced-comparison-widget {
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+.enhanced-comparison-widget .card-header {
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+}
+
+.comparison-players {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.player-summary-card {
+  transition: all 0.2s ease;
+  border-right: none;
+  border-top: 1px solid #dee2e6;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.player-summary-card:hover {
+  background-color: #f8f9fa;
+  transform: translateX(4px);
+}
+
+.player-summary-card .card-body {
+  padding: 0.5rem 0.75rem;
+}
+
+.enhanced-comparison-widget .table {
+  font-size: 0.875rem;
+  margin-bottom: 0;
+}
+
+.enhanced-comparison-widget .table th {
+  padding: 0.5rem 0.25rem;
+  font-weight: 600;
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.enhanced-comparison-widget .table td {
+  padding: 0.4rem 0.25rem;
+  vertical-align: middle;
+}
+
+.enhanced-comparison-widget .table tbody tr:hover {
+  background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* Scrollbar Styling */
+.comparison-players::-webkit-scrollbar {
+  width: 6px;
+}
+
+.comparison-players::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.comparison-players::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.comparison-players::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+  .comparison-players {
+    max-height: none;
+    margin-bottom: 1rem;
+  }
+  
+  .enhanced-comparison-widget .table {
+    font-size: 0.8rem;
+  }
+  
+  .enhanced-comparison-widget .table th,
+  .enhanced-comparison-widget .table td {
+    padding: 0.35rem 0.2rem;
+  }
+}

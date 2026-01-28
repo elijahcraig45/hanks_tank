@@ -1,0 +1,79 @@
+/* YearSelector Component Styles */
+
+.year-selector {
+  margin-bottom: 1.5rem;
+}
+
+.year-selector-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.year-selector-dropdown {
+  max-width: 200px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.year-selector-dropdown:hover:not(:disabled) {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+.year-selector-dropdown:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.year-selector-hint {
+  display: block;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .year-selector-dropdown {
+    max-width: 100%;
+  }
+}
+
+/* Animation for data source indicator */
+.year-selector-hint {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Inline variant */
+.year-selector.inline {
+  display: inline-block;
+  margin-bottom: 0;
+}
+
+.year-selector.inline .year-selector-dropdown {
+  display: inline-block;
+  width: auto;
+  margin-left: 0.5rem;
+}
+
+/* Compact variant */
+.year-selector.compact .year-selector-label {
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.year-selector.compact .year-selector-dropdown {
+  font-size: 0.9rem;
+}

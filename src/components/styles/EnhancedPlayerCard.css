@@ -1,0 +1,137 @@
+/* Enhanced Player Card Styles */
+
+.enhanced-player-card {
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.enhanced-player-card:hover {
+  transform: translateY(-2px);
+  border-left-color: var(--bs-primary);
+}
+
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+/* Rank Badge */
+.rank-badge {
+  min-width: 50px;
+  text-align: center;
+}
+
+.rank-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #6c757d;
+  line-height: 1;
+}
+
+.rank-number.top-10 {
+  color: #0d6efd;
+  font-size: 1.75rem;
+}
+
+/* Player Link */
+.player-link {
+  color: #212529;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.player-link:hover {
+  color: #0d6efd;
+  text-decoration: underline;
+}
+
+/* Stat Items */
+.stat-item {
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+/* Advanced Stats Section */
+.advanced-stats {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+.advanced-stats h6 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.advanced-stats .small {
+  font-size: 0.875rem;
+  line-height: 1.8;
+}
+
+/* Progress Bars */
+.stat-progress {
+  height: 6px;
+  border-radius: 3px;
+}
+
+.stat-progress .progress-bar {
+  transition: width 0.6s ease;
+}
+
+/* Slash Line */
+.slash-line {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .rank-number {
+    font-size: 1.25rem;
+  }
+  
+  .stat-value {
+    font-size: 1rem;
+  }
+  
+  .enhanced-player-card h5 {
+    font-size: 1.1rem;
+  }
+}
+
+/* Animation for details expand */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
+}
+
+.advanced-stats {
+  animation: slideDown 0.3s ease-in-out;
+}
