@@ -5,7 +5,9 @@
 
 import { SEASONS, API_CONFIG } from '../config/constants';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com/api';
+// Construct full API URL - add /api if not already present
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com';
+const API_BASE_URL = BASE_URL.endsWith('/api') ? BASE_URL : `${BASE_URL}/api`;
 const API_TIMEOUT = 60000; // 60 seconds for mobile networks
 const RETRY_ATTEMPTS = 3;
 const RETRY_DELAY = 1000; // 1 second

@@ -1,53 +1,74 @@
-# Hank's Tank 2025 - MLB Analytics Frontend
+# Hank's Tank - MLB Analytics Platform
 
-A comprehensive React-based baseball analytics dashboard for the 2025 MLB season. This frontend application provides interactive visualizations and detailed statistics for players, teams, and games.
+A professional React-based baseball analytics dashboard providing comprehensive MLB statistics, visualizations, and insights.
 
 ## 🌐 Live Application
 
-**🔗 [View Live App on Google Cloud Platform](https://frontend-dot-hankstank.uc.r.appspot.com/)**
+**[https://frontend-dot-hankstank.uc.r.appspot.com](https://frontend-dot-hankstank.uc.r.appspot.com)**
 
-The application is deployed and running on Google Cloud App Engine with continuous deployment.
+## Features
 
-## 🚀 Features
+- **Real-Time Data**: Live game scores and current season statistics
+- **Historical Analysis**: Access to historical data from 2015-2025
+- **Advanced Metrics**: Sabermetric statistics including wOBA, ISO, BABIP, and more
+- **Team Analytics**: Comprehensive team performance dashboards with league rankings
+- **Player Comparisons**: Side-by-side player analysis with radar charts
+- **Interactive Visualizations**: Charts, graphs, and data tables
+- **Responsive Design**: Optimized for desktop and mobile devices
 
-- **Player Analytics**: Detailed batting and pitching statistics with interactive visualizations
-- **Team Performance**: Comprehensive team batting and pitching analytics
-- **Live Game Data**: Real-time game scores and strike zone visualizations
-- **Advanced Visualizations**: Scatter plot matrices for statistical correlations
-- **Historical Data**: Multi-year data comparison (2020-2025)
-- **Responsive Design**: Bootstrap-powered responsive interface
+## Tech Stack
 
-## 🛠 Tech Stack
+- React 18.2 with Hooks
+- React Router 6
+- Bootstrap 5.3 & React Bootstrap
+- Recharts for data visualization
+- Google Cloud App Engine hosting
 
-- **React 18.2** - Modern React with hooks and functional components
-- **React Router 6** - Client-side routing and navigation
-- **Bootstrap 5.3** - Responsive UI framework
-- **Recharts 2.12** - Data visualization library
-- **React Bootstrap** - Bootstrap components for React
+## Installation
 
-## 📊 Components
+```bash
+npm install
+npm start
+```
 
-### Core Pages
-- `HomePage.js` - Landing page with overview
-- `PlayerPage.js` - Individual player statistics and analysis
-- `TeamPage.js` - Team-level analytics and comparisons
+## Environment Variables
 
-### Analytics Components
-- `PlayerBatting.js` - Batting statistics and visualizations
-- `PlayerPitching.js` - Pitching analytics and metrics
-- `TeamBatting.js` - Team batting performance
-- `TeamPitching.js` - Team pitching statistics
-- `ScatterPlotMatrix.js` - Advanced statistical correlations
+Create a `.env.local` file:
 
-### Game Components
-- `GamesToday.js` - Daily game schedules and scores
-- `Game.js` - Individual game details
-- `BoxScore.js` - Detailed game box scores
-- `StrikeZone.js` - Interactive strike zone visualization
-- `LiveGameStrikeZone.js` - Real-time strike zone data
+```
+REACT_APP_API_URL=http://localhost:8080
+REACT_APP_DEFAULT_SEASON=2026
+```
 
-### Utility Components
-- `Navbar.js` - Navigation bar with routing
+## Build & Deploy
+
+```bash
+npm run build
+gcloud app deploy
+```
+
+## API Integration
+
+This frontend connects to the Hank's Tank Backend API for all data operations. The backend handles:
+- MLB Stats API integration
+- BigQuery historical data retrieval
+- Data caching and optimization
+- Intelligent routing between live and historical data sources
+
+## Project Structure
+
+```
+src/
+├── components/     # React components
+├── services/       # API service layer
+├── config/         # Configuration constants
+├── utils/          # Utility functions
+└── App.js         # Main application component
+```
+
+## License
+
+MIT
 - `AssistedAnalysis.js` - AI-powered insights and analysis
 
 ## 🚀 Getting Started
