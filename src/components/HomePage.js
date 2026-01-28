@@ -43,10 +43,10 @@ function HomePage() {
   };
 
   const fetchNewsData = async () => {
-    const BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com';
+    const BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com/api';
     const [mlbNews, bravesNews] = await Promise.all([
-      fetch(`${BASE_URL}/api/mlb-news`),
-      fetch(`${BASE_URL}/api/braves-news`)
+      fetch(`${BASE_URL}/mlb-news`),
+      fetch(`${BASE_URL}/braves-news`)
     ]);
 
     if (mlbNews.ok && bravesNews.ok) {
