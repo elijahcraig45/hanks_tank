@@ -175,6 +175,8 @@ function HomePage() {
   };
 
   const getTeamAbbreviation = (teamName) => {
+    if (!teamName) return 'UNK';
+    
     const teamMap = {
       "Atlanta Braves": "ATL",
       "Miami Marlins": "MIA",
