@@ -3,10 +3,13 @@
  * Handles all backend communication with error handling, retries, and caching
  */
 
+import { SEASONS, API_CONFIG } from '../config/constants';
+
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com/api';
 const API_TIMEOUT = 60000; // 60 seconds for mobile networks
 const RETRY_ATTEMPTS = 3;
 const RETRY_DELAY = 1000; // 1 second
+const CURRENT_SEASON = SEASONS.DEFAULT; // Centralized current season
 
 class ApiService {
   constructor() {
@@ -160,7 +163,7 @@ class ApiService {
   /**
    * Get team batting statistics
    */
-  async getTeamBatting(year = 2026, options = {}) {
+  async getTeamBatting(year = CURRENT_SEASON, options = {}) {
     const { sortStat = 'ops', direction = 'desc', limit = 30 } = options;
     return this.get(`/team-batting?year=${year}&sortStat=${sortStat}&direction=${direction}&limit=${limit}`, {
       cacheTTL: 30 // 30 minutes
@@ -170,7 +173,7 @@ class ApiService {
   /**
    * Get team pitching statistics
    */
-  async getTeamPitching(year = 2026, options = {}) {
+  async getTeamPitching(year = CURRENT_SEASON, options = {}) {
     const { sortStat = 'era', direction = 'asc', limit = 30 } = options;
     return this.get(`/team-pitching?year=${year}&sortStat=${sortStat}&direction=${direction}&limit=${limit}`, {
       cacheTTL: 30
@@ -180,7 +183,7 @@ class ApiService {
   /**
    * Get player batting statistics
    */
-  async getPlayerBatting(year = 2026, options = {}) {
+  async getPlayerBatting(year = CURRENT_SEASON, options = {}) {
     const { sortStat = 'ops', direction = 'desc', limit = 100 } = options;
     return this.get(`/player-batting?year=${year}&sortStat=${sortStat}&direction=${direction}&limit=${limit}`, {
       cacheTTL: 30
@@ -190,7 +193,7 @@ class ApiService {
   /**
    * Get player pitching statistics
    */
-  async getPlayerPitching(year = 2026, options = {}) {
+  async getPlayerPitching(year = CURRENT_SEASON, options = {}) {
     const { sortStat = 'era', direction = 'asc', limit = 100 } = options;
     return this.get(`/player-pitching?year=${year}&sortStat=${sortStat}&direction=${direction}&limit=${limit}`, {
       cacheTTL: 30
@@ -200,7 +203,7 @@ class ApiService {
   /**
    * Get standings
    */
-  async getStandings(year = 2026) {
+  async getStandings(year = CURRENT_SEASON) {
     return this.get(`/standings?year=${year}`, {
       cacheTTL: 10 // 10 minutes for standings (changes frequently)
     });
@@ -250,7 +253,7 @@ class ApiService {
   /**
    * Get Statcast data
    */
-  async getStatcast(year = 2026, options = {}) {
+  async getStatcast(year = CURRENT_SEASON, options = {}) {
     const { playerId, position = 'batter', p_throws = '', stands = '', events = '' } = options;
     const params = new URLSearchParams({
       year: year.toString(),
@@ -286,7 +289,7 @@ class ApiService {
   /**
    * Get team details
    */
-  async getTeamDetails(teamId, year = 2026) {
+  async getTeamDetails(teamId, year = CURRENT_SEASON) {
     return this.get(`/v2/teams/${teamId}?season=${year}`, { cacheTTL: 60 });
   }
 
