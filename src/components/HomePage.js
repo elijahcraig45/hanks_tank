@@ -86,11 +86,15 @@ function HomePage() {
         }
 
         // Handle standings data
+        console.log('Standings data received:', standingsData);
         if (standingsData && standingsData.records) {
+          console.log('Processing standings with records');
           const formattedStandings = formatStandingsData(standingsData.records);
+          console.log('Formatted standings:', formattedStandings);
           setStandings(formattedStandings);
         } else if (standingsData && typeof standingsData === 'object') {
           // Data might already be formatted
+          console.log('Using standings data as-is');
           setStandings(standingsData);
         } else {
           console.log('No standings data available for current year');
@@ -391,7 +395,7 @@ function HomePage() {
                   <p className="small">Standings will be available once the season begins</p>
                 </div>
               ) : (
-                Object.entries(standings).map(([division, teams]) => (
+                Object.entries(standings).map(([division, divisionTeams]) => (
                 <div key={division} className="mb-4">
                   <h6 className="text-primary mb-2">{division}</h6>
                   <Table size="sm" className="standings-table">
@@ -404,9 +408,9 @@ function HomePage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {teams && Array.isArray(teams) && teams.map((team, index) => {
-                        if (!team || !team.Tm) return null;
-                        return (
+                      {divisionTeams && Array.isArray(divisionTeams) && divisionTeams
+                        .filter(team => team && team.Tm && typeof team.Tm === 'string')
+                        .map((team, index) => (
                         <tr 
                           key={`${division}-${index}`}
                           className={team.Tm === "Atlanta Braves" ? "table-warning" : ""}
@@ -423,7 +427,7 @@ function HomePage() {
                           <td>{team.winPct || '---'}</td>
                           <td>{team.GB || '--'}</td>
                         </tr>
-                      )})}
+                      ))}
                     </tbody>
                   </Table>
                 </div>
