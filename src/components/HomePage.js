@@ -13,6 +13,7 @@ import {
   Button
 } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import apiService from '../services/api';
 import './styles/HomePage.css';
 
 function HomePage() {
@@ -26,7 +27,8 @@ function HomePage() {
   const refreshNews = async () => {
     setNewsLoading(true);
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/news/refresh`, {
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com';
+      const response = await fetch(`${API_BASE_URL}/api/news/refresh`, {
         method: 'POST'
       });
       if (response.ok) {
@@ -41,10 +43,10 @@ function HomePage() {
   };
 
   const fetchNewsData = async () => {
-    const apiUrl = process.env.REACT_APP_API_URL;
+    const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com';
     const [mlbNews, bravesNews] = await Promise.all([
-      fetch(`${apiUrl}/api/mlb-news`),
-      fetch(`${apiUrl}/api/braves-news`)
+      fetch(`${API_BASE_URL}/api/mlb-news`),
+      fetch(`${API_BASE_URL}/api/braves-news`)
     ]);
 
     if (mlbNews.ok && bravesNews.ok) {
@@ -63,14 +65,14 @@ function HomePage() {
       setError(null);
       
       try {
-        const apiUrl = process.env.REACT_APP_API_URL;
+        const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com';
         
         // Fetch all data concurrently
         const currentYear = new Date().getFullYear();
         const [mlbNews, bravesNews, standingsData] = await Promise.all([
-          fetch(`${apiUrl}/api/mlb-news`).catch(() => ({ ok: false })),
-          fetch(`${apiUrl}/api/braves-news`).catch(() => ({ ok: false })),
-          fetch(`${apiUrl}/api/Standings?year=${currentYear}`).catch(() => ({ ok: false }))
+          fetch(`${API_BASE_URL}/api/mlb-news`).catch(() => ({ ok: false })),
+          fetch(`${API_BASE_URL}/api/braves-news`).catch(() => ({ ok: false })),
+          apiService.getStandings(currentYear).catch(() => null)
         ]);
 
         // Handle news data (optional)
@@ -84,19 +86,10 @@ function HomePage() {
         }
 
         // Handle standings data
-        if (standingsData.ok) {
-          const rawStandings = await standingsData.json();
-          
-          // Check if we have actual standings data
-          if (rawStandings && rawStandings.records && rawStandings.records.length > 0) {
-            const processedStandings = formatStandingsData(rawStandings.records);
-            setStandings(processedStandings);
-          } else {
-            console.log('No standings data available for current year');
-            setStandings({});
-          }
+        if (standingsData) {
+          setStandings(standingsData);
         } else {
-          console.log('Failed to fetch standings data');
+          console.log('No standings data available for current year');
           setStandings({});
         }
 
