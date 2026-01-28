@@ -86,7 +86,11 @@ function HomePage() {
         }
 
         // Handle standings data
-        if (standingsData) {
+        if (standingsData && standingsData.records) {
+          const formattedStandings = formatStandingsData(standingsData.records);
+          setStandings(formattedStandings);
+        } else if (standingsData && typeof standingsData === 'object') {
+          // Data might already be formatted
           setStandings(standingsData);
         } else {
           console.log('No standings data available for current year');
@@ -400,7 +404,9 @@ function HomePage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {teams.map((team, index) => (
+                      {teams && Array.isArray(teams) && teams.map((team, index) => {
+                        if (!team || !team.Tm) return null;
+                        return (
                         <tr 
                           key={`${division}-${index}`}
                           className={team.Tm === "Atlanta Braves" ? "table-warning" : ""}
@@ -417,7 +423,7 @@ function HomePage() {
                           <td>{team.winPct || '---'}</td>
                           <td>{team.GB || '--'}</td>
                         </tr>
-                      ))}
+                      )})}
                     </tbody>
                   </Table>
                 </div>
