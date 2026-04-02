@@ -1,0 +1,108 @@
+/* -----------------------------------------------------------------------
+   Game Details Page
+   ----------------------------------------------------------------------- */
+
+.game-page {
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* Header */
+.game-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+.game-status-badge {
+  font-size: 0.7rem;
+  vertical-align: middle;
+  padding: 0.3em 0.6em;
+}
+
+/* Play-by-play scrollable panel */
+.pbp-scroll {
+  height: 420px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.pbp-item {
+  border-bottom: 1px solid #f0f0f0 !important;
+  transition: background 0.1s;
+  line-height: 1.3;
+}
+
+.pbp-item:hover {
+  background: #f8f9fa !important;
+}
+
+.pbp-item--selected {
+  background: #e7f3ff !important;
+  border-left: 3px solid #0d6efd !important;
+}
+
+.pbp-inning {
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  min-width: 22px;
+  line-height: 1.8;
+}
+
+.pbp-badge {
+  font-size: 0.65rem;
+  padding: 0.2em 0.4em;
+  margin-top: 2px;
+}
+
+.pbp-batter {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+.pbp-desc {
+  font-size: 0.75rem;
+  margin-top: 1px;
+  line-height: 1.3;
+}
+
+.pbp-count {
+  font-size: 0.68rem;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+/* Tables */
+.game-table {
+  font-size: 0.82rem;
+}
+
+.game-table th {
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: #495057;
+  white-space: nowrap;
+  padding: 0.4rem 0.5rem;
+}
+
+.game-table td {
+  padding: 0.35rem 0.5rem;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.game-table .fw-semibold {
+  white-space: nowrap;
+}
+
+/* Cards */
+.game-page .card {
+  border: 1px solid rgba(0,0,0,.08);
+}
+
+.game-page .card-header {
+  background: #fff;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  font-size: 0.9rem;
+}

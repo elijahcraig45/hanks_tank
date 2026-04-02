@@ -1,34 +1,74 @@
+/* -----------------------------------------------------------------------
+   Games page
+   ----------------------------------------------------------------------- */
+.games-page-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
 .game-card {
-  transition: transform 0.2s;
+  transition: transform 0.15s, box-shadow 0.15s;
+  border: 1px solid rgba(0,0,0,.08) !important;
+  background: #fff;
 }
 
 .game-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 16px rgba(0,0,0,.10) !important;
 }
 
-.team-name {
-  font-size: 1.2rem;
-  font-weight: bold;
+/* Team matchup */
+.game-team-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #212529;
+  line-height: 1.2;
 }
 
-.game-score {
-  font-size: 1.5rem;
+.game-team-record {
+  font-size: 0.75rem;
+  color: #6c757d;
 }
 
-.team-record {
-  font-size: 0.9rem;
+.game-at {
+  font-size: 0.85rem;
+  padding: 0 0.4rem;
+  margin-top: 0.1rem;
 }
 
-.game-status {
-  font-size: 1rem;
+/* Pitchers line */
+.game-pitchers {
+  font-size: 0.76rem;
+  color: #6c757d;
 }
 
-.text-muted {
-  color: #6c757d !important;
+/* Linescore table */
+.game-linescore {
+  font-size: 0.78rem;
 }
 
-.text-primary {
-  color: #007bff !important;
+.game-linescore th,
+.game-linescore td {
+  padding: 0.2rem 0.3rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.game-linescore th {
+  font-weight: 600;
+  color: #6c757d;
+}
+
+/* Status line */
+.game-status-line {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-top: 0.3rem;
+}
+
+.game-time {
+  font-weight: 600;
+  color: #495057;
 }
 
 /* -----------------------------------------------------------------------
@@ -43,30 +83,30 @@
 .prediction-label {
   font-weight: 600;
   color: #495057;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .model-version {
   font-weight: 400;
-  color: #868e96;
-  font-size: 0.72rem;
+  color: #adb5bd;
+  font-size: 0.7rem;
 }
 
 .confidence-badge {
-  font-size: 0.68rem;
-  padding: 0.2em 0.5em;
+  font-size: 0.65rem;
+  padding: 0.2em 0.45em;
 }
 
 /* Probability bar */
 .prob-bar-wrap {
   display: flex;
-  height: 22px;
+  height: 20px;
   border-radius: 4px;
   overflow: hidden;
   background: #e9ecef;
-  margin-top: 0.4rem;
+  margin-top: 0.35rem;
 }
 
 .prob-segment {
@@ -74,30 +114,18 @@
   align-items: center;
   justify-content: center;
   transition: width 0.4s ease;
-  position: relative;
 }
 
-.away-prob {
-  background: #6c757d;
-}
-
-.home-prob {
-  background: #0d6efd;
-}
-
-.prob-segment.predicted-winner.away-prob {
-  background: #198754;
-}
-
-.prob-segment.predicted-winner.home-prob {
-  background: #198754;
-}
+.away-prob { background: #6c757d; }
+.home-prob { background: #0d6efd; }
+.prob-segment.predicted-winner.away-prob { background: #198754; }
+.prob-segment.predicted-winner.home-prob { background: #198754; }
 
 .prob-label {
   color: #fff;
   font-weight: 700;
-  font-size: 0.75rem;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  font-size: 0.72rem;
+  text-shadow: 0 1px 2px rgba(0,0,0,.3);
   pointer-events: none;
 }
 
@@ -109,37 +137,22 @@
 }
 
 .signal-item {
-  padding: 0.15rem 0 0.15rem 1.1em;
+  padding: 0.1rem 0 0.1rem 1.1em;
   position: relative;
   color: #343a40;
-  line-height: 1.35;
+  font-size: 0.76rem;
+  line-height: 1.4;
 }
 
 .signal-item::before {
   position: absolute;
   left: 0;
-  top: 0.18rem;
-  font-size: 0.7rem;
+  top: 0.15rem;
+  font-size: 0.65rem;
 }
 
-.signal-positive::before {
-  content: "▲";
-  color: #198754;
-}
+.signal-positive::before { content: "▲"; color: #198754; }
+.signal-negative::before { content: "▼"; color: #dc3545; }
+.signal-neutral::before  { content: "●"; color: #adb5bd; }
 
-.signal-negative::before {
-  content: "▼";
-  color: #dc3545;
-}
-
-.signal-neutral::before {
-  content: "●";
-  color: #adb5bd;
-}
-
-.signal-empty {
-  color: #adb5bd;
-  font-style: italic;
-  font-size: 0.78rem;
-}
 
