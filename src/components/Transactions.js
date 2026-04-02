@@ -27,7 +27,7 @@ const Transactions = () => {
       setLoading(true);
       const response = await axios.get(`${API_BASE_URL}/transactions/recent`);
       if (response.data.success) {
-        setTransactions(response.data.data);
+        setTransactions(Array.isArray(response.data.data) ? response.data.data : []);
       }
     } catch (err) {
       console.error('Error fetching transactions:', err);
@@ -58,7 +58,7 @@ const Transactions = () => {
 
       const response = await axios.get(`${API_BASE_URL}/transactions`, { params });
       if (response.data.success) {
-        let data = response.data.data;
+        let data = Array.isArray(response.data.data) ? response.data.data : [];
         
         // Client-side filter for transaction type if specified
         if (filter.typeDesc) {
