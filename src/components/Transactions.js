@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Badge, Button, Form, Spinner, Alert } from 'react-bootstrap';
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com/api';
 
 const Transactions = () => {
   const [transactions, setTransactions] = useState([]);
@@ -25,7 +25,7 @@ const Transactions = () => {
   const fetchRecentTransactions = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/api/transactions/recent`);
+      const response = await axios.get(`${API_BASE_URL}/transactions/recent`);
       if (response.data.success) {
         setTransactions(response.data.data);
       }
@@ -39,7 +39,7 @@ const Transactions = () => {
 
   const fetchTeams = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/v2/teams`);
+      const response = await axios.get(`${API_BASE_URL}/v2/teams`);
       if (response.data.success) {
         setTeams(response.data.data);
       }
@@ -56,7 +56,7 @@ const Transactions = () => {
       if (filter.startDate) params.startDate = filter.startDate;
       if (filter.endDate) params.endDate = filter.endDate;
 
-      const response = await axios.get(`${API_BASE_URL}/api/transactions`, { params });
+      const response = await axios.get(`${API_BASE_URL}/transactions`, { params });
       if (response.data.success) {
         let data = response.data.data;
         

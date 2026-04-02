@@ -1,22 +1,12 @@
-/* Ensure navbar dropdowns are visible and properly styled */
+/* Navbar dark theme dropdown styles */
 .navbar .dropdown-menu {
   background-color: #212529;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-  z-index: 1050;
-  position: absolute;
-  display: none;
-}
-
-.navbar .dropdown-menu.show {
-  display: block;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25);
 }
 
 .navbar .dropdown-item {
   color: rgba(255, 255, 255, 0.85);
-  padding: 0.5rem 1rem;
-  text-decoration: none;
-  display: block;
 }
 
 .navbar .dropdown-item:hover,
