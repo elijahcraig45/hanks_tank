@@ -30,3 +30,116 @@
 .text-primary {
   color: #007bff !important;
 }
+
+/* -----------------------------------------------------------------------
+   Prediction Panel
+   ----------------------------------------------------------------------- */
+.prediction-panel {
+  border-top: 1px solid #e9ecef;
+  padding-top: 0.6rem;
+  font-size: 0.82rem;
+}
+
+.prediction-label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.model-version {
+  font-weight: 400;
+  color: #868e96;
+  font-size: 0.72rem;
+}
+
+.confidence-badge {
+  font-size: 0.68rem;
+  padding: 0.2em 0.5em;
+}
+
+/* Probability bar */
+.prob-bar-wrap {
+  display: flex;
+  height: 22px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #e9ecef;
+  margin-top: 0.4rem;
+}
+
+.prob-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.4s ease;
+  position: relative;
+}
+
+.away-prob {
+  background: #6c757d;
+}
+
+.home-prob {
+  background: #0d6efd;
+}
+
+.prob-segment.predicted-winner.away-prob {
+  background: #198754;
+}
+
+.prob-segment.predicted-winner.home-prob {
+  background: #198754;
+}
+
+.prob-label {
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  pointer-events: none;
+}
+
+/* Signal list */
+.signal-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.signal-item {
+  padding: 0.15rem 0 0.15rem 1.1em;
+  position: relative;
+  color: #343a40;
+  line-height: 1.35;
+}
+
+.signal-item::before {
+  position: absolute;
+  left: 0;
+  top: 0.18rem;
+  font-size: 0.7rem;
+}
+
+.signal-positive::before {
+  content: "▲";
+  color: #198754;
+}
+
+.signal-negative::before {
+  content: "▼";
+  color: #dc3545;
+}
+
+.signal-neutral::before {
+  content: "●";
+  color: #adb5bd;
+}
+
+.signal-empty {
+  color: #adb5bd;
+  font-style: italic;
+  font-size: 0.78rem;
+}
+

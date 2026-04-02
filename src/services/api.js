@@ -269,6 +269,21 @@ class ApiService {
   }
 
   /**
+   * Get game predictions and matchup signals for a date
+   */
+  async getPredictions(date = null) {
+    const dateParam = date || new Date().toISOString().split('T')[0];
+    return this.get(`/predictions?date=${dateParam}`, { cacheTTL: 5 });
+  }
+
+  /**
+   * Get prediction + matchup signals for a single game
+   */
+  async getGamePrediction(gamePk) {
+    return this.get(`/predictions/${gamePk}`, { cacheTTL: 5 });
+  }
+
+  /**
    * Get games for a specific date
    */
   async getGames(date = null) {
