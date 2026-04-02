@@ -206,7 +206,7 @@ class ApiService {
    * Get standings
    */
   async getStandings(year = CURRENT_SEASON) {
-    return this.get(`/standings?year=${year}`, {
+    return this.get(`/v2/teams/standings?season=${year}`, {
       cacheTTL: 10 // 10 minutes for standings (changes frequently)
     });
   }

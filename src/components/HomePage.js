@@ -85,19 +85,12 @@ function HomePage() {
           });
         }
 
-        // Handle standings data
-        console.log('Standings data received:', standingsData);
-        if (standingsData && standingsData.records) {
-          console.log('Processing standings with records');
-          const formattedStandings = formatStandingsData(standingsData.records);
-          console.log('Formatted standings:', formattedStandings);
+        // Handle standings data — hybrid endpoint returns { success, data: { standings: <MLB API response>, metadata } }
+        const standingsRaw = standingsData?.data?.standings || standingsData?.standings || standingsData;
+        if (standingsRaw && standingsRaw.records && Array.isArray(standingsRaw.records)) {
+          const formattedStandings = formatStandingsData(standingsRaw.records);
           setStandings(formattedStandings);
-        } else if (standingsData && typeof standingsData === 'object') {
-          // Data might already be formatted
-          console.log('Using standings data as-is');
-          setStandings(standingsData);
         } else {
-          console.log('No standings data available for current year');
           setStandings({});
         }
 
@@ -245,7 +238,7 @@ function HomePage() {
                 {newsLoading ? <Spinner animation="border" size="sm" /> : "Refresh"}
               </Button>
             </Card.Header>
-            <ListGroup variant="flush">
+            <ListGroup variant="flush" style={{ maxHeight: "420px", overflowY: "auto" }}>
               {[...newsData.mlb.slice(0, 3), ...newsData.braves.slice(0, 3)]
                 .slice(0, 5)
                 .map((article, index) => (
