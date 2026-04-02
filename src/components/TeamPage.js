@@ -247,13 +247,13 @@ const TeamPage = () => {
 
       <Row className="mt-4">
         <Col className="d-flex gap-3 justify-content-center">
-          <Button as={Link} to="/teams/batting" variant="primary">
+          <Button as={Link} to="/TeamBatting" variant="primary">
             View All Team Batting Stats
           </Button>
-          <Button as={Link} to="/teams/pitching" variant="outline-primary">
+          <Button as={Link} to="/TeamPitching" variant="outline-primary">
             View All Team Pitching Stats
           </Button>
-          <Button as={Link} to="/players/batting" variant="outline-secondary">
+          <Button as={Link} to="/PlayerBatting" variant="outline-secondary">
             View Player Stats
           </Button>
         </Col>

@@ -208,7 +208,7 @@ function HomePage() {
   }
 
   return (
-    <Container fluid="lg" className="py-4">
+    <Container fluid="lg" className="py-4 home-page">
       {error && (
         <Alert variant="danger" dismissible onClose={() => setError(null)}>
           {error}
@@ -219,7 +219,8 @@ function HomePage() {
       <Row className="mb-4">
         <Col>
           <div className="text-center">
-            <p className="lead text-muted">Your Ultimate MLB Analytics Dashboard</p>
+            <h1 className="home-page-title mb-1">Hank's Tank</h1>
+            <p className="text-muted mb-0">MLB Analytics Dashboard</p>
             {lastUpdated && (
               <small className="text-muted">
                 Last updated: {lastUpdated.toLocaleTimeString()}

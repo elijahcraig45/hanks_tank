@@ -1,34 +1,14 @@
-/* HomePage Enhanced Styles */
+/* HomePage Styles — scoped to .home-page wrapper */
 
-body.dark-theme {
-  background-color: #202124;
-  color: #fff;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  color: #fff;
-  font-weight: 600 !important;
-}
-
-p, ul li {
-  color: #eee;
-  font-weight: 500;
-}
-
-.card {
-  background-color: #303134;
-  border: 1px solid #404144;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+.home-page .card {
+  border: 1px solid #dee2e6;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.card:hover {
+.home-page .card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.card-body {
-  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
 
 /* News Section Enhancements */
@@ -117,46 +97,10 @@ p, ul li {
   color: #fff !important;
 }
 
-.table-dark td {
-  font-weight: 500 !important;
-}
-
-.table th {
-  font-weight: 700 !important;
-  color: #212529 !important;
-}
-
-.table td {
-  font-weight: 500 !important;
-}
-
-.card-header h5 {
-  font-weight: 700 !important;
-}
-
-.badge {
-  font-weight: 600 !important;
-}
-
-.btn {
-  font-weight: 600 !important;
-}
-
-/* Loading and content improvements */
-.text-center p {
-  font-weight: 500 !important;
-}
-
-.user-select-none {
-  font-weight: 600 !important;
-}
-.spinner-border {
-  color: #667eea;
-}
-
-.alert {
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+/* Home page title styling */
+.home-page-title {
+  font-size: 2rem;
+  font-weight: 800;
 }
 
 /* Responsive Design */
@@ -167,10 +111,6 @@ p, ul li {
   
   .news-title-small {
     font-size: 0.8rem;
-  }
-  
-  .card-body {
-    padding: 15px;
   }
   
   .standings-table {
@@ -184,54 +124,36 @@ p, ul li {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.card {
+.home-page .card {
   animation: fadeIn 0.3s ease-out;
 }
 
 /* Custom scrollbar for news sections */
-.card-body::-webkit-scrollbar {
+.home-page .card-body::-webkit-scrollbar {
   width: 6px;
 }
 
-.card-body::-webkit-scrollbar-track {
+.home-page .card-body::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 3px;
 }
 
-.card-body::-webkit-scrollbar-thumb {
+.home-page .card-body::-webkit-scrollbar-thumb {
   background: #c1c1c1;
   border-radius: 3px;
 }
 
-.card-body::-webkit-scrollbar-thumb:hover {
+.home-page .card-body::-webkit-scrollbar-thumb:hover {
   background: #a1a1a1;
 }
 
-/* Enhanced link styles */
-a {
-  transition: color 0.2s ease;
-}
-
-a:hover {
-  color: #667eea !important;
-}
-
-/* Badge enhancements */
-.badge {
-  font-size: 0.7rem;
-  padding: 0.35em 0.65em;
-}
-
-/* Display title styling */
-.display-4 {
+/* Home page title */
+.home-page-title {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  font-weight: bold;
-}
-
-.lead {
-  font-size: 1.1rem;
+  font-weight: 800;
+  font-size: 2.2rem;
 }
   

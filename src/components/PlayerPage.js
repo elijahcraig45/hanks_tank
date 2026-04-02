@@ -85,7 +85,7 @@ const PlayerPage = () => {
           {error}
           <hr />
           <p className="mb-0">
-            <Button as={Link} to="/players/batting" variant="primary" className="me-2">
+            <Button as={Link} to="/PlayerBatting" variant="primary" className="me-2">
               Browse All Players
             </Button>
             <Button as={Link} to="/" variant="outline-secondary">
@@ -213,13 +213,13 @@ const PlayerPage = () => {
 
       <Row className="mt-4">
         <Col className="d-flex gap-3 justify-content-center">
-          <Button as={Link} to="/players/batting" variant="primary">
+          <Button as={Link} to="/PlayerBatting" variant="primary">
             View All Batting Stats
           </Button>
-          <Button as={Link} to="/players/pitching" variant="outline-primary">
+          <Button as={Link} to="/PlayerPitching" variant="outline-primary">
             View All Pitching Stats
           </Button>
-          <Button as={Link} to="/teams/batting" variant="outline-secondary">
+          <Button as={Link} to="/TeamBatting" variant="outline-secondary">
             View Team Stats
           </Button>
         </Col>
