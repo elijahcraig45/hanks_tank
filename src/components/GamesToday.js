@@ -348,7 +348,7 @@ const TodaysGames = () => {
                           })}
                         {game.status.statusCode === "P" && "Pregame"}
                         {game.status.statusCode === "F" && "Final"}
-                        {inProgress && gameFeed && (
+                        {inProgress && gameFeed && gameFeed.liveData.plays.currentPlay?.about && (
                           <>
                             {gameFeed.liveData.plays.currentPlay.about.halfInning.toUpperCase()}{" "}
                             {gameFeed.liveData.plays.currentPlay.about.inning}
