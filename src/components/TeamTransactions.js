@@ -3,7 +3,7 @@ import { Container } from 'react-bootstrap';
 import axios from 'axios';
 import '../App.css';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com/api';
 
 const TeamTransactions = ({ teamId, teamName }) => {
   const [transactions, setTransactions] = useState([]);
@@ -55,7 +55,7 @@ const TeamTransactions = ({ teamId, teamName }) => {
       const { startDate, endDate } = getDateRange();
       
       const response = await axios.get(
-        `${API_BASE_URL}/api/transactions/team/${teamId}`,
+        `${API_BASE_URL}/transactions/team/${teamId}`,
         { params: { startDate, endDate } }
       );
       
@@ -75,7 +75,7 @@ const TeamTransactions = ({ teamId, teamName }) => {
       const { startDate, endDate } = getDateRange();
       
       const response = await axios.get(
-        `${API_BASE_URL}/api/transactions/team/${teamId}/breakdown`,
+        `${API_BASE_URL}/transactions/team/${teamId}/breakdown`,
         { params: { startDate, endDate } }
       );
       
