@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Container, Row, Col, Card, Alert, Spinner, Badge, Button, Tab, Tabs } from 'react-bootstrap';
+import { Container, Row, Col, Card, Alert, Spinner, Button, Tab, Tabs } from 'react-bootstrap';
+import apiService from '../services/api';
+import { SEASONS } from '../config/constants';
 
 const PlayerPage = () => {
   const { playerId } = useParams();
@@ -22,21 +24,10 @@ const PlayerPage = () => {
       
       try {
         // Fetch both batting and pitching data to see if player exists in either
-        const [battingResponse, pitchingResponse] = await Promise.all([
-          fetch(`${process.env.REACT_APP_API_URL}/player-batting?year=2024&limit=1000`),
-          fetch(`${process.env.REACT_APP_API_URL}/player-pitching?year=2024&limit=1000`)
+        const [allBattingData, allPitchingData] = await Promise.all([
+          apiService.getPlayerBatting(SEASONS.CURRENT, { limit: 500 }),
+          apiService.getPlayerPitching(SEASONS.CURRENT, { limit: 500 })
         ]);
-
-        if (!battingResponse.ok || !pitchingResponse.ok) {
-          throw new Error('Failed to fetch player data');
-        }
-
-        const allBattingData = await battingResponse.json();
-        const allPitchingData = await pitchingResponse.json();
-
-        console.log(`🔍 PlayerPage: Looking for player ID ${playerId}`);
-        console.log(`📊 Available batting players:`, allBattingData.slice(0, 3).map(p => ({ name: p.Name, id: p.playerId })));
-        console.log(`⚾ Available pitching players:`, allPitchingData.slice(0, 3).map(p => ({ name: p.Name, id: p.playerId })));
 
         // Find player in both datasets
         const playerBatting = allBattingData.find(player => 
@@ -47,14 +38,11 @@ const PlayerPage = () => {
           player.playerId && player.playerId.toString() === playerId
         );
 
-        console.log(`🏏 Found batting data:`, playerBatting ? playerBatting.Name : 'None');
-        console.log(`⚾ Found pitching data:`, playerPitching ? playerPitching.Name : 'None');
-
         setBattingData(playerBatting);
         setPitchingData(playerPitching);
 
         if (!playerBatting && !playerPitching) {
-          setError(`No player found with ID: ${playerId}. Check the browser console for available player IDs.`);
+          setError(`No player found with ID: ${playerId}.`);
         }
 
       } catch (error) {
@@ -104,14 +92,17 @@ const PlayerPage = () => {
     <Container className="py-4">
       <Row className="mb-4">
         <Col>
-          <div className="d-flex align-items-center mb-3">
-            <Badge bg="primary" className="me-3 fs-5 p-3">
-              {team}
-            </Badge>
+          <div className="d-flex align-items-center gap-3 mb-3">
+            <div
+              className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold fs-5"
+              style={{ width: 60, height: 60, background: '#1a1a2e', flexShrink: 0 }}
+            >
+              {playerName.split(' ').map(n => n[0]).join('').slice(0, 2)}
+            </div>
             <div>
-              <h1 className="display-6 mb-0">{playerName}</h1>
+              <h1 className="display-6 mb-1 fw-bold">{playerName}</h1>
               <p className="text-muted mb-0">
-                Player ID: {playerId} • 2024 Season Stats
+                {team} • {SEASONS.CURRENT} Season Stats
               </p>
             </div>
           </div>
@@ -121,85 +112,108 @@ const PlayerPage = () => {
       <Tabs defaultActiveKey={battingData ? "batting" : "pitching"} className="mb-4">
         {battingData && (
           <Tab eventKey="batting" title="🏏 Batting Stats">
-            <Card>
-              <Card.Header>
-                <h5 className="mb-0">Batting Statistics</h5>
-              </Card.Header>
-              <Card.Body>
-                <Row>
-                  <Col md={6}>
-                    <div className="mb-3">
-                      <h6 className="text-muted">Basic Stats</h6>
-                      <p><strong>Games:</strong> {battingData.G}</p>
-                      <p><strong>At Bats:</strong> {battingData.AB}</p>
-                      <p><strong>Plate Appearances:</strong> {battingData.PA}</p>
-                      <p><strong>Runs:</strong> {battingData.R}</p>
-                      <p><strong>Hits:</strong> {battingData.H}</p>
-                      <p><strong>Doubles:</strong> {battingData['2B']}</p>
-                      <p><strong>Triples:</strong> {battingData['3B']}</p>
-                      <p><strong>Home Runs:</strong> {battingData.HR}</p>
-                      <p><strong>RBIs:</strong> {battingData.RBI}</p>
-                    </div>
-                  </Col>
-                  <Col md={6}>
-                    <div className="mb-3">
-                      <h6 className="text-muted">Advanced Stats</h6>
-                      <p><strong>Batting Average:</strong> {battingData.AVG}</p>
-                      <p><strong>On-Base %:</strong> {battingData.OBP}</p>
-                      <p><strong>Slugging %:</strong> {battingData.SLG}</p>
-                      <p><strong>OPS:</strong> {battingData.OPS}</p>
-                      <p><strong>Walks:</strong> {battingData.BB}</p>
-                      <p><strong>Strikeouts:</strong> {battingData.SO}</p>
-                      <p><strong>Stolen Bases:</strong> {battingData.SB}</p>
-                      <p><strong>Caught Stealing:</strong> {battingData.CS}</p>
-                      <p><strong>BABIP:</strong> {battingData.BABIP}</p>
-                    </div>
-                  </Col>
-                </Row>
-              </Card.Body>
-            </Card>
+            <Row className="g-3 mb-3">
+              {[
+                { label: 'AVG', value: battingData.AVG },
+                { label: 'OBP', value: battingData.OBP },
+                { label: 'SLG', value: battingData.SLG },
+                { label: 'OPS', value: battingData.OPS },
+              ].map(s => (
+                <Col xs={6} md={3} key={s.label}>
+                  <Card className="text-center h-100 border-0 shadow-sm">
+                    <Card.Body className="py-3">
+                      <div className="fs-4 fw-bold text-primary">{s.value ?? '—'}</div>
+                      <div className="text-muted small">{s.label}</div>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+            <Row className="g-3">
+              {[
+                { label: 'Games', value: battingData.G },
+                { label: 'PA', value: battingData.PA },
+                { label: 'At Bats', value: battingData.AB },
+                { label: 'Runs', value: battingData.R },
+                { label: 'Hits', value: battingData.H },
+                { label: '2B', value: battingData['2B'] },
+                { label: '3B', value: battingData['3B'] },
+                { label: 'HR', value: battingData.HR },
+                { label: 'RBI', value: battingData.RBI },
+                { label: 'SB', value: battingData.SB },
+                { label: 'BB', value: battingData.BB },
+                { label: 'SO', value: battingData.SO },
+                { label: 'BABIP', value: battingData.BABIP },
+                { label: 'TB', value: battingData.TB },
+                { label: 'HBP', value: battingData.HBP },
+                { label: 'CS', value: battingData.CS },
+              ].map(s => (
+                <Col xs={6} sm={4} md={3} lg={2} key={s.label}>
+                  <Card className="text-center h-100 border-0 bg-light">
+                    <Card.Body className="py-2">
+                      <div className="fw-semibold">{s.value ?? '—'}</div>
+                      <div className="text-muted" style={{ fontSize: '0.75rem' }}>{s.label}</div>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
           </Tab>
         )}
 
         {pitchingData && (
           <Tab eventKey="pitching" title="⚾ Pitching Stats">
-            <Card>
-              <Card.Header>
-                <h5 className="mb-0">Pitching Statistics</h5>
-              </Card.Header>
-              <Card.Body>
-                <Row>
-                  <Col md={6}>
-                    <div className="mb-3">
-                      <h6 className="text-muted">Basic Stats</h6>
-                      <p><strong>Games:</strong> {pitchingData.G}</p>
-                      <p><strong>Games Started:</strong> {pitchingData.GS}</p>
-                      <p><strong>Wins:</strong> {pitchingData.W}</p>
-                      <p><strong>Losses:</strong> {pitchingData.L}</p>
-                      <p><strong>Saves:</strong> {pitchingData.SV}</p>
-                      <p><strong>Innings Pitched:</strong> {pitchingData.IP}</p>
-                      <p><strong>Hits Allowed:</strong> {pitchingData.H}</p>
-                      <p><strong>Runs Allowed:</strong> {pitchingData.R}</p>
-                      <p><strong>Earned Runs:</strong> {pitchingData.ER}</p>
-                    </div>
-                  </Col>
-                  <Col md={6}>
-                    <div className="mb-3">
-                      <h6 className="text-muted">Advanced Stats</h6>
-                      <p><strong>ERA:</strong> {pitchingData.ERA}</p>
-                      <p><strong>WHIP:</strong> {pitchingData.WHIP}</p>
-                      <p><strong>Strikeouts:</strong> {pitchingData.SO}</p>
-                      <p><strong>Walks:</strong> {pitchingData.BB}</p>
-                      <p><strong>Home Runs Allowed:</strong> {pitchingData.HR}</p>
-                      <p><strong>Hit Batters:</strong> {pitchingData.HBP}</p>
-                      <p><strong>Wild Pitches:</strong> {pitchingData.WP}</p>
-                      <p><strong>Balks:</strong> {pitchingData.BK}</p>
-                      <p><strong>Batters Faced:</strong> {pitchingData.BF}</p>
-                    </div>
-                  </Col>
+            {pitchingData ? (
+              <>
+                <Row className="g-3 mb-3">
+                  {[
+                    { label: 'ERA', value: pitchingData.ERA },
+                    { label: 'WHIP', value: pitchingData.WHIP },
+                    { label: 'IP', value: pitchingData.IP },
+                    { label: 'K/9', value: pitchingData.SO9 ?? (pitchingData.SO && pitchingData.IP ? (pitchingData.SO / parseFloat(pitchingData.IP) * 9).toFixed(2) : null) },
+                  ].map(s => (
+                    <Col xs={6} md={3} key={s.label}>
+                      <Card className="text-center h-100 border-0 shadow-sm">
+                        <Card.Body className="py-3">
+                          <div className="fs-4 fw-bold text-danger">{s.value ?? '—'}</div>
+                          <div className="text-muted small">{s.label}</div>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  ))}
                 </Row>
-              </Card.Body>
-            </Card>
+                <Row className="g-3">
+                  {[
+                    { label: 'Games', value: pitchingData.G },
+                    { label: 'GS', value: pitchingData.GS },
+                    { label: 'Wins', value: pitchingData.W },
+                    { label: 'Losses', value: pitchingData.L },
+                    { label: 'Saves', value: pitchingData.SV },
+                    { label: 'Strikeouts', value: pitchingData.SO },
+                    { label: 'Walks', value: pitchingData.BB },
+                    { label: 'Hits', value: pitchingData.H },
+                    { label: 'Runs', value: pitchingData.R },
+                    { label: 'Earned Runs', value: pitchingData.ER },
+                    { label: 'HR Allowed', value: pitchingData.HR },
+                    { label: 'HBP', value: pitchingData.HBP },
+                    { label: 'Wild Pitches', value: pitchingData.WP },
+                    { label: 'Balks', value: pitchingData.BK },
+                    { label: 'BF', value: pitchingData.BF },
+                  ].map(s => (
+                    <Col xs={6} sm={4} md={3} lg={2} key={s.label}>
+                      <Card className="text-center h-100 border-0 bg-light">
+                        <Card.Body className="py-2">
+                          <div className="fw-semibold">{s.value ?? '—'}</div>
+                          <div className="text-muted" style={{ fontSize: '0.75rem' }}>{s.label}</div>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  ))}
+                </Row>
+              </>
+            ) : (
+              <Alert variant="info">No pitching stats found for this player.</Alert>
+            )}
           </Tab>
         )}
       </Tabs>
@@ -207,7 +221,7 @@ const PlayerPage = () => {
       {!battingData && !pitchingData && (
         <Alert variant="info">
           <Alert.Heading>No Statistics Available</Alert.Heading>
-          <p>This player does not have batting or pitching statistics for the 2024 season.</p>
+          <p>This player does not have batting or pitching statistics for the {SEASONS.CURRENT} season.</p>
         </Alert>
       )}
 

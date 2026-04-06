@@ -38,7 +38,9 @@ const PlayerComparison = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [viewMode, setViewMode] = useState('radar'); // 'radar', 'percentile', 'headtohead'
+  // eslint-disable-next-line no-unused-vars
   const [selectedStat, setSelectedStat] = useState('OPS');
 
   const battingStats = ['AVG', 'OBP', 'SLG', 'OPS', 'HR', 'RBI', 'R', 'SB', 'BB', 'SO'];
@@ -47,9 +49,9 @@ const PlayerComparison = () => {
 
   const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#a4de6c'];
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchPlayers();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedYear, statType]);
 
   const fetchPlayers = async () => {
@@ -98,6 +100,7 @@ const PlayerComparison = () => {
     })
     .slice(0, 10);
 
+  // eslint-disable-next-line no-unused-vars
   const calculatePercentile = (value, stat) => {
     if (!allPlayers.length || value === null || value === undefined) return 0;
     

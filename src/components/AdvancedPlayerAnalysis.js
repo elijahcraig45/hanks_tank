@@ -61,9 +61,9 @@ const AdvancedPlayerAnalysis = () => {
 
   const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchPlayers();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedYear, statType]);
 
   const fetchPlayers = async () => {
@@ -314,7 +314,6 @@ const AdvancedPlayerAnalysis = () => {
   // Render percentile view
   const renderPercentileView = () => {
     const playerData = getPercentileData();
-    const stats = statCategories[selectedCategory] || [];
 
     return (
       <Card className="mb-4">

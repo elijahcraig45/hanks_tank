@@ -3,7 +3,7 @@
  * Handles all backend communication with error handling, retries, and caching
  */
 
-import { SEASONS, API_CONFIG } from '../config/constants';
+import { SEASONS } from '../config/constants';
 
 // Construct full API URL - add /api if not already present
 const BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com';

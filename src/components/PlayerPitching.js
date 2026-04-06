@@ -145,9 +145,9 @@ const PlayerPitching = () => {
     fetchAvailableStats();
   }, []);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchPlayerData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedYear]);
 
   useEffect(() => {
