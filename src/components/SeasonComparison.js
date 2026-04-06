@@ -124,9 +124,9 @@ const SeasonComparison = () => {
     }
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchComparisonData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSeasons, comparisonType]);
 
   const renderLeagueComparison = () => {

@@ -1,11 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import { Container } from 'react-bootstrap';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com/api';
 
-const TeamTransactions = ({ teamId, teamName }) => {
+// Map of team abbreviations to MLB team IDs and full names
+const TEAM_MAP = {
+  'ATL': { id: 144, name: 'Atlanta Braves' },
+  'NYY': { id: 147, name: 'New York Yankees' },
+  'LAD': { id: 119, name: 'Los Angeles Dodgers' },
+  'HOU': { id: 117, name: 'Houston Astros' },
+  'TB':  { id: 139, name: 'Tampa Bay Rays' },
+  'SF':  { id: 137, name: 'San Francisco Giants' },
+  'TOR': { id: 141, name: 'Toronto Blue Jays' },
+  'SD':  { id: 135, name: 'San Diego Padres' },
+  'CHC': { id: 112, name: 'Chicago Cubs' },
+  'PHI': { id: 143, name: 'Philadelphia Phillies' },
+  'BOS': { id: 111, name: 'Boston Red Sox' },
+  'WSN': { id: 120, name: 'Washington Nationals' },
+  'MIA': { id: 146, name: 'Miami Marlins' },
+  'MIL': { id: 158, name: 'Milwaukee Brewers' },
+  'STL': { id: 138, name: 'St. Louis Cardinals' },
+  'CIN': { id: 113, name: 'Cincinnati Reds' },
+  'PIT': { id: 134, name: 'Pittsburgh Pirates' },
+  'TEX': { id: 140, name: 'Texas Rangers' },
+  'LAA': { id: 108, name: 'Los Angeles Angels' },
+  'OAK': { id: 133, name: 'Oakland Athletics' },
+  'SEA': { id: 136, name: 'Seattle Mariners' },
+  'MIN': { id: 142, name: 'Minnesota Twins' },
+  'CWS': { id: 145, name: 'Chicago White Sox' },
+  'DET': { id: 116, name: 'Detroit Tigers' },
+  'KC':  { id: 118, name: 'Kansas City Royals' },
+  'CLE': { id: 114, name: 'Cleveland Guardians' },
+  'BAL': { id: 110, name: 'Baltimore Orioles' },
+  'COL': { id: 115, name: 'Colorado Rockies' },
+  'ARI': { id: 109, name: 'Arizona Diamondbacks' },
+  'NYM': { id: 121, name: 'New York Mets' },
+};
+
+const TeamTransactions = ({ teamId: teamIdProp, teamName: teamNameProp }) => {
+  const { teamAbbr } = useParams();
+
+  // Resolve team info from URL params or component props
+  const resolvedTeam = teamAbbr ? TEAM_MAP[teamAbbr.toUpperCase()] : null;
+  const teamId = teamIdProp ?? resolvedTeam?.id;
+  const teamName = teamNameProp ?? resolvedTeam?.name ?? teamAbbr;
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,6 +58,7 @@ const TeamTransactions = ({ teamId, teamName }) => {
       fetchTeamTransactions();
       fetchTransactionBreakdown();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [teamId, dateRange]);
 
   const getDateRange = () => {

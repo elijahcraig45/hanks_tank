@@ -45,9 +45,9 @@ const TeamComparison = () => {
 
   const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#a4de6c', '#8dd1e1'];
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchTeams();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedYear, statType]);
 
   const fetchTeams = async () => {

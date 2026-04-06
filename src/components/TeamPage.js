@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Container, Row, Col, Alert, Card, Badge, Button, Table, Spinner, Tab, Tabs } from 'react-bootstrap';
+import { Container, Row, Col, Alert, Card, Button, Spinner, Tab, Tabs } from 'react-bootstrap';
+import apiService from '../services/api';
+import { SEASONS } from '../config/constants';
 
 const TeamPage = () => {
   const { teamAbbr } = useParams();
@@ -11,36 +13,36 @@ const TeamPage = () => {
 
   // Team information mapping
   const teamInfo = {
-    'ATL': { name: 'Atlanta Braves', color: '#CE1141', city: 'Atlanta', founded: 1871 },
-    'NYY': { name: 'New York Yankees', color: '#132448', city: 'New York', founded: 1903 },
-    'LAD': { name: 'Los Angeles Dodgers', color: '#005A9C', city: 'Los Angeles', founded: 1883 },
-    'HOU': { name: 'Houston Astros', color: '#002D62', city: 'Houston', founded: 1962 },
-    'TB': { name: 'Tampa Bay Rays', color: '#8FBCE6', city: 'Tampa Bay', founded: 1998 },
-    'SF': { name: 'San Francisco Giants', color: '#FD5A1E', city: 'San Francisco', founded: 1883 },
-    'TOR': { name: 'Toronto Blue Jays', color: '#134A8E', city: 'Toronto', founded: 1977 },
-    'SD': { name: 'San Diego Padres', color: '#2F241D', city: 'San Diego', founded: 1969 },
-    'CHC': { name: 'Chicago Cubs', color: '#0E3386', city: 'Chicago', founded: 1876 },
-    'PHI': { name: 'Philadelphia Phillies', color: '#E81828', city: 'Philadelphia', founded: 1883 },
-    'BOS': { name: 'Boston Red Sox', color: '#BD3039', city: 'Boston', founded: 1901 },
-    'WSN': { name: 'Washington Nationals', color: '#AB0003', city: 'Washington', founded: 1969 },
-    'MIA': { name: 'Miami Marlins', color: '#00A3E0', city: 'Miami', founded: 1993 },
-    'MIL': { name: 'Milwaukee Brewers', color: '#FFC52F', city: 'Milwaukee', founded: 1969 },
-    'STL': { name: 'St. Louis Cardinals', color: '#C41E3A', city: 'St. Louis', founded: 1882 },
-    'CIN': { name: 'Cincinnati Reds', color: '#C6011F', city: 'Cincinnati', founded: 1881 },
-    'PIT': { name: 'Pittsburgh Pirates', color: '#FDB827', city: 'Pittsburgh', founded: 1881 },
-    'TEX': { name: 'Texas Rangers', color: '#C0111F', city: 'Arlington', founded: 1961 },
-    'LAA': { name: 'Los Angeles Angels', color: '#BA0021', city: 'Anaheim', founded: 1961 },
-    'OAK': { name: 'Oakland Athletics', color: '#003831', city: 'Oakland', founded: 1901 },
-    'SEA': { name: 'Seattle Mariners', color: '#0C2C56', city: 'Seattle', founded: 1977 },
-    'MIN': { name: 'Minnesota Twins', color: '#002B5C', city: 'Minneapolis', founded: 1901 },
-    'CWS': { name: 'Chicago White Sox', color: '#27251F', city: 'Chicago', founded: 1901 },
-    'DET': { name: 'Detroit Tigers', color: '#0C2340', city: 'Detroit', founded: 1901 },
-    'KC': { name: 'Kansas City Royals', color: '#004687', city: 'Kansas City', founded: 1969 },
-    'CLE': { name: 'Cleveland Guardians', color: '#E31937', city: 'Cleveland', founded: 1901 },
-    'BAL': { name: 'Baltimore Orioles', color: '#DF4601', city: 'Baltimore', founded: 1901 },
-    'COL': { name: 'Colorado Rockies', color: '#333366', city: 'Denver', founded: 1993 },
-    'ARI': { name: 'Arizona Diamondbacks', color: '#A71930', city: 'Phoenix', founded: 1998 },
-    'NYM': { name: 'New York Mets', color: '#FF5910', city: 'New York', founded: 1962 }
+    'ATL': { id: 144, name: 'Atlanta Braves', color: '#CE1141', city: 'Atlanta', founded: 1871 },
+    'NYY': { id: 147, name: 'New York Yankees', color: '#132448', city: 'New York', founded: 1903 },
+    'LAD': { id: 119, name: 'Los Angeles Dodgers', color: '#005A9C', city: 'Los Angeles', founded: 1883 },
+    'HOU': { id: 117, name: 'Houston Astros', color: '#002D62', city: 'Houston', founded: 1962 },
+    'TB':  { id: 139, name: 'Tampa Bay Rays', color: '#8FBCE6', city: 'Tampa Bay', founded: 1998 },
+    'SF':  { id: 137, name: 'San Francisco Giants', color: '#FD5A1E', city: 'San Francisco', founded: 1883 },
+    'TOR': { id: 141, name: 'Toronto Blue Jays', color: '#134A8E', city: 'Toronto', founded: 1977 },
+    'SD':  { id: 135, name: 'San Diego Padres', color: '#2F241D', city: 'San Diego', founded: 1969 },
+    'CHC': { id: 112, name: 'Chicago Cubs', color: '#0E3386', city: 'Chicago', founded: 1876 },
+    'PHI': { id: 143, name: 'Philadelphia Phillies', color: '#E81828', city: 'Philadelphia', founded: 1883 },
+    'BOS': { id: 111, name: 'Boston Red Sox', color: '#BD3039', city: 'Boston', founded: 1901 },
+    'WSN': { id: 120, name: 'Washington Nationals', color: '#AB0003', city: 'Washington', founded: 1969 },
+    'MIA': { id: 146, name: 'Miami Marlins', color: '#00A3E0', city: 'Miami', founded: 1993 },
+    'MIL': { id: 158, name: 'Milwaukee Brewers', color: '#FFC52F', city: 'Milwaukee', founded: 1969 },
+    'STL': { id: 138, name: 'St. Louis Cardinals', color: '#C41E3A', city: 'St. Louis', founded: 1882 },
+    'CIN': { id: 113, name: 'Cincinnati Reds', color: '#C6011F', city: 'Cincinnati', founded: 1881 },
+    'PIT': { id: 134, name: 'Pittsburgh Pirates', color: '#FDB827', city: 'Pittsburgh', founded: 1881 },
+    'TEX': { id: 140, name: 'Texas Rangers', color: '#C0111F', city: 'Arlington', founded: 1961 },
+    'LAA': { id: 108, name: 'Los Angeles Angels', color: '#BA0021', city: 'Anaheim', founded: 1961 },
+    'OAK': { id: 133, name: 'Oakland Athletics', color: '#003831', city: 'Oakland', founded: 1901 },
+    'SEA': { id: 136, name: 'Seattle Mariners', color: '#0C2C56', city: 'Seattle', founded: 1977 },
+    'MIN': { id: 142, name: 'Minnesota Twins', color: '#002B5C', city: 'Minneapolis', founded: 1901 },
+    'CWS': { id: 145, name: 'Chicago White Sox', color: '#27251F', city: 'Chicago', founded: 1901 },
+    'DET': { id: 116, name: 'Detroit Tigers', color: '#0C2340', city: 'Detroit', founded: 1901 },
+    'KC':  { id: 118, name: 'Kansas City Royals', color: '#004687', city: 'Kansas City', founded: 1969 },
+    'CLE': { id: 114, name: 'Cleveland Guardians', color: '#E31937', city: 'Cleveland', founded: 1901 },
+    'BAL': { id: 110, name: 'Baltimore Orioles', color: '#DF4601', city: 'Baltimore', founded: 1901 },
+    'COL': { id: 115, name: 'Colorado Rockies', color: '#333366', city: 'Denver', founded: 1993 },
+    'ARI': { id: 109, name: 'Arizona Diamondbacks', color: '#A71930', city: 'Phoenix', founded: 1998 },
+    'NYM': { id: 121, name: 'New York Mets', color: '#FF5910', city: 'New York', founded: 1962 }
   };
 
   useEffect(() => {
@@ -52,17 +54,10 @@ const TeamPage = () => {
       
       try {
         // Fetch both batting and pitching data for the team
-        const [battingResponse, pitchingResponse] = await Promise.all([
-          fetch(`${process.env.REACT_APP_API_URL}/team-batting?year=2024&limit=30`),
-          fetch(`${process.env.REACT_APP_API_URL}/team-pitching?year=2024&limit=30`)
+        const [battingData, pitchingData] = await Promise.all([
+          apiService.getTeamBatting(SEASONS.CURRENT, { limit: 30 }),
+          apiService.getTeamPitching(SEASONS.CURRENT, { limit: 30 })
         ]);
-
-        if (!battingResponse.ok || !pitchingResponse.ok) {
-          throw new Error('Failed to fetch team data');
-        }
-
-        const battingData = await battingResponse.json();
-        const pitchingData = await pitchingResponse.json();
 
         // Find the specific team data
         const teamBatting = battingData.find(team => 
@@ -157,18 +152,19 @@ const TeamPage = () => {
     <Container className="py-4">
       <Row className="mb-4">
         <Col>
-          <div className="d-flex align-items-center mb-3">
-            <Badge 
-              bg="primary" 
-              className="me-3 fs-4 p-3"
-              style={{ backgroundColor: team?.color || '#007bff' }}
-            >
-              {teamAbbr?.toUpperCase()}
-            </Badge>
+          <div className="d-flex align-items-center gap-3 mb-3">
+            {team?.id && (
+              <img
+                src={`https://www.mlbstatic.com/team-logos/${team.id}.svg`}
+                alt={team.name}
+                style={{ width: 72, height: 72, objectFit: 'contain' }}
+                onError={e => { e.target.style.display = 'none'; }}
+              />
+            )}
             <div>
-              <h1 className="display-6 mb-0">{team?.name || `${teamAbbr} Team`}</h1>
+              <h1 className="display-6 mb-1 fw-bold">{team?.name || `${teamAbbr} Team`}</h1>
               <p className="text-muted mb-0">
-                {team?.city} • Founded {team?.founded} • 2024 Season Stats
+                {team?.city} • Est. {team?.founded} • {SEASONS.CURRENT} Season Stats
               </p>
             </div>
           </div>
@@ -177,71 +173,105 @@ const TeamPage = () => {
 
       <Tabs defaultActiveKey="batting" className="mb-4">
         <Tab eventKey="batting" title="🏏 Batting Stats">
-          <Card>
-            <Card.Header>
-              <h5 className="mb-0">Team Batting Statistics</h5>
-            </Card.Header>
-            <Card.Body>
-              {teamBattingData ? (
-                <Table responsive striped>
-                  <tbody>
-                    <tr><td><strong>Games Played</strong></td><td>{teamBattingData.G}</td></tr>
-                    <tr><td><strong>At Bats</strong></td><td>{teamBattingData.AB}</td></tr>
-                    <tr><td><strong>Runs</strong></td><td>{teamBattingData.R}</td></tr>
-                    <tr><td><strong>Hits</strong></td><td>{teamBattingData.H}</td></tr>
-                    <tr><td><strong>Doubles</strong></td><td>{teamBattingData['2B']}</td></tr>
-                    <tr><td><strong>Triples</strong></td><td>{teamBattingData['3B']}</td></tr>
-                    <tr><td><strong>Home Runs</strong></td><td>{teamBattingData.HR}</td></tr>
-                    <tr><td><strong>RBIs</strong></td><td>{teamBattingData.RBI}</td></tr>
-                    <tr><td><strong>Stolen Bases</strong></td><td>{teamBattingData.SB}</td></tr>
-                    <tr><td><strong>Walks</strong></td><td>{teamBattingData.BB}</td></tr>
-                    <tr><td><strong>Strikeouts</strong></td><td>{teamBattingData.SO}</td></tr>
-                    <tr><td><strong>Batting Average</strong></td><td>{teamBattingData.AVG}</td></tr>
-                    <tr><td><strong>On-Base %</strong></td><td>{teamBattingData.OBP}</td></tr>
-                    <tr><td><strong>Slugging %</strong></td><td>{teamBattingData.SLG}</td></tr>
-                    <tr><td><strong>OPS</strong></td><td>{teamBattingData.OPS}</td></tr>
-                  </tbody>
-                </Table>
-              ) : (
-                <Alert variant="warning">No batting data available for this team.</Alert>
-              )}
-            </Card.Body>
-          </Card>
+          {teamBattingData ? (
+            <>
+              <Row className="g-3 mb-3">
+                {[
+                  { label: 'AVG', value: teamBattingData.AVG },
+                  { label: 'OBP', value: teamBattingData.OBP },
+                  { label: 'SLG', value: teamBattingData.SLG },
+                  { label: 'OPS', value: teamBattingData.OPS },
+                ].map(s => (
+                  <Col xs={6} md={3} key={s.label}>
+                    <Card className="text-center h-100 border-0 shadow-sm">
+                      <Card.Body className="py-3">
+                        <div className="fs-4 fw-bold" style={{ color: team?.color || '#007bff' }}>{s.value ?? '—'}</div>
+                        <div className="text-muted small">{s.label}</div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+              <Row className="g-3">
+                {[
+                  { label: 'Games', value: teamBattingData.G },
+                  { label: 'At Bats', value: teamBattingData.AB },
+                  { label: 'Runs', value: teamBattingData.R },
+                  { label: 'Hits', value: teamBattingData.H },
+                  { label: 'Doubles', value: teamBattingData['2B'] },
+                  { label: 'Triples', value: teamBattingData['3B'] },
+                  { label: 'Home Runs', value: teamBattingData.HR },
+                  { label: 'RBIs', value: teamBattingData.RBI },
+                  { label: 'Stolen Bases', value: teamBattingData.SB },
+                  { label: 'Walks', value: teamBattingData.BB },
+                  { label: 'Strikeouts', value: teamBattingData.SO },
+                  { label: 'Total Bases', value: teamBattingData.TB },
+                ].map(s => (
+                  <Col xs={6} md={3} lg={2} key={s.label}>
+                    <Card className="text-center h-100 border-0 bg-light">
+                      <Card.Body className="py-2">
+                        <div className="fw-semibold">{s.value ?? '—'}</div>
+                        <div className="text-muted" style={{ fontSize: '0.75rem' }}>{s.label}</div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            </>
+          ) : (
+            <Alert variant="warning">No batting data available for this team.</Alert>
+          )}
         </Tab>
 
         <Tab eventKey="pitching" title="⚾ Pitching Stats">
-          <Card>
-            <Card.Header>
-              <h5 className="mb-0">Team Pitching Statistics</h5>
-            </Card.Header>
-            <Card.Body>
-              {teamPitchingData ? (
-                <Table responsive striped>
-                  <tbody>
-                    <tr><td><strong>Games</strong></td><td>{teamPitchingData.G}</td></tr>
-                    <tr><td><strong>Games Started</strong></td><td>{teamPitchingData.GS}</td></tr>
-                    <tr><td><strong>Wins</strong></td><td>{teamPitchingData.W}</td></tr>
-                    <tr><td><strong>Losses</strong></td><td>{teamPitchingData.L}</td></tr>
-                    <tr><td><strong>Win %</strong></td><td>{teamPitchingData['W-L%']}</td></tr>
-                    <tr><td><strong>ERA</strong></td><td>{teamPitchingData.ERA}</td></tr>
-                    <tr><td><strong>Innings Pitched</strong></td><td>{teamPitchingData.IP}</td></tr>
-                    <tr><td><strong>Hits Allowed</strong></td><td>{teamPitchingData.H}</td></tr>
-                    <tr><td><strong>Runs Allowed</strong></td><td>{teamPitchingData.R}</td></tr>
-                    <tr><td><strong>Earned Runs</strong></td><td>{teamPitchingData.ER}</td></tr>
-                    <tr><td><strong>Home Runs Allowed</strong></td><td>{teamPitchingData.HR}</td></tr>
-                    <tr><td><strong>Walks</strong></td><td>{teamPitchingData.BB}</td></tr>
-                    <tr><td><strong>Strikeouts</strong></td><td>{teamPitchingData.SO}</td></tr>
-                    <tr><td><strong>WHIP</strong></td><td>{teamPitchingData.WHIP}</td></tr>
-                    <tr><td><strong>Saves</strong></td><td>{teamPitchingData.SV}</td></tr>
-                    <tr><td><strong>Complete Games</strong></td><td>{teamPitchingData.CG}</td></tr>
-                    <tr><td><strong>Shutouts</strong></td><td>{teamPitchingData.SHO}</td></tr>
-                  </tbody>
-                </Table>
-              ) : (
-                <Alert variant="warning">No pitching data available for this team.</Alert>
-              )}
-            </Card.Body>
-          </Card>
+          {teamPitchingData ? (
+            <>
+              <Row className="g-3 mb-3">
+                {[
+                  { label: 'ERA', value: teamPitchingData.ERA },
+                  { label: 'WHIP', value: teamPitchingData.WHIP },
+                  { label: 'W-L%', value: teamPitchingData['W-L%'] },
+                  { label: 'IP', value: teamPitchingData.IP },
+                ].map(s => (
+                  <Col xs={6} md={3} key={s.label}>
+                    <Card className="text-center h-100 border-0 shadow-sm">
+                      <Card.Body className="py-3">
+                        <div className="fs-4 fw-bold" style={{ color: team?.color || '#007bff' }}>{s.value ?? '—'}</div>
+                        <div className="text-muted small">{s.label}</div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+              <Row className="g-3">
+                {[
+                  { label: 'Games', value: teamPitchingData.G },
+                  { label: 'GS', value: teamPitchingData.GS },
+                  { label: 'Wins', value: teamPitchingData.W },
+                  { label: 'Losses', value: teamPitchingData.L },
+                  { label: 'Saves', value: teamPitchingData.SV },
+                  { label: 'Strikeouts', value: teamPitchingData.SO },
+                  { label: 'Walks', value: teamPitchingData.BB },
+                  { label: 'HR Allowed', value: teamPitchingData.HR },
+                  { label: 'Hits Allowed', value: teamPitchingData.H },
+                  { label: 'Earned Runs', value: teamPitchingData.ER },
+                  { label: 'CG', value: teamPitchingData.CG },
+                  { label: 'SHO', value: teamPitchingData.SHO },
+                ].map(s => (
+                  <Col xs={6} md={3} lg={2} key={s.label}>
+                    <Card className="text-center h-100 border-0 bg-light">
+                      <Card.Body className="py-2">
+                        <div className="fw-semibold">{s.value ?? '—'}</div>
+                        <div className="text-muted" style={{ fontSize: '0.75rem' }}>{s.label}</div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            </>
+          ) : (
+            <Alert variant="warning">No pitching data available for this team.</Alert>
+          )}
         </Tab>
       </Tabs>
 

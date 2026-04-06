@@ -34,8 +34,6 @@ const NEUTRAL_VELO_NORM = 0.0;
 const fmt = (v, digits = 3) =>
   v != null ? `.${String(Math.round(v * 1000)).padStart(3, "0")}` : "—";
 
-const fmtPct = (v) => (v != null ? `${(v * 100).toFixed(1)}%` : "—");
-
 const confidenceColor = (tier) => {
   if (!tier) return "secondary";
   const t = tier.toUpperCase();
@@ -49,11 +47,7 @@ function generateWhyText(pred) {
   const reasons = [];
   const homeTeam = pred.home_team_name?.split(" ").slice(-1)[0] || "Home";
   const awayTeam = pred.away_team_name?.split(" ").slice(-1)[0] || "Away";
-  const winner = pred.predicted_winner === pred.home_team_name ? homeTeam : awayTeam;
   const isHomeWinner = pred.predicted_winner === pred.home_team_name;
-  const winProb = isHomeWinner
-    ? Math.round((pred.home_win_probability || 0) * 100)
-    : Math.round((pred.away_win_probability || 0) * 100);
 
   // Base: lineup / no lineup
   if (!pred.lineup_confirmed) {
@@ -72,7 +66,7 @@ function generateWhyText(pred) {
     const favored = adv > 0 ? homeTeam : awayTeam;
     reasons.push({
       icon: adv > 0 ? "⚾" : "⚾",
-      type: adv > 0 === isHomeWinner ? "positive" : "negative",
+      type: (adv > 0) === isHomeWinner ? "positive" : "negative",
       title: `Lineup matchup favors ${favored}`,
       detail: `Matchup advantage score: ${adv > 0 ? "+" : ""}${adv.toFixed(3)} (platoon wOBA vs starter hand).`,
     });
@@ -210,11 +204,6 @@ function PredictionCard({ pred, game }) {
 
   const awayId = game?.teams?.away?.team?.id;
   const homeId = game?.teams?.home?.team?.id;
-
-  const winnerName = pred.predicted_winner;
-  const winnerColor = awayWins ? awayColor : homeColor;
-  const winnerId = awayWins ? awayId : homeId;
-  const winnerProb = awayWins ? awayProb : homeProb;
 
   const reasons = generateWhyText(pred);
 

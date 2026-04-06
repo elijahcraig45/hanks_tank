@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
-  Container, Row, Col, Card, Badge, Table,
+  Container, Row, Col, Card, Table,
   Spinner, Alert, Button, ListGroup,
 } from "react-bootstrap";
 import { Link } from "react-router-dom";
