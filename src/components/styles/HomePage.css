@@ -1,159 +1,256 @@
-/* HomePage Styles — scoped to .home-page wrapper */
+/* ── HomePage ────────────────────────────────────────────────────────────── */
 
-.home-page .card {
-  border: 1px solid #dee2e6;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.home-page {
+  max-width: 1400px;
 }
 
-.home-page .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-}
-
-/* News Section Enhancements */
-.hero-news {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-}
-
-.hero-news .card-header {
-  background: transparent;
-  border-bottom: 1px solid rgba(255,255,255,0.2);
-  color: white;
-}
-
-.hero-news .list-group-item {
-  background: rgba(255,255,255,0.1);
-  border-color: rgba(255,255,255,0.1);
-  color: white;
-}
-
-.news-item {
-  transition: background-color 0.2s ease;
-}
-
-.news-item:hover {
-  background-color: rgba(0,0,0,0.05) !important;
-}
-
-.news-title {
-  font-size: 0.95rem;
-  line-height: 1.3;
-  margin-bottom: 0.25rem;
-}
-
-.news-title-small {
-  font-size: 0.85rem;
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.news-section .card-body {
-  padding: 0.75rem;
-}
-
-/* Standings Table */
-.standings-table {
-  font-size: 0.85rem;
-}
-
-.standings-table th {
-  background-color: #f8f9fa;
-  font-weight: 700 !important;
-  border-top: none;
-  padding: 0.5rem 0.25rem;
-  color: #212529 !important;
-}
-
-.standings-table td {
-  padding: 0.5rem 0.25rem;
-  vertical-align: middle;
-  font-weight: 500;
-}
-
-.table-warning {
-  background-color: rgba(255, 193, 7, 0.2) !important;
-}
-
-/* Quick Analytics Section */
-.btn-outline-primary:hover, 
-.btn-outline-success:hover, 
-.btn-outline-info:hover, 
-.btn-outline-warning:hover, 
-.btn-outline-secondary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-/* Enhanced global styling for better readability */
-.table-dark th {
-  font-weight: 700 !important;
-  color: #fff !important;
-}
-
-/* Home page title styling */
-.home-page-title {
-  font-size: 2rem;
+/* Header */
+.home-title {
+  font-size: 2.4rem;
   font-weight: 800;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .news-title {
-    font-size: 0.9rem;
-  }
-  
-  .news-title-small {
-    font-size: 0.8rem;
-  }
-  
-  .standings-table {
-    font-size: 0.75rem;
-  }
-}
-
-/* Animation for loading states */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.home-page .card {
-  animation: fadeIn 0.3s ease-out;
-}
-
-/* Custom scrollbar for news sections */
-.home-page .card-body::-webkit-scrollbar {
-  width: 6px;
-}
-
-.home-page .card-body::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.home-page .card-body::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
-}
-
-.home-page .card-body::-webkit-scrollbar-thumb:hover {
-  background: #a1a1a1;
-}
-
-/* Home page title */
-.home-page-title {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #004b87 0%, #1a73e8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  font-weight: 800;
-  font-size: 2.2rem;
 }
-  
+
+/* ── Games Carousel ─────────────────────────────────────────────────────── */
+
+.games-carousel-wrap {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+}
+
+.games-carousel-track {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+
+.games-carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+.game-tile {
+  scroll-snap-align: start;
+  flex: 0 0 200px;
+  color: inherit;
+}
+
+.game-tile-inner {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 0.625rem;
+  padding: 0.75rem;
+  font-size: 0.82rem;
+  height: 100%;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.game-tile:hover .game-tile-inner {
+  box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+
+.game-tile-live {
+  border-color: #dc3545;
+  background: #fff8f8;
+}
+
+.game-status-badge {
+  margin-bottom: 0.4rem;
+  text-align: center;
+}
+
+.gs-live  { color: #dc3545; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; }
+.gs-final { color: #6c757d; font-weight: 600; font-size: 0.75rem; }
+.gs-preview { color: #0c63e4; font-size: 0.75rem; }
+
+.game-team-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.15rem;
+}
+
+.game-logo {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.game-team-name {
+  font-weight: 600;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-record {
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.game-score {
+  font-weight: 700;
+  font-size: 0.95rem;
+  min-width: 20px;
+  text-align: right;
+}
+
+.game-at {
+  text-align: center;
+  color: #adb5bd;
+  font-size: 0.7rem;
+  margin: 0.1rem 0;
+}
+
+.game-venue {
+  font-size: 0.7rem;
+  text-align: center;
+  margin-top: 0.35rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.carousel-btn {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.carousel-btn:hover:not(:disabled) {
+  background: #e9ecef;
+}
+
+.carousel-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ── News ───────────────────────────────────────────────────────────────── */
+
+.news-card {
+  border: 1px solid #dee2e6;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.news-scroll {
+  max-height: 480px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.news-item a {
+  display: block;
+}
+
+.news-title {
+  font-size: 0.87rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #212529;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 0.2rem;
+}
+
+.news-item a:hover .news-title {
+  color: #0c63e4;
+}
+
+/* ── Standings ──────────────────────────────────────────────────────────── */
+
+.standings-card {
+  border: 1px solid #dee2e6;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.standings-scroll {
+  max-height: 680px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.standings-division {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.standings-div-header {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #1a73e8;
+  padding: 0.5rem 0.75rem 0.25rem;
+  background: #f8f9fa;
+}
+
+.standings-table {
+  font-size: 0.82rem;
+  margin-bottom: 0 !important;
+}
+
+.standings-table th {
+  font-weight: 700;
+  color: #495057;
+  padding: 0.3rem 0.5rem;
+  border-top: none;
+  background: #fff;
+}
+
+.standings-table td {
+  padding: 0.3rem 0.5rem;
+  vertical-align: middle;
+}
+
+.standings-table td:not(:first-child),
+.standings-table th:not(:first-child) {
+  text-align: center;
+}
+
+.standings-logo {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.standings-team-link {
+  color: #212529;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.standings-team-link:hover {
+  color: #0c63e4;
+}
+
+.standings-braves td {
+  background: rgba(206, 17, 65, 0.06) !important;
+}

@@ -1,0 +1,238 @@
+/* ─── Predictions Page ───────────────────────────────────────────────────── */
+
+.predictions-page {
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+
+/* Date navigation */
+.pred-date-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pred-date-nav {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #495057;
+  transition: background 0.15s;
+}
+.pred-date-nav:hover:not(:disabled) { background: #e9ecef; }
+.pred-date-nav:disabled { opacity: 0.35; cursor: default; }
+
+.pred-date-input {
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.9rem;
+  color: #212529;
+  background: #fff;
+  height: 36px;
+}
+
+.pred-date-label {
+  font-size: 0.88rem;
+}
+
+/* Summary chips */
+.pred-summary-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.pred-chip {
+  display: inline-block;
+  padding: 0.2em 0.65em;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #e9ecef;
+  color: #495057;
+}
+.pred-chip--high   { background: #d1e7dd; color: #0f5132; }
+.pred-chip--med    { background: #fff3cd; color: #664d03; }
+.pred-chip--lineup { background: #cff4fc; color: #055160; }
+
+/* Group header */
+.pred-group-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.pred-conf-badge {
+  font-size: 0.65rem;
+  padding: 0.2em 0.5em;
+}
+
+/* ─── Prediction Card ────────────────────────────────────────────────────── */
+
+.pred-card {
+  border: 1px solid rgba(0,0,0,.07) !important;
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.pred-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,.09) !important;
+}
+
+/* Matchup row */
+.pred-matchup-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.1rem;
+}
+
+.pred-at {
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.pred-team-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.pred-team-cell--home {
+  justify-content: flex-end;
+}
+
+.pred-team-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.pred-team-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pred-team-record {
+  font-size: 0.72rem;
+  color: #6c757d;
+}
+
+.pred-team-winner .pred-team-name { opacity: 1; }
+.pred-team-loser  .pred-team-name { opacity: 0.45; }
+.pred-team-loser  .pred-team-logo { opacity: 0.4; }
+
+.pred-winner-crown {
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+/* Probability bar */
+.pred-prob-bar {
+  display: flex;
+  height: 22px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: #e9ecef;
+}
+
+.pred-prob-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.4s ease;
+}
+
+.pred-prob-label {
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0,0,0,.4);
+  white-space: nowrap;
+}
+
+.pred-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-top: 0.12rem;
+  opacity: 0.8;
+}
+
+/* Starters line */
+.pred-starters {
+  font-size: 0.76rem;
+  color: #6c757d;
+}
+
+/* Why toggle */
+.pred-why-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #0d6efd;
+  font-size: 0.78rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+.pred-why-toggle:hover { text-decoration: underline; }
+
+/* Why body */
+.pred-why-body {
+  border-top: 1px solid #e9ecef;
+  padding-top: 0.6rem;
+}
+
+.pred-reason {
+  padding: 0.5rem 0.6rem;
+  border-radius: 5px;
+  margin-bottom: 0.4rem;
+  background: #f8f9fa;
+  border-left: 3px solid #dee2e6;
+}
+
+.pred-reason--positive { border-left-color: #198754; background: #f0fdf4; }
+.pred-reason--negative { border-left-color: #dc3545; background: #fff5f5; }
+.pred-reason--neutral  { border-left-color: #adb5bd; background: #f8f9fa; }
+
+.pred-reason-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 0.2rem;
+}
+
+.pred-reason-detail {
+  font-size: 0.75rem;
+  color: #495057;
+  line-height: 1.5;
+}
+
+.pred-game-link {
+  font-size: 0.78rem;
+  color: #0d6efd;
+  text-decoration: none;
+}
+.pred-game-link:hover { text-decoration: underline; }
+
+/* Empty state */
+.pred-empty-icon {
+  font-size: 3rem;
+}
