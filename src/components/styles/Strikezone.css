@@ -1,50 +1,193 @@
-/* StrikeZone.css */
+/* ── StrikeZone root ── */
+.sz-root {
+  font-size: 0.875rem;
+}
 
-/* Tooltip styling */
-.tooltip {
-    position: absolute;
-    background: white;
-    border: 1px solid black;
-    padding: 5px;
-    pointer-events: none;
-    z-index: 10;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+/* ── Filter bar ── */
+.sz-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+/* ── Body: plot + panel side by side ── */
+.sz-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+/* ── Plot area ── */
+.sz-plot-wrap {
+  flex: 1 1 320px;
+  min-width: 280px;
+}
+
+.sz-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+/* ── Legend ── */
+.sz-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 10px;
+}
+
+.sz-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: #495057;
+}
+
+.sz-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Right panel ── */
+.sz-panel {
+  flex: 0 1 280px;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Pitch detail card ── */
+.sz-detail-card {
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sz-detail-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+}
+
+.sz-detail-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sz-detail-section-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6c757d;
+  margin-bottom: 6px;
+}
+
+/* ── Stat grid inside detail ── */
+.sz-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 8px;
+}
+
+.sz-stat-item {
+  display: flex;
+  flex-direction: column;
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.sz-stat-label {
+  font-size: 0.68rem;
+  color: #6c757d;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.sz-stat-value {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+.sz-desc {
+  margin: 6px 0 0;
+  font-size: 0.8rem;
+  color: #495057;
+  line-height: 1.4;
+}
+
+/* ── Event summary ── */
+.sz-event-summary {
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.sz-event-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  border-bottom: 1px solid #f1f3f5;
+  font-size: 0.8rem;
+}
+
+.sz-event-row:last-child { border-bottom: none; }
+
+.sz-event-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sz-event-name {
+  flex: 1;
+  color: #212529;
+}
+
+.sz-event-count {
+  font-weight: 600;
+  color: #212529;
+  min-width: 28px;
+  text-align: right;
+}
+
+.sz-event-pct {
+  color: #6c757d;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* ── Responsive: stack on small screens ── */
+@media (max-width: 640px) {
+  .sz-body {
+    flex-direction: column;
   }
-  
-  /* Legend styling */
-  .legend {
-    margin-top: 10px;
+  .sz-panel {
+    flex: 1 1 auto;
+    width: 100%;
   }
-  
-  .legend-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 5px;
-  }
-  
-  .legend-item span {
-    width: 12px;
-    height: 12px;
-    margin-right: 5px;
-    display: inline-block;
-  }
-  
-  /* Form control styling for consistency */
-  .dropdown-menu {
-    max-height: 200px;
-    overflow-y: auto;
-  }
-  
-  .dropdown-item {
-    padding: 5px 10px;
-  }
-  
-  .dropdown-item .form-check {
-    margin: 0;
-  }
-  
-  .dropdown-item .form-check-input {
-    margin-left: 0;
-    margin-right: 10px;
-  }
-  
+}

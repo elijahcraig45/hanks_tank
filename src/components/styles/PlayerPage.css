@@ -1,38 +1,71 @@
-/* Player Page Styles - Light theme with enhanced readability */
+/* Player Page Styles */
 
 .player-page {
   background-color: #f8f9fa;
   min-height: 100vh;
+}
+
+/* Player name in header */
+.player-name {
+  font-size: 1.9rem;
+  font-weight: 700;
   color: #212529;
+  margin-bottom: 0;
 }
 
-.player-page .container {
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 2rem;
-  margin-top: 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e9ecef;
+/* Header card */
+.player-header-card {
+  background: #ffffff;
 }
 
-/* Player header styling */
+/* Photo / avatar */
+.player-photo-wrap {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  flex-shrink: 0;
+}
+
+.player-headshot {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top center;
+  border: 3px solid #dee2e6;
+  background: #e9ecef;
+}
+
+.player-initials-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 1.6rem;
+  font-weight: 700;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid rgba(0,0,0,0.1);
+}
+
+/* Tabs */
+.player-tabs .nav-link {
+  font-weight: 600;
+  color: #495057;
+}
+.player-tabs .nav-link.active {
+  color: #0d6efd;
+  border-bottom: 2px solid #0d6efd;
+}
+
+/* Header alias for legacy code */
 .player-header h1 {
   color: #212529 !important;
   font-weight: 700 !important;
   font-size: 2.5rem !important;
-  margin-bottom: 0.5rem;
 }
-
-.player-header h2 {
-  color: #212529 !important;
-  font-weight: 600 !important;
-  font-size: 2rem !important;
-}
-
 .player-header .text-muted {
-  color: #6c757d !important;
   font-size: 1.1rem !important;
-  font-weight: 500 !important;
 }
 
 /* Tab styling */
