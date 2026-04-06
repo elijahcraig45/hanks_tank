@@ -17,6 +17,7 @@ import TeamComparison from './components/TeamComparison';
 import AdvancedPlayerAnalysis from './components/AdvancedPlayerAnalysis';
 import Transactions from './components/Transactions';
 import TeamTransactions from './components/TeamTransactions';
+import PredictionsPage from './components/PredictionsPage';
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
         <Route path="/game/:gamePk" element={<GameDetailsPage />} />
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/transactions/:teamAbbr" element={<TeamTransactions />} />
+        <Route path="/predictions" element={<PredictionsPage />} />
       </Routes>
     </Router>
   );

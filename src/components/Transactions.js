@@ -27,7 +27,8 @@ const Transactions = () => {
       setLoading(true);
       const response = await axios.get(`${API_BASE_URL}/transactions/recent`);
       if (response.data.success) {
-        setTransactions(Array.isArray(response.data.data) ? response.data.data : []);
+        const data = Array.isArray(response.data.data) ? response.data.data : [];
+        setTransactions([...data].sort((a, b) => new Date(b.date) - new Date(a.date)));
       }
     } catch (err) {
       console.error('Error fetching transactions:', err);
@@ -41,7 +42,8 @@ const Transactions = () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/v2/teams`);
       if (response.data.success) {
-        setTeams(response.data.data);
+        const teamsData = response.data.data?.teams || response.data.data;
+        setTeams(Array.isArray(teamsData) ? teamsData : []);
       }
     } catch (err) {
       console.error('Error fetching teams:', err);
@@ -65,7 +67,7 @@ const Transactions = () => {
           data = data.filter(t => t.typeDesc === filter.typeDesc);
         }
         
-        setTransactions(data);
+        setTransactions([...data].sort((a, b) => new Date(b.date) - new Date(a.date)));
       }
     } catch (err) {
       console.error('Error fetching filtered transactions:', err);
@@ -155,7 +157,7 @@ const Transactions = () => {
               >
                 <option value="">All Teams</option>
                 {teams.map(team => (
-                  <option key={team.id} value={team.id}>{team.name}</option>
+                  <option key={team.team_id} value={team.team_id}>{team.Team}</option>
                 ))}
               </Form.Select>
             </Col>

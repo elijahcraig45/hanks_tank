@@ -68,6 +68,7 @@ function BasicExample() {
               </ul>
             </div>
 
+            <Nav.Link as={Link} to="/predictions" onClick={closeAll}>Predictions</Nav.Link>
             <Nav.Link as={Link} to="/transactions" onClick={closeAll}>Transactions</Nav.Link>
           </Nav>
         </Navbar.Collapse>
