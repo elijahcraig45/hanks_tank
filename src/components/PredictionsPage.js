@@ -200,14 +200,13 @@ function generateWhyV7(pred) {
   const homeXwoba = pred.home_starter_xwoba_allowed;
   const awayXwoba = pred.away_starter_xwoba_allowed;
 
-  const hasArsenal =
-    homeVeloNorm != null &&
-    homeVeloNorm !== NEUTRAL_VELO_NORM &&
-    awayVeloNorm !== NEUTRAL_VELO_NORM;
+  const homeHasArsenal = homeVeloNorm != null && homeVeloNorm !== NEUTRAL_VELO_NORM;
+  const awayHasArsenal = awayVeloNorm != null && awayVeloNorm !== NEUTRAL_VELO_NORM;
+  const hasArsenal = homeHasArsenal || awayHasArsenal;
 
   if (hasArsenal) {
-    const homeVelo = (homeVeloNorm * 3 + NEUTRAL_VELO).toFixed(1);
-    const awayVelo = (awayVeloNorm * 3 + NEUTRAL_VELO).toFixed(1);
+    const homeVelo = ((homeVeloNorm ?? 0) * 3 + NEUTRAL_VELO).toFixed(1);
+    const awayVelo = ((awayVeloNorm ?? 0) * 3 + NEUTRAL_VELO).toFixed(1);
     const arsenalAdv = pred.starter_arsenal_advantage;
 
     const betterPitcher =
@@ -219,6 +218,13 @@ function generateWhyV7(pred) {
           : null
         : null;
 
+    const homeLabel = homeHasArsenal
+      ? `${homeVelo} mph FB, K-BB% ${homeKBB != null ? (homeKBB * 100).toFixed(1) : "—"}%, xwOBA ${fmt(homeXwoba)}`
+      : `${NEUTRAL_VELO} mph FB (lg avg)`;
+    const awayLabel = awayHasArsenal
+      ? `${awayVelo} mph FB, K-BB% ${awayKBB != null ? (awayKBB * 100).toFixed(1) : "—"}%, xwOBA ${fmt(awayXwoba)}`
+      : `${NEUTRAL_VELO} mph FB (lg avg)`;
+
     reasons.push({
       icon: "🎯",
       type: betterPitcher
@@ -229,7 +235,7 @@ function generateWhyV7(pred) {
       title: betterPitcher
         ? `${betterPitcher} has the arsenal edge`
         : "Pitchers roughly matched",
-      detail: `${pred.home_starter_name?.split(" ").slice(-1)[0] || homeTeam}: ${homeVelo} mph FB, K-BB% ${homeKBB != null ? (homeKBB * 100).toFixed(1) : "—"}%, xwOBA allowed ${fmt(homeXwoba)} · ${pred.away_starter_name?.split(" ").slice(-1)[0] || awayTeam}: ${awayVelo} mph FB, K-BB% ${awayKBB != null ? (awayKBB * 100).toFixed(1) : "—"}%, xwOBA allowed ${fmt(awayXwoba)}`,
+      detail: `${pred.home_starter_name?.split(" ").slice(-1)[0] || homeTeam}: ${homeLabel} · ${pred.away_starter_name?.split(" ").slice(-1)[0] || awayTeam}: ${awayLabel}`,
     });
   } else {
     reasons.push({
