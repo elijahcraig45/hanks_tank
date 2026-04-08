@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { Container, Row, Col, Card, Table, Badge, Button } from "react-bootstrap";
 import StrikeZone from './LiveGameStrikeZone';
 import BoxScore from './BoxScore';
+import apiService from '../services/api';
 import "./styles/Game.css";
 
 // Map half-inning names to short labels
@@ -11,31 +12,185 @@ const halfInningLabel = (half) => {
   return half.toLowerCase() === "top" ? "▲" : "▼";
 };
 
-// Short result label from event description
+// Differentiated result badge — GO/FO/LD/PO instead of generic OUT
 const resultBadge = (description = "") => {
   const d = description.toLowerCase();
-  if (d.includes("home run")) return { label: "HR", bg: "danger" };
-  if (d.includes("triple")) return { label: "3B", bg: "warning" };
-  if (d.includes("double")) return { label: "2B", bg: "warning" };
-  if (d.includes("single")) return { label: "1B", bg: "success" };
-  if (d.includes("strikeout") || d.includes("struck out")) return { label: "K", bg: "secondary" };
-  if (d.includes("walk") || d.includes("intentional")) return { label: "BB", bg: "info" };
-  if (d.includes("hit by pitch")) return { label: "HBP", bg: "info" };
-  if (d.includes("sac fly")) return { label: "SF", bg: "primary" };
+  if (d.includes("home run"))                                return { label: "HR",  bg: "danger" };
+  if (d.includes("triple"))                                  return { label: "3B",  bg: "warning" };
+  if (d.includes("double play") || d.includes("double"))    return { label: "2B",  bg: "warning" };
+  if (d.includes("single"))                                  return { label: "1B",  bg: "success" };
+  if (d.includes("strikeout") || d.includes("struck out"))  return { label: "K",   bg: "secondary" };
+  if (d.includes("walk") || d.includes("intentional"))      return { label: "BB",  bg: "info" };
+  if (d.includes("hit by pitch"))                           return { label: "HBP", bg: "info" };
+  if (d.includes("sac fly"))                                return { label: "SF",  bg: "primary" };
   if (d.includes("sac bunt") || d.includes("sacrifice bunt")) return { label: "SH", bg: "primary" };
-  if (d.includes("field")) return { label: "OUT", bg: "dark" };
-  if (d.includes("ground")) return { label: "OUT", bg: "dark" };
-  if (d.includes("fly")) return { label: "OUT", bg: "dark" };
-  if (d.includes("line")) return { label: "OUT", bg: "dark" };
-  if (d.includes("pop")) return { label: "OUT", bg: "dark" };
-  return { label: "•", bg: "secondary" };
+  if (d.includes("fielder") && d.includes("choice"))        return { label: "FC",  bg: "warning" };
+  if (d.includes("grounded out") || d.includes("ground"))   return { label: "GO",  bg: "secondary" };
+  if (d.includes("lined out") || d.includes("line"))        return { label: "LD",  bg: "secondary" };
+  if (d.includes("popped out") || d.includes("pop out"))    return { label: "PO",  bg: "secondary" };
+  if (d.includes("flied out") || d.includes("fly"))         return { label: "FO",  bg: "secondary" };
+  if (d.includes("field"))                                   return { label: "FO",  bg: "secondary" };
+  return { label: "•", bg: "light" };
 };
 
+// ── Scouting report card from prediction data ─────────────────────────────────
+const ScoutingReport = ({ pred, awayAbbr, homeAbbr }) => {
+  if (!pred) return null;
+
+  const isV8 = pred.elo_differential != null || (pred.model_version || "").includes("8");
+
+  const statRow = (label, val, extra) => val != null ? (
+    <div className="scout-row" key={label}>
+      <span className="scout-label">{label}</span>
+      <span className="scout-val">{val}{extra}</span>
+    </div>
+  ) : null;
+
+  const fmt = (n, decimals = 0) => n != null ? Number(n).toFixed(decimals) : null;
+  const pct  = (n) => n != null ? `${Math.round(n * 100)}%` : null;
+  const sign  = (n) => n != null ? (n > 0 ? `+${Math.round(n)}` : String(Math.round(n))) : null;
+
+  return (
+    <Card className="shadow-sm mb-4">
+      <Card.Header className="py-2 d-flex align-items-center justify-content-between">
+        <span className="fw-semibold">Pre-Game Scouting Report</span>
+        <div className="d-flex gap-1 align-items-center">
+          {pred.model_version && (
+            <Badge bg="light" text="dark" style={{ fontSize: "0.68rem", border: "1px solid #dee2e6" }}>
+              {pred.model_version}
+            </Badge>
+          )}
+          {pred.confidence_tier && (
+            <Badge
+              bg={pred.confidence_tier.toUpperCase() === "HIGH" ? "success" :
+                  pred.confidence_tier.toUpperCase() === "MEDIUM" ? "warning" : "secondary"}
+              style={{ fontSize: "0.68rem" }}
+            >
+              {pred.confidence_tier}
+            </Badge>
+          )}
+        </div>
+      </Card.Header>
+      <Card.Body className="p-3">
+
+        {/* Win probability bar */}
+        {pred.home_win_probability != null && pred.away_win_probability != null && (
+          <div className="mb-3">
+            <div className="d-flex justify-content-between mb-1" style={{ fontSize: "0.77rem", fontWeight: 600 }}>
+              <span>{awayAbbr} {Math.round(pred.away_win_probability * 100)}%</span>
+              <span className="text-muted" style={{ fontWeight: 400 }}>win probability</span>
+              <span>{homeAbbr} {Math.round(pred.home_win_probability * 100)}%</span>
+            </div>
+            <div className="scout-prob-bar">
+              <div
+                className={`scout-prob-away${pred.predicted_winner === pred.away_team_name ? " scout-prob-winner" : ""}`}
+                style={{ width: `${Math.round(pred.away_win_probability * 100)}%` }}
+              />
+              <div
+                className={`scout-prob-home${pred.predicted_winner === pred.home_team_name ? " scout-prob-winner" : ""}`}
+                style={{ width: `${Math.round(pred.home_win_probability * 100)}%` }}
+              />
+            </div>
+            {pred.predicted_winner && (
+              <div className="mt-1 text-center" style={{ fontSize: "0.73rem", color: "#6c757d" }}>
+                Predicted winner: <strong style={{ color: "#198754" }}>{pred.predicted_winner}</strong>
+              </div>
+            )}
+          </div>
+        )}
+
+        <Row className="g-3">
+          {isV8 && (
+            <>
+              {/* Elo & Pythagorean */}
+              <Col xs={6} sm={4}>
+                <div className="scout-section">
+                  <div className="scout-section-title">Elo Ratings</div>
+                  {statRow(`${awayAbbr} Elo`, fmt(pred.elo_away))}
+                  {statRow(`${homeAbbr} Elo`, fmt(pred.elo_home))}
+                  {statRow("Differential", sign(pred.elo_differential))}
+                  {pred.elo_home_win_prob != null && statRow("Model win%", pct(pred.elo_home_win_prob), ` (${homeAbbr})`)}
+                </div>
+              </Col>
+
+              <Col xs={6} sm={4}>
+                <div className="scout-section">
+                  <div className="scout-section-title">Pythagorean</div>
+                  {statRow(`${awayAbbr} W%`, pct(pred.away_pythag_season))}
+                  {statRow(`${homeAbbr} W%`, pct(pred.home_pythag_season))}
+                  {statRow("Diff", sign(pred.pythag_differential != null ? pred.pythag_differential * 100 : null), pred.pythag_differential != null ? "%" : "")}
+                </div>
+              </Col>
+
+              <Col xs={6} sm={4}>
+                <div className="scout-section">
+                  <div className="scout-section-title">Recent Form</div>
+                  {statRow(`${awayAbbr} L10 RD`, sign(pred.away_run_diff_10g))}
+                  {statRow(`${homeAbbr} L10 RD`, sign(pred.home_run_diff_10g))}
+                  {pred.away_current_streak != null && statRow(`${awayAbbr} streak`, pred.away_current_streak > 0 ? `W${pred.away_current_streak}` : `L${Math.abs(pred.away_current_streak)}`)}
+                  {pred.home_current_streak != null && statRow(`${homeAbbr} streak`, pred.home_current_streak > 0 ? `W${pred.home_current_streak}` : `L${Math.abs(pred.home_current_streak)}`)}
+                </div>
+              </Col>
+            </>
+          )}
+
+          {/* Starting pitchers */}
+          {(pred.away_starter_name || pred.home_starter_name) && (
+            <Col xs={12} sm={6}>
+              <div className="scout-section">
+                <div className="scout-section-title">Starting Pitchers</div>
+                {pred.away_starter_name && (
+                  <div className="scout-pitcher-row">
+                    <span className="scout-pitcher-abbr">{awayAbbr}</span>
+                    <span className="scout-pitcher-name">{pred.away_starter_name}</span>
+                    {pred.away_starter_hand && (
+                      <span className="scout-hand-badge">{pred.away_starter_hand}HP</span>
+                    )}
+                  </div>
+                )}
+                {pred.home_starter_name && (
+                  <div className="scout-pitcher-row">
+                    <span className="scout-pitcher-abbr">{homeAbbr}</span>
+                    <span className="scout-pitcher-name">{pred.home_starter_name}</span>
+                    {pred.home_starter_hand && (
+                      <span className="scout-hand-badge">{pred.home_starter_hand}HP</span>
+                    )}
+                  </div>
+                )}
+                {pred.away_starter_era != null && statRow(`${pred.away_starter_name?.split(" ").slice(-1)[0]} ERA`, fmt(pred.away_starter_era, 2))}
+                {pred.home_starter_era != null && statRow(`${pred.home_starter_name?.split(" ").slice(-1)[0]} ERA`, fmt(pred.home_starter_era, 2))}
+                {pred.away_starter_woba_allowed != null && statRow(`${pred.away_starter_name?.split(" ").slice(-1)[0]} wOBA`, fmt(pred.away_starter_woba_allowed, 3))}
+                {pred.home_starter_woba_allowed != null && statRow(`${pred.home_starter_name?.split(" ").slice(-1)[0]} wOBA`, fmt(pred.home_starter_woba_allowed, 3))}
+              </div>
+            </Col>
+          )}
+
+          {/* H2H & Context */}
+          <Col xs={12} sm={6}>
+            <div className="scout-section">
+              <div className="scout-section-title">Context</div>
+              {pred.h2h_win_pct_3yr != null && statRow("H2H win% (3yr)", pct(pred.h2h_win_pct_3yr), ` (${homeAbbr})`)}
+              {pred.h2h_game_count_3yr != null && statRow("H2H games", pred.h2h_game_count_3yr)}
+              {pred.is_divisional != null && statRow("Divisional", pred.is_divisional ? "Yes" : "No")}
+              {pred.home_bullpen_era != null && statRow(`${homeAbbr} bullpen ERA`, fmt(pred.home_bullpen_era, 2))}
+              {pred.away_bullpen_era != null && statRow(`${awayAbbr} bullpen ERA`, fmt(pred.away_bullpen_era, 2))}
+              {pred.temperature != null && statRow("Temp", `${pred.temperature}°F`)}
+              {pred.wind_speed != null && statRow("Wind", `${pred.wind_speed} mph`)}
+            </div>
+          </Col>
+        </Row>
+      </Card.Body>
+    </Card>
+  );
+};
+
+// ── Main page ─────────────────────────────────────────────────────────────────
 const GameDetailsPage = () => {
   const { gamePk } = useParams();
-  const [gameDetails, setGameDetails] = useState(null);
+  const [gameDetails, setGameDetails]   = useState(null);
   const [selectedAtBat, setSelectedAtBat] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]           = useState(true);
+  const [prediction, setPrediction]     = useState(null);
 
   const fetchGameDetails = async () => {
     try {
@@ -57,6 +212,20 @@ const GameDetailsPage = () => {
 
   useEffect(() => { fetchGameDetails(); }, [gamePk]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Fetch today's predictions and find matching game
+  useEffect(() => {
+    const fetchPred = async () => {
+      try {
+        const data = await apiService.getPredictions();
+        if (data?.predictions) {
+          const match = data.predictions.find(p => String(p.game_pk) === String(gamePk));
+          if (match) setPrediction(match);
+        }
+      } catch { /* predictions are optional */ }
+    };
+    fetchPred();
+  }, [gamePk]);
+
   if (loading) {
     return (
       <Container className="py-5 text-center">
@@ -69,14 +238,15 @@ const GameDetailsPage = () => {
     return <Container className="py-5"><p className="text-muted">Game data unavailable.</p></Container>;
   }
 
-  const awayTeam = gameDetails.gameData.teams.away;
-  const homeTeam = gameDetails.gameData.teams.home;
-  const linescore = gameDetails.liveData.linescore;
-  const weather = gameDetails.gameData.weather;
+  const awayTeam        = gameDetails.gameData.teams.away;
+  const homeTeam        = gameDetails.gameData.teams.home;
+  const linescore       = gameDetails.liveData.linescore;
+  const weather         = gameDetails.gameData.weather;
   const probablePitchers = gameDetails.gameData.probablePitchers || {};
-  const status = gameDetails.gameData.status;
-  const venue = gameDetails.gameData.venue;
-  const events = gameDetails.liveData.plays.allPlays.slice().reverse();
+  const status          = gameDetails.gameData.status;
+  const venue           = gameDetails.gameData.venue;
+  const events          = gameDetails.liveData.plays.allPlays.slice().reverse();
+  const isPreGame       = status.abstractGameState === "Preview";
 
   const getPlayerDetails = (playerId, team) =>
     gameDetails.liveData.boxscore.teams[team].players[`ID${playerId}`];
@@ -84,7 +254,7 @@ const GameDetailsPage = () => {
   const renderPlayerRow = (playerId, team) => {
     const player = getPlayerDetails(playerId, team);
     if (!player?.person || !player.stats?.batting || player.position?.type === "Pitcher") return null;
-    const stats = player.stats.batting;
+    const stats  = player.stats.batting;
     const season = player.seasonStats.batting;
     return (
       <tr key={player.person.id}>
@@ -105,7 +275,7 @@ const GameDetailsPage = () => {
   const renderPitcherRow = (playerId, team) => {
     const player = getPlayerDetails(playerId, team);
     if (!player?.person || !player.stats?.pitching) return null;
-    const stats = player.stats.pitching;
+    const stats  = player.stats.pitching;
     const season = player.seasonStats.pitching;
     return (
       <tr key={player.person.id}>
@@ -125,7 +295,7 @@ const GameDetailsPage = () => {
 
   const renderPlayByPlayItem = (event) => {
     const { result, about, count, matchup } = event;
-    const badge = resultBadge(result?.description);
+    const badge      = resultBadge(result?.description);
     const isSelected = selectedAtBat?.about?.atBatIndex === about?.atBatIndex;
     return (
       <button
@@ -142,11 +312,16 @@ const GameDetailsPage = () => {
             <span className="pbp-batter">{matchup?.batter?.fullName}</span>
             <span className="pbp-desc text-muted d-block">{result?.description}</span>
           </div>
-          <span className="pbp-count text-muted flex-shrink-0">{count?.balls}-{count?.strikes} {count?.outs}out</span>
+          <span className="pbp-count text-muted flex-shrink-0">
+            {count?.balls}-{count?.strikes} {count?.outs}out
+          </span>
         </div>
       </button>
     );
   };
+
+  // batSide for strike zone — from current at-bat or selected at-bat
+  const batSide = selectedAtBat?.matchup?.batSide?.code || "R";
 
   return (
     <Container fluid className="game-page py-3 px-3 px-md-4">
@@ -158,7 +333,10 @@ const GameDetailsPage = () => {
           <span className="text-muted fw-light">@</span>
           {" "}
           <span>{homeTeam.abbreviation}</span>
-          <Badge bg={status.abstractGameState === "Live" ? "success" : "secondary"} className="ms-2 game-status-badge">
+          <Badge
+            bg={status.abstractGameState === "Live" ? "success" : "secondary"}
+            className="ms-2 game-status-badge"
+          >
             {status.detailedState}
           </Badge>
         </h2>
@@ -171,6 +349,15 @@ const GameDetailsPage = () => {
           {weather?.condition && ` · ${weather.condition} ${weather.temp}°F · ${weather.wind}`}
         </p>
       </div>
+
+      {/* Scouting Report (pre-game or always if prediction available) */}
+      {prediction && (isPreGame || true) && (
+        <ScoutingReport
+          pred={prediction}
+          awayAbbr={awayTeam.abbreviation}
+          homeAbbr={homeTeam.abbreviation}
+        />
+      )}
 
       {/* Linescore */}
       <Row className="mb-4">
@@ -198,16 +385,20 @@ const GameDetailsPage = () => {
         <Col xs={12} md={6}>
           <Card className="h-100 shadow-sm">
             <Card.Header className="py-2">
-              <span className="fw-semibold">Strike Zone</span>
-              {selectedAtBat?.matchup && (
-                <span className="text-muted ms-2" style={{ fontSize: "0.8rem" }}>
-                  {selectedAtBat.matchup.batter?.fullName} vs {selectedAtBat.matchup.pitcher?.fullName}
-                </span>
-              )}
+              <div className="d-flex justify-content-between align-items-center">
+                <span className="fw-semibold">Strike Zone</span>
+                {selectedAtBat?.matchup && (
+                  <span className="text-muted" style={{ fontSize: "0.78rem" }}>
+                    {selectedAtBat.matchup.batter?.fullName} vs {selectedAtBat.matchup.pitcher?.fullName}
+                  </span>
+                )}
+              </div>
             </Card.Header>
-            <Card.Body className="d-flex justify-content-center align-items-start">
+            <Card.Body className="p-2">
               <StrikeZone
                 pitches={selectedAtBat ? selectedAtBat.playEvents.filter(e => e.isPitch) : []}
+                batSide={batSide}
+                matchup={selectedAtBat?.matchup}
               />
             </Card.Body>
           </Card>
@@ -217,7 +408,7 @@ const GameDetailsPage = () => {
       {/* Lineups */}
       <Row className="mb-4 g-3">
         {["away", "home"].map((side) => {
-          const team = side === "away" ? awayTeam : homeTeam;
+          const team    = side === "away" ? awayTeam : homeTeam;
           const batters = gameDetails.liveData.boxscore.teams[side].batters;
           return (
             <Col xs={12} lg={6} key={side}>
@@ -246,7 +437,7 @@ const GameDetailsPage = () => {
       {/* Pitchers */}
       <Row className="mb-4 g-3">
         {["away", "home"].map((side) => {
-          const team = side === "away" ? awayTeam : homeTeam;
+          const team     = side === "away" ? awayTeam : homeTeam;
           const pitchers = gameDetails.liveData.boxscore.teams[side].pitchers;
           return (
             <Col xs={12} lg={6} key={side}>
@@ -279,8 +470,14 @@ const GameDetailsPage = () => {
             <Card className="shadow-sm h-100">
               <Card.Header className="py-2 fw-semibold">Starting Pitchers</Card.Header>
               <Card.Body className="py-2">
-                <p className="mb-1"><span className="text-muted">{awayTeam.abbreviation}:</span> {probablePitchers.away?.fullName || "TBD"}</p>
-                <p className="mb-0"><span className="text-muted">{homeTeam.abbreviation}:</span> {probablePitchers.home?.fullName || "TBD"}</p>
+                <p className="mb-1">
+                  <span className="text-muted">{awayTeam.abbreviation}:</span>{" "}
+                  {probablePitchers.away?.fullName || "TBD"}
+                </p>
+                <p className="mb-0">
+                  <span className="text-muted">{homeTeam.abbreviation}:</span>{" "}
+                  {probablePitchers.home?.fullName || "TBD"}
+                </p>
               </Card.Body>
             </Card>
           </Col>

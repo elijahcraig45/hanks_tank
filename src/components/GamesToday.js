@@ -4,70 +4,136 @@ import { Link } from "react-router-dom";
 import apiService from "../services/api";
 import "./styles/TodaysGames.css";
 
-// -----------------------------------------------------------------------
-// Signal generation — readable insights from raw matchup feature values
-// -----------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
+// Signal generation — branches on V8 (Elo/Pythagorean) vs V6-V7 (wOBA)
+// ─────────────────────────────────────────────────────────────────────────────
 const NEUTRAL_WOBA = 0.320;
 
 function generateSignals(pred) {
   if (!pred) return [];
   const signals = [];
-
   const homeTeam = pred.home_team_name?.split(" ").slice(-1)[0] || "Home";
   const awayTeam = pred.away_team_name?.split(" ").slice(-1)[0] || "Away";
-  const homeHand = pred.away_starter_hand;
-  const awayHand = pred.home_starter_hand;
+  const isV8 = pred.elo_differential != null || (pred.model_version || "").includes("8");
 
-  if (pred.home_lineup_woba_vs_hand != null) {
-    const d = pred.home_lineup_woba_vs_hand - NEUTRAL_WOBA;
-    const dir = d >= 0.010 ? "strong" : d <= -0.010 ? "weak" : "average";
-    signals.push({
-      type: d >= 0.010 ? "positive" : d <= -0.010 ? "negative" : "neutral",
-      text: `${homeTeam} lineup .${Math.round(pred.home_lineup_woba_vs_hand * 1000)} wOBA vs ${homeHand}HP — ${dir} platoon matchup`,
-    });
-  }
-  if (pred.away_lineup_woba_vs_hand != null) {
-    const d = pred.away_lineup_woba_vs_hand - NEUTRAL_WOBA;
-    const dir = d >= 0.010 ? "strong" : d <= -0.010 ? "weak" : "average";
-    signals.push({
-      type: d >= 0.010 ? "positive" : d <= -0.010 ? "negative" : "neutral",
-      text: `${awayTeam} lineup .${Math.round(pred.away_lineup_woba_vs_hand * 1000)} wOBA vs ${awayHand}HP — ${dir} platoon matchup`,
-    });
-  }
-  if (pred.home_h2h_woba != null && pred.home_h2h_pa_total >= 10) {
-    const d = pred.home_h2h_woba - NEUTRAL_WOBA;
-    const adj = pred.home_h2h_pa_total < 60 ? " (small sample)" : "";
-    signals.push({
-      type: d >= 0.015 ? "positive" : d <= -0.015 ? "negative" : "neutral",
-      text: `${homeTeam} vs ${pred.away_starter_name?.split(" ").slice(-1)[0]}: .${Math.round(pred.home_h2h_woba * 1000)} wOBA (${pred.home_h2h_pa_total} PA${adj})`,
-    });
-  }
-  if (pred.away_h2h_woba != null && pred.away_h2h_pa_total >= 10) {
-    const d = pred.away_h2h_woba - NEUTRAL_WOBA;
-    const adj = pred.away_h2h_pa_total < 60 ? " (small sample)" : "";
-    signals.push({
-      type: d >= 0.015 ? "positive" : d <= -0.015 ? "negative" : "neutral",
-      text: `${awayTeam} vs ${pred.home_starter_name?.split(" ").slice(-1)[0]}: .${Math.round(pred.away_h2h_woba * 1000)} wOBA (${pred.away_h2h_pa_total} PA${adj})`,
-    });
-  }
-  if (pred.away_starter_woba_allowed != null) {
-    const d = pred.away_starter_woba_allowed - NEUTRAL_WOBA;
-    if (Math.abs(d) >= 0.015) {
+  if (isV8) {
+    // Elo rating edge
+    if (pred.elo_differential != null && Math.abs(pred.elo_differential) >= 18) {
+      const favored = pred.elo_differential > 0 ? homeTeam : awayTeam;
+      const edge    = Math.abs(Math.round(pred.elo_differential));
       signals.push({
-        type: d <= -0.015 ? "negative" : "positive",
-        text: `${pred.away_starter_name?.split(" ").slice(-1)[0]} allows .${Math.round(pred.away_starter_woba_allowed * 1000)} wOBA — ${d < 0 ? "elite" : "hittable"} arm`,
+        type: pred.elo_differential > 0 ? "positive" : "negative",
+        text: `${favored} Elo edge +${edge} pts`,
       });
     }
-  }
-  if (pred.home_starter_woba_allowed != null) {
-    const d = pred.home_starter_woba_allowed - NEUTRAL_WOBA;
-    if (Math.abs(d) >= 0.015) {
+
+    // Pythagorean win%
+    const hp = pred.home_pythag_season;
+    const ap = pred.away_pythag_season;
+    if (hp != null && ap != null && Math.abs(hp - ap) >= 0.045) {
+      const better  = hp > ap ? homeTeam : awayTeam;
+      const bestPct = Math.round(Math.max(hp, ap) * 100);
+      const wrstPct = Math.round(Math.min(hp, ap) * 100);
       signals.push({
-        type: d <= -0.015 ? "positive" : "negative",
-        text: `${pred.home_starter_name?.split(" ").slice(-1)[0]} allows .${Math.round(pred.home_starter_woba_allowed * 1000)} wOBA — ${d < 0 ? "elite" : "hittable"} arm`,
+        type: hp > ap ? "positive" : "negative",
+        text: `Pythagorean: ${better} ${bestPct}% vs ${wrstPct}%`,
       });
     }
+
+    // Active winning/losing streak ≥ 3
+    const hSt = pred.home_current_streak;
+    const aSt = pred.away_current_streak;
+    const bigStreak = [
+      hSt && Math.abs(hSt) >= 3 ? { team: homeTeam, val: hSt } : null,
+      aSt && Math.abs(aSt) >= 3 ? { team: awayTeam, val: aSt } : null,
+    ].filter(Boolean).sort((a, b) => Math.abs(b.val) - Math.abs(a.val))[0];
+    if (bigStreak) {
+      const w = bigStreak.val > 0;
+      signals.push({
+        type: w ? "positive" : "negative",
+        text: `${bigStreak.team} on ${w ? "W" : "L"}${Math.abs(bigStreak.val)} streak`,
+      });
+    }
+
+    // Last-10 run differential
+    const h10 = pred.home_run_diff_10g ?? 0;
+    const a10 = pred.away_run_diff_10g ?? 0;
+    const best10 = Math.abs(h10) >= Math.abs(a10) ? { team: homeTeam, val: h10 } : { team: awayTeam, val: a10 };
+    if (Math.abs(best10.val) >= 6) {
+      signals.push({
+        type: best10.val > 0 ? "positive" : "negative",
+        text: `${best10.team} ${best10.val > 0 ? "+" : ""}${best10.val} run diff (L10)`,
+      });
+    }
+
+    // H2H win%
+    if (pred.h2h_win_pct_3yr != null && (pred.h2h_game_count_3yr ?? 0) >= 5) {
+      const pct = Math.round(pred.h2h_win_pct_3yr * 100);
+      if (pct >= 56 || pct <= 44) {
+        signals.push({
+          type: pct >= 56 ? "positive" : "negative",
+          text: `${homeTeam} ${pct}% H2H vs ${awayTeam} (3yr)`,
+        });
+      }
+    }
+
+  } else {
+    // V6 / V7 wOBA-based signals
+    const homeHand = pred.away_starter_hand;
+    const awayHand = pred.home_starter_hand;
+
+    if (pred.home_lineup_woba_vs_hand != null) {
+      const d   = pred.home_lineup_woba_vs_hand - NEUTRAL_WOBA;
+      const dir = d >= 0.010 ? "strong" : d <= -0.010 ? "weak" : "avg";
+      signals.push({
+        type: d >= 0.010 ? "positive" : d <= -0.010 ? "negative" : "neutral",
+        text: `${homeTeam} .${Math.round(pred.home_lineup_woba_vs_hand * 1000)} wOBA vs ${homeHand}HP — ${dir}`,
+      });
+    }
+    if (pred.away_lineup_woba_vs_hand != null) {
+      const d   = pred.away_lineup_woba_vs_hand - NEUTRAL_WOBA;
+      const dir = d >= 0.010 ? "strong" : d <= -0.010 ? "weak" : "avg";
+      signals.push({
+        type: d >= 0.010 ? "positive" : d <= -0.010 ? "negative" : "neutral",
+        text: `${awayTeam} .${Math.round(pred.away_lineup_woba_vs_hand * 1000)} wOBA vs ${awayHand}HP — ${dir}`,
+      });
+    }
+    if (pred.home_h2h_woba != null && pred.home_h2h_pa_total >= 10) {
+      const d   = pred.home_h2h_woba - NEUTRAL_WOBA;
+      const adj = pred.home_h2h_pa_total < 60 ? " (sm sample)" : "";
+      signals.push({
+        type: d >= 0.015 ? "positive" : d <= -0.015 ? "negative" : "neutral",
+        text: `${homeTeam} vs ${pred.away_starter_name?.split(" ").slice(-1)[0]}: .${Math.round(pred.home_h2h_woba * 1000)} wOBA${adj}`,
+      });
+    }
+    if (pred.away_h2h_woba != null && pred.away_h2h_pa_total >= 10) {
+      const d   = pred.away_h2h_woba - NEUTRAL_WOBA;
+      const adj = pred.away_h2h_pa_total < 60 ? " (sm sample)" : "";
+      signals.push({
+        type: d >= 0.015 ? "positive" : d <= -0.015 ? "negative" : "neutral",
+        text: `${awayTeam} vs ${pred.home_starter_name?.split(" ").slice(-1)[0]}: .${Math.round(pred.away_h2h_woba * 1000)} wOBA${adj}`,
+      });
+    }
+    if (pred.away_starter_woba_allowed != null) {
+      const d = pred.away_starter_woba_allowed - NEUTRAL_WOBA;
+      if (Math.abs(d) >= 0.015) {
+        signals.push({
+          type: d <= -0.015 ? "negative" : "positive",
+          text: `${pred.away_starter_name?.split(" ").slice(-1)[0]} allows .${Math.round(pred.away_starter_woba_allowed * 1000)} wOBA`,
+        });
+      }
+    }
+    if (pred.home_starter_woba_allowed != null) {
+      const d = pred.home_starter_woba_allowed - NEUTRAL_WOBA;
+      if (Math.abs(d) >= 0.015) {
+        signals.push({
+          type: d <= -0.015 ? "positive" : "negative",
+          text: `${pred.home_starter_name?.split(" ").slice(-1)[0]} allows .${Math.round(pred.home_starter_woba_allowed * 1000)} wOBA`,
+        });
+      }
+    }
   }
+
   return signals.slice(0, 4);
 }
 

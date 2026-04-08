@@ -1,79 +1,123 @@
 import { useState, useEffect, useRef } from 'react';
-import Container from 'react-bootstrap/Container';
-import Nav from 'react-bootstrap/Nav';
-import Navbar from 'react-bootstrap/Navbar';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import './styles/Navbar.css';
 
-
 function BasicExample() {
-  const [statsOpen, setStatsOpen] = useState(false);
+  const [statsOpen, setStatsOpen]     = useState(false);
   const [analysisOpen, setAnalysisOpen] = useState(false);
-  const statsRef = useRef(null);
+  const [mobileOpen, setMobileOpen]   = useState(false);
+  const statsRef    = useRef(null);
   const analysisRef = useRef(null);
+  const location    = useLocation();
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
-    function handleOutsideClick(e) {
-      if (statsRef.current && !statsRef.current.contains(e.target)) setStatsOpen(false);
+    setMobileOpen(false);
+    setStatsOpen(false);
+    setAnalysisOpen(false);
+  }, [location]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (statsRef.current    && !statsRef.current.contains(e.target))    setStatsOpen(false);
       if (analysisRef.current && !analysisRef.current.contains(e.target)) setAnalysisOpen(false);
-    }
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const closeAll = () => { setStatsOpen(false); setAnalysisOpen(false); };
+  const closeAll = () => { setStatsOpen(false); setAnalysisOpen(false); setMobileOpen(false); };
+
+  const isActive = (paths) =>
+    Array.isArray(paths)
+      ? paths.some(p => location.pathname.startsWith(p))
+      : location.pathname === paths;
 
   return (
-    <Navbar expand="lg" bg="dark" variant="dark" sticky="top">
-      <Container>
-        <Navbar.Brand as={Link} to="/">Hank's Tank 2026</Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto align-items-lg-center">
-            <Nav.Link as={Link} to="/" onClick={closeAll}>Home</Nav.Link>
-            <Nav.Link as={Link} to="/games" onClick={closeAll}>Games</Nav.Link>
+    <nav className="ht-nav">
+      <div className="ht-nav-inner">
+        {/* Brand */}
+        <Link to="/" className="ht-brand" onClick={closeAll}>
+          <span className="ht-brand-icon">⚾</span>
+          <span className="ht-brand-name">Hank's Tank</span>
+          <span className="ht-brand-year">2026</span>
+        </Link>
 
-            {/* Stats dropdown */}
-            <div ref={statsRef} className={`dropdown${statsOpen ? ' show' : ''}`}>
-              <button
-                className="btn btn-link nav-link dropdown-toggle text-white-50"
-                onClick={() => { setStatsOpen(o => !o); setAnalysisOpen(false); }}
-              >
-                Stats
-              </button>
-              <ul className={`dropdown-menu dropdown-menu-dark${statsOpen ? ' show' : ''}`}>
-                <li><Link className="dropdown-item" to="/TeamBatting" onClick={closeAll}>Team Batting</Link></li>
-                <li><Link className="dropdown-item" to="/TeamPitching" onClick={closeAll}>Team Pitching</Link></li>
-                <li><hr className="dropdown-divider" /></li>
-                <li><Link className="dropdown-item" to="/PlayerBatting" onClick={closeAll}>Player Batting</Link></li>
-                <li><Link className="dropdown-item" to="/PlayerPitching" onClick={closeAll}>Player Pitching</Link></li>
-              </ul>
-            </div>
+        {/* Desktop links */}
+        <div className="ht-links">
+          <Link to="/" className={`ht-link${location.pathname === '/' ? ' ht-link--active' : ''}`}>Home</Link>
+          <Link to="/games" className={`ht-link${isActive('/games') ? ' ht-link--active' : ''}`}>Games</Link>
+          <Link to="/predictions" className={`ht-link ht-link--highlight${isActive('/predictions') ? ' ht-link--active' : ''}`}>
+            Predictions
+          </Link>
 
-            {/* Analysis dropdown */}
-            <div ref={analysisRef} className={`dropdown${analysisOpen ? ' show' : ''}`}>
-              <button
-                className="btn btn-link nav-link dropdown-toggle text-white-50"
-                onClick={() => { setAnalysisOpen(o => !o); setStatsOpen(false); }}
-              >
-                Analysis
-              </button>
-              <ul className={`dropdown-menu dropdown-menu-dark${analysisOpen ? ' show' : ''}`}>
-                <li><Link className="dropdown-item" to="/season-comparison" onClick={closeAll}>Season Comparison</Link></li>
-                <li><Link className="dropdown-item" to="/team-comparison" onClick={closeAll}>Team Comparison</Link></li>
-                <li><Link className="dropdown-item" to="/player-comparison" onClick={closeAll}>Player Comparison</Link></li>
-                <li><hr className="dropdown-divider" /></li>
-                <li><Link className="dropdown-item" to="/advanced-analysis" onClick={closeAll}>Advanced Analysis</Link></li>
-              </ul>
-            </div>
+          {/* Stats dropdown */}
+          <div ref={statsRef} className="ht-dropdown">
+            <button
+              className={`ht-link ht-link--btn${isActive(['/TeamBatting','/TeamPitching','/PlayerBatting','/PlayerPitching']) ? ' ht-link--active' : ''}`}
+              onClick={() => { setStatsOpen(o => !o); setAnalysisOpen(false); }}
+            >
+              Stats <span className="ht-caret">{statsOpen ? '▴' : '▾'}</span>
+            </button>
+            {statsOpen && (
+              <div className="ht-dropdown-menu">
+                <div className="ht-dropdown-section">Team</div>
+                <Link className="ht-dropdown-item" to="/TeamBatting"    onClick={closeAll}>Team Batting</Link>
+                <Link className="ht-dropdown-item" to="/TeamPitching"   onClick={closeAll}>Team Pitching</Link>
+                <div className="ht-dropdown-section" style={{marginTop:6}}>Player</div>
+                <Link className="ht-dropdown-item" to="/PlayerBatting"  onClick={closeAll}>Player Batting</Link>
+                <Link className="ht-dropdown-item" to="/PlayerPitching" onClick={closeAll}>Player Pitching</Link>
+              </div>
+            )}
+          </div>
 
-            <Nav.Link as={Link} to="/predictions" onClick={closeAll}>Predictions</Nav.Link>
-            <Nav.Link as={Link} to="/transactions" onClick={closeAll}>Transactions</Nav.Link>
-          </Nav>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
+          {/* Analysis dropdown */}
+          <div ref={analysisRef} className="ht-dropdown">
+            <button
+              className={`ht-link ht-link--btn${isActive(['/season-comparison','/team-comparison','/player-comparison','/advanced-analysis']) ? ' ht-link--active' : ''}`}
+              onClick={() => { setAnalysisOpen(o => !o); setStatsOpen(false); }}
+            >
+              Analysis <span className="ht-caret">{analysisOpen ? '▴' : '▾'}</span>
+            </button>
+            {analysisOpen && (
+              <div className="ht-dropdown-menu">
+                <Link className="ht-dropdown-item" to="/season-comparison"  onClick={closeAll}>Season Comparison</Link>
+                <Link className="ht-dropdown-item" to="/team-comparison"    onClick={closeAll}>Team Comparison</Link>
+                <Link className="ht-dropdown-item" to="/player-comparison"  onClick={closeAll}>Player Comparison</Link>
+                <div className="ht-dropdown-divider" />
+                <Link className="ht-dropdown-item" to="/advanced-analysis"  onClick={closeAll}>Advanced Analysis</Link>
+              </div>
+            )}
+          </div>
+
+          <Link to="/transactions" className={`ht-link${isActive('/transactions') ? ' ht-link--active' : ''}`}>Transactions</Link>
+        </div>
+
+        {/* Mobile toggle */}
+        <button className="ht-mobile-toggle" onClick={() => setMobileOpen(o => !o)} aria-label="Menu">
+          <span /><span /><span />
+        </button>
+      </div>
+
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div className="ht-mobile-menu">
+          <Link className="ht-mobile-link" to="/"              onClick={closeAll}>Home</Link>
+          <Link className="ht-mobile-link" to="/games"         onClick={closeAll}>Games</Link>
+          <Link className="ht-mobile-link ht-mobile-link--hl" to="/predictions" onClick={closeAll}>Predictions</Link>
+          <div className="ht-mobile-section">Stats</div>
+          <Link className="ht-mobile-link" to="/TeamBatting"   onClick={closeAll}>Team Batting</Link>
+          <Link className="ht-mobile-link" to="/TeamPitching"  onClick={closeAll}>Team Pitching</Link>
+          <Link className="ht-mobile-link" to="/PlayerBatting" onClick={closeAll}>Player Batting</Link>
+          <Link className="ht-mobile-link" to="/PlayerPitching" onClick={closeAll}>Player Pitching</Link>
+          <div className="ht-mobile-section">Analysis</div>
+          <Link className="ht-mobile-link" to="/season-comparison"  onClick={closeAll}>Season Comparison</Link>
+          <Link className="ht-mobile-link" to="/team-comparison"    onClick={closeAll}>Team Comparison</Link>
+          <Link className="ht-mobile-link" to="/player-comparison"  onClick={closeAll}>Player Comparison</Link>
+          <Link className="ht-mobile-link" to="/advanced-analysis"  onClick={closeAll}>Advanced Analysis</Link>
+          <Link className="ht-mobile-link" to="/transactions"       onClick={closeAll}>Transactions</Link>
+        </div>
+      )}
+    </nav>
   );
 }
 
