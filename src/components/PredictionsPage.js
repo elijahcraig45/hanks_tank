@@ -44,6 +44,126 @@ const confidenceColor = (tier) => {
 
 function generateWhyText(pred) {
   if (!pred) return [];
+  const isV8 = pred.model_version?.toLowerCase().includes("v8");
+  return isV8 ? generateWhyV8(pred) : generateWhyV7(pred);
+}
+
+function generateWhyV8(pred) {
+  const reasons = [];
+  const homeTeam = pred.home_team_name?.split(" ").slice(-1)[0] || "Home";
+  const awayTeam = pred.away_team_name?.split(" ").slice(-1)[0] || "Away";
+  const isHomeWinner = pred.predicted_winner === pred.home_team_name;
+
+  // --- Elo ratings ---
+  if (pred.elo_differential != null) {
+    const eloDiff = pred.elo_differential;
+    const eloFavored = eloDiff > 0 ? homeTeam : awayTeam;
+    const eloEdge = Math.abs(eloDiff);
+    const eloHomePct = pred.elo_home_win_prob != null
+      ? `${Math.round(pred.elo_home_win_prob * 100)}%`
+      : null;
+    reasons.push({
+      icon: "📈",
+      type: (eloDiff > 15) === isHomeWinner || (eloDiff < -15) === !isHomeWinner ? "positive" : "neutral",
+      title: eloEdge < 15
+        ? "Teams evenly rated (Elo)"
+        : `${eloFavored} has the Elo edge (+${Math.round(eloEdge)} pts)`,
+      detail: `Elo differential: ${eloDiff > 0 ? "+" : ""}${Math.round(eloDiff)} pts${eloHomePct ? ` · Elo-implied home win probability: ${eloHomePct}` : ""}.`,
+    });
+  }
+
+  // --- Pythagorean win% ---
+  if (pred.home_pythag_season != null && pred.away_pythag_season != null) {
+    const homePct = Math.round(pred.home_pythag_season * 1000) / 10;
+    const awayPct = Math.round(pred.away_pythag_season * 1000) / 10;
+    const diff = pred.pythag_differential;
+    const pythagFavored = diff > 0 ? homeTeam : awayTeam;
+    reasons.push({
+      icon: "📐",
+      type: Math.abs(diff) < 0.02 ? "neutral" : (diff > 0) === isHomeWinner ? "positive" : "negative",
+      title: Math.abs(diff) < 0.02
+        ? "Pythagorean win% roughly matched"
+        : `${pythagFavored} outperforming by run differential`,
+      detail: `Expected win% from runs scored/allowed — ${homeTeam}: ${homePct}% · ${awayTeam}: ${awayPct}%. Differential: ${diff >= 0 ? "+" : ""}${(diff * 100).toFixed(1)} pts.`,
+    });
+  }
+
+  // --- Rolling form (last 10 games) ---
+  if (pred.home_run_diff_10g != null && pred.away_run_diff_10g != null) {
+    const hRD = pred.home_run_diff_10g;
+    const aRD = pred.away_run_diff_10g;
+    const formFavored = hRD > aRD ? homeTeam : awayTeam;
+    reasons.push({
+      icon: "🔥",
+      type: (hRD > aRD) === isHomeWinner ? "positive" : "neutral",
+      title: `${formFavored} in better recent form`,
+      detail: `Last 10 games run differential — ${homeTeam}: ${hRD >= 0 ? "+" : ""}${hRD.toFixed(1)} · ${awayTeam}: ${aRD >= 0 ? "+" : ""}${aRD.toFixed(1)}.`,
+    });
+  }
+
+  // --- Win streaks ---
+  if (pred.home_current_streak != null && pred.away_current_streak != null) {
+    const hS = pred.home_current_streak;
+    const aS = pred.away_current_streak;
+    const hotTeam = hS > aS ? homeTeam : aS > hS ? awayTeam : null;
+    if (Math.abs(hS) >= 3 || Math.abs(aS) >= 3) {
+      reasons.push({
+        icon: hS > 2 || aS < -2 ? "🔥" : aS > 2 || hS < -2 ? "❄️" : "➡️",
+        type: hotTeam === (isHomeWinner ? homeTeam : awayTeam) ? "positive" : "neutral",
+        title: hotTeam
+          ? `${hotTeam} on a ${Math.abs(hS > aS ? hS : aS)}-game ${(hS > aS ? hS : aS) > 0 ? "winning" : "losing"} streak`
+          : "Both teams streaking",
+        detail: `Current streaks — ${homeTeam}: ${hS > 0 ? "W" : "L"}${Math.abs(hS)} · ${awayTeam}: ${aS > 0 ? "W" : "L"}${Math.abs(aS)}.`,
+      });
+    }
+  }
+
+  // --- H2H 3-year record ---
+  if (pred.h2h_win_pct_3yr != null && Math.abs(pred.h2h_win_pct_3yr - 0.5) > 0.05) {
+    const h2hFavored = pred.h2h_win_pct_3yr > 0.5 ? homeTeam : awayTeam;
+    const h2hPct = Math.round(pred.h2h_win_pct_3yr > 0.5
+      ? pred.h2h_win_pct_3yr * 100
+      : (1 - pred.h2h_win_pct_3yr) * 100);
+    reasons.push({
+      icon: "🔁",
+      type: (pred.h2h_win_pct_3yr > 0.5) === isHomeWinner ? "positive" : "negative",
+      title: `${h2hFavored} dominates this matchup historically`,
+      detail: `3-year head-to-head: ${h2hFavored} wins ${h2hPct}% of games between these clubs.`,
+    });
+  }
+
+  // --- Divisional rivalry ---
+  if (pred.is_divisional) {
+    reasons.push({
+      icon: "⚔️",
+      type: "neutral",
+      title: "Divisional rivalry",
+      detail: "Intra-division games historically tighter than league average — familiarity compresses win probabilities slightly.",
+    });
+  }
+
+  // --- Probable starters note (no lineup wOBA for V8) ---
+  if (!pred.lineup_confirmed) {
+    reasons.push({
+      icon: "📋",
+      type: "neutral",
+      title: "Probable starters only",
+      detail: "V8 uses team-level Elo, run differential, and Pythagorean metrics — lineup wOBA splits are not part of this model's feature set.",
+    });
+  }
+
+  // --- Home field / form footer ---
+  reasons.push({
+    icon: "🏠",
+    type: isHomeWinner ? "positive" : "neutral",
+    title: "Home field advantage",
+    detail: "Home teams win ~53-54% of MLB games. Elo ratings include a +80 point home bonus that the model was trained on.",
+  });
+
+  return reasons;
+}
+
+function generateWhyV7(pred) {
   const reasons = [];
   const homeTeam = pred.home_team_name?.split(" ").slice(-1)[0] || "Home";
   const awayTeam = pred.away_team_name?.split(" ").slice(-1)[0] || "Away";
@@ -404,7 +524,13 @@ const PredictionsPage = () => {
       <div className="mb-4">
         <h3 className="fw-bold mb-0">Predictions</h3>
         <p className="text-muted mb-0" style={{ fontSize: "0.875rem" }}>
-          Daily game outcome forecasts from the V6 pitcher-venue stacked ensemble
+          {predictions.length > 0
+            ? `Daily game outcome forecasts · ${predictions[0].model_version ?? "—"}${
+                predictions[0].model_version?.toLowerCase().includes("v8")
+                  ? " (Elo + Pythagorean ensemble, 57.7% overall · 65.4% high-confidence)"
+                  : " (pitcher-venue stacked ensemble)"
+              }`
+            : "Daily game outcome forecasts"}
         </p>
       </div>
 
