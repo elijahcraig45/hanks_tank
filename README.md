@@ -1,53 +1,146 @@
-# Hank's Tank - MLB Analytics Platform
+# Hank's Tank — MLB Analytics Platform
 
-A professional React-based baseball analytics dashboard providing comprehensive MLB statistics, visualizations, and insights.
+> **Live:** [https://frontend-dot-hankstank.uc.r.appspot.com](https://frontend-dot-hankstank.uc.r.appspot.com)
 
-## 🌐 Live Application
+A full-featured MLB analytics dashboard built as a personal data-engineering showcase. Combines real-time MLB data, a custom Node/TypeScript REST API, a Google BigQuery data warehouse, and daily ML predictions from a V8 ensemble model (CatBoost × 2 + LightGBM + MLP, **57.65% accuracy on 1,243-game 2025 holdout**) into a single production-grade React SPA deployed on Google Cloud App Engine.
 
-**[https://frontend-dot-hankstank.uc.r.appspot.com](https://frontend-dot-hankstank.uc.r.appspot.com)**
+This is one of three interconnected repositories:
 
-## Features
+| Repo | Role | Stack |
+|---|---|---|
+| **hanks_tank** ← you are here | React SPA frontend | React 18, Bootstrap 5, D3, App Engine |
+| **[hanks_tank_backend](../hanks_tank_backend)** | REST API + data layer | TypeScript, Express, BigQuery, App Engine |
+| **[hanks_tank_ml](../hanks_tank_ml)** | ML pipeline + daily inference | Python, CatBoost, LightGBM, Cloud Functions |
 
-- **Real-Time Data**: Live game scores and current season statistics
-- **Historical Analysis**: Access to historical data from 2015-2025
-- **Advanced Metrics**: Sabermetric statistics including wOBA, ISO, BABIP, and more
-- **Team Analytics**: Comprehensive team performance dashboards with league rankings
-- **Player Comparisons**: Side-by-side player analysis with radar charts
-- **Interactive Visualizations**: Charts, graphs, and data tables
-- **Responsive Design**: Optimized for desktop and mobile devices
+---
 
-## Tech Stack
+## ✨ Key Features
 
-- React 18.2 with Hooks
-- React Router 6
-- Bootstrap 5.3 & React Bootstrap
-- Recharts for data visualization
-- Google Cloud App Engine hosting
+### 🔮 ML-Powered Game Predictions
+- Daily predictions for every MLB game served from BigQuery via the backend API
+- Win-probability bars, confidence tiers (HIGH / MEDIUM / LOW), and lineup-confirmation flags
+- **Pre-game Scouting Report** on every game page: Elo ratings, Pythagorean win%, last-10 run differential, streak indicators, H2H history (3-year), starter ERA/wOBA, bullpen health
+- Signal generation automatically branches on model version: V8 shows Elo/Pythagorean/form signals; V6-V7 shows wOBA matchup signals
 
-## Installation
+### ⚾ Live Game Experience
+- Real-time linescore, play-by-play with **differentiated result badges** (GO/FO/LD/PO/FC vs generic OUT)
+- **D3 strike zone** with per-pitch-type color coding (13 pitch types), numbered pitch sequence, ⭐ home-run markers, and a **batter silhouette** that mirrors hand/position correctly between umpire and pitcher views
+- Click any at-bat in the play-by-play to focus the strike zone on that sequence
+
+### 📊 Stats Database (2015–2026)
+- 35,000+ records in BigQuery exposed through the backend API
+- Team batting / pitching with sortable, filterable tables and league-rank sparklines
+- Player pages with headshot, career trend charts (Recharts), sabermetric grids (wOBA, BABIP, OPS+, K%, BB%, FIP, xFIP), and full Statcast heat-map via the strike zone component
+- Season comparison, player comparison (side-by-side radar + delta tables), team comparison
+
+### 🔬 Advanced Analysis
+- Scatter plot matrix, correlation analysis, percentile rankings
+- AI-assisted analysis (natural language queries forwarded to the backend)
+
+---
+
+## 🏗️ Architecture
+
+```
+Browser (React SPA)
+    │
+    ├─ /games, /game/:pk  ──► MLB Stats API (public, real-time)
+    │
+    └─ /api/*  ─────────────► hanks_tank_backend (App Engine)
+                                    │
+                                    ├─ BigQuery  (historical stats, predictions)
+                                    ├─ FanGraphs (player analytics)
+                                    └─ MLB API   (standings, live scores)
+```
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| UI framework | React 18, React Router 6 |
+| Component library | React Bootstrap 2 / Bootstrap 5 |
+| Visualizations | D3 v7, Recharts |
+| State | React Hooks (no Redux) |
+| API client | Centralized `ApiService` with retry, timeout, cache |
+| Hosting | Google Cloud App Engine (frontend service) |
+| CI/CD | `gcloud app deploy` via `build.sh` |
+
+---
+
+## 🚀 Local Development
 
 ```bash
+# 1. Install
 npm install
+
+# 2. Configure environment
+cp .env.example .env.local
+# Set REACT_APP_API_URL=http://localhost:8080
+
+# 3. Start dev server
 npm start
 ```
 
-## Environment Variables
-
-Create a `.env.local` file:
-
-```
-REACT_APP_API_URL=http://localhost:8080
-REACT_APP_DEFAULT_SEASON=2026
-```
-
-## Build & Deploy
+### Build & Deploy
 
 ```bash
 npm run build
-gcloud app deploy
+gcloud app deploy app.yaml --quiet
 ```
 
-## API Integration
+---
+
+## 📁 Project Structure
+
+```
+src/
+├── App.js                  # Route declarations
+├── index.js                # Entry + global CSS imports
+├── components/
+│   ├── HomePage.js         # Dashboard: stats pills, games carousel, standings
+│   ├── GamesToday.js       # /games — live scoreboard + V8 signals
+│   ├── Game.js             # /game/:pk — scouting report, play-by-play, lineups
+│   ├── LiveGameStrikeZone.js  # D3 strike zone with batter silhouette
+│   ├── PredictionsPage.js  # /predictions — date-nav, confidence groups, why-cards
+│   ├── PlayerPage.js       # /player/:id — stats, trends, Statcast heat-map
+│   ├── TeamPage.js         # /team/:abbr — roster, batting, pitching, transactions
+│   ├── PlayerBatting.js    # /PlayerBatting — leaderboard table
+│   ├── PlayerPitching.js   # /PlayerPitching — leaderboard table
+│   ├── TeamBatting.js      # /TeamBatting
+│   ├── TeamPitching.js     # /TeamPitching
+│   ├── SeasonComparison.js # Season-over-season delta charts
+│   ├── PlayerComparison.js # Side-by-side player radar
+│   ├── TeamComparison.js   # Team delta analysis
+│   ├── AdvancedPlayerAnalysis.js
+│   ├── StrikeZone.js       # Statcast heat-map (historical, from API)
+│   ├── BoxScore.js         # Innings linescore table
+│   ├── Navbar.js           # Custom dark nav with dropdowns
+│   ├── Transactions.js
+│   └── styles/             # Per-component CSS modules
+├── services/
+│   └── api.js              # Centralized ApiService (retry, cache, timeout)
+└── config/
+    └── constants.js        # Season constants, thresholds
+```
+
+---
+
+## 🌐 Environment Variables
+
+Create a `.env.local` file (never committed):
+
+```
+REACT_APP_API_URL=https://hankstank.uc.r.appspot.com
+REACT_APP_DEFAULT_SEASON=2026
+```
+
+---
+
+## 📄 License
+
+MIT — see [LICENSE](LICENSE)
 
 This frontend connects to the Hank's Tank Backend API for all data operations. The backend handles:
 - MLB Stats API integration

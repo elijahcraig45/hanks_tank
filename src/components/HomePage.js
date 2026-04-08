@@ -274,12 +274,31 @@ function HomePage() {
       {/* ── Header ── */}
       <div className="home-header text-center mb-4">
         <h1 className="home-title">Hank's Tank</h1>
-        <p className="text-muted mb-0">MLB Analytics Dashboard · {new Date().getFullYear()}</p>
+        <p className="home-subtitle mb-2">MLB ANALYTICS · {new Date().getFullYear()}</p>
         {lastUpdated && (
-          <small className="text-muted">
+          <small className="text-muted" style={{ fontSize: "0.75rem" }}>
             Updated {lastUpdated.toLocaleTimeString()}
           </small>
         )}
+      </div>
+
+      {/* ── Stat pills ── */}
+      <div className="stat-pill-row justify-content-center mb-4">
+        {[
+          { icon: "⚾", val: games.length || "—", label: "Games Today" },
+          { icon: "📊", val: "35K+", label: "Records in BQ" },
+          { icon: "🤖", val: "V8", label: "Model Version" },
+          { icon: "🎯", val: "57.6%", label: "2025 Accuracy" },
+          { icon: "🏟️", val: "30", label: "MLB Teams" },
+        ].map(({ icon, val, label }) => (
+          <div key={label} className="stat-pill fade-up">
+            <span className="stat-pill-icon">{icon}</span>
+            <div>
+              <div className="stat-pill-val">{val}</div>
+              <div className="stat-pill-label">{label}</div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* ── Games Carousel ── */}
@@ -287,26 +306,31 @@ function HomePage() {
 
       {/* ── Main Grid ── */}
       <Row className="g-4">
-        {/* ── Left col: news ── */}
+        {/* ── Left col: nav + news ── */}
         <Col xs={12} lg={8}>
 
-          {/* Quick links */}
-          <Row className="g-2 mb-4">
+          {/* Quick nav cards */}
+          <div className="quick-nav-grid mb-4">
             {[
-              { to: "/predictions", label: "🔮 Predictions", variant: "primary" },
-              { to: "/TeamBatting", label: "🏏 Team Batting", variant: "outline-secondary" },
-              { to: "/TeamPitching", label: "⚾ Team Pitching", variant: "outline-secondary" },
-              { to: "/PlayerBatting", label: "🧢 Player Batting", variant: "outline-secondary" },
-              { to: "/PlayerPitching", label: "💪 Player Pitching", variant: "outline-secondary" },
-              { to: "/games", label: "📅 Scoreboard", variant: "outline-secondary" },
-            ].map(({ to, label, variant }) => (
-              <Col xs={6} sm={4} md={2} key={to}>
-                <Link to={to} className={`btn btn-${variant} btn-sm w-100 text-nowrap`}>
-                  {label}
-                </Link>
-              </Col>
+              { to: "/predictions",       icon: "🔮", label: "Predictions",     primary: true },
+              { to: "/games",             icon: "📅", label: "Scoreboard",      primary: false },
+              { to: "/TeamBatting",       icon: "🏏", label: "Team Batting",    primary: false },
+              { to: "/TeamPitching",      icon: "⚾", label: "Team Pitching",   primary: false },
+              { to: "/PlayerBatting",     icon: "🧢", label: "Player Batting",  primary: false },
+              { to: "/PlayerPitching",    icon: "💪", label: "Player Pitching", primary: false },
+              { to: "/advanced-analysis", icon: "🔬", label: "Advanced",        primary: false },
+              { to: "/transactions",      icon: "🔄", label: "Transactions",    primary: false },
+            ].map(({ to, icon, label, primary }) => (
+              <Link
+                key={to}
+                to={to}
+                className={`quick-nav-card${primary ? " quick-nav-card--primary" : ""}`}
+              >
+                <span className="quick-nav-icon">{icon}</span>
+                {label}
+              </Link>
             ))}
-          </Row>
+          </div>
 
           {/* News columns */}
           <Row className="g-3">

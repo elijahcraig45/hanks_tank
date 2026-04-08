@@ -1,29 +1,172 @@
-/* Navbar dropdown styles — dark theme */
-.navbar .dropdown-menu {
-  background-color: #343a40;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+/* ─── Hank's Tank Navigation ─────────────────────────────────────────────── */
+
+.ht-nav {
+  background: var(--ht-navy);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  box-shadow: 0 2px 12px rgba(0,0,0,.35);
 }
 
-.navbar .dropdown-item {
-  color: rgba(255, 255, 255, 0.85);
+.ht-nav-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
 }
 
-.navbar .dropdown-item:hover,
-.navbar .dropdown-item:focus {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+/* ── Brand ── */
+.ht-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  text-decoration: none;
+  flex-shrink: 0;
+  user-select: none;
+}
+.ht-brand-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+.ht-brand-name {
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+.ht-brand-year {
+  font-family: var(--ht-font-mono);
+  font-size: 0.68rem;
+  color: var(--ht-blue);
+  background: rgba(26,86,219,.18);
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  font-weight: 600;
 }
 
-.navbar .dropdown-divider {
-  border-top-color: rgba(255, 255, 255, 0.1);
+/* ── Desktop link row ── */
+.ht-links {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  margin-left: auto;
+}
+@media (max-width: 767px) { .ht-links { display: none; } }
+
+.ht-link {
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: rgba(255,255,255,.68);
+  text-decoration: none;
+  padding: 5px 12px;
+  border-radius: 6px;
+  transition: color 0.13s, background 0.13s;
+  white-space: nowrap;
+}
+.ht-link:hover       { color: #fff; background: rgba(255,255,255,.07); }
+.ht-link--active     { color: #fff !important; background: rgba(255,255,255,.1) !important; }
+.ht-link--btn        { background: transparent; border: 0; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+.ht-link--highlight  { color: #7cb9ff; font-weight: 600; }
+.ht-link--highlight:hover { color: #a8d6ff; background: rgba(124,185,255,.1); }
+
+.ht-caret { font-size: 0.6rem; opacity: 0.7; }
+
+/* ── Dropdown ── */
+.ht-dropdown { position: relative; }
+
+.ht-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  min-width: 180px;
+  padding: 6px;
+  animation: dropIn 0.13s ease;
+}
+@keyframes dropIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
-/* Mobile: dropdown nests inline */
-@media (max-width: 991.98px) {
-  .navbar .dropdown-menu {
-    border: none;
-    background-color: rgba(255, 255, 255, 0.05);
-    padding-left: 1rem;
-  }
+.ht-dropdown-section {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #475569;
+  padding: 4px 10px 2px;
+}
+
+.ht-dropdown-item {
+  display: block;
+  padding: 7px 12px;
+  font-size: 0.82rem;
+  color: rgba(255,255,255,.78);
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background 0.1s, color 0.1s;
+}
+.ht-dropdown-item:hover { background: rgba(255,255,255,.09); color: #fff; }
+
+.ht-dropdown-divider {
+  height: 1px;
+  background: rgba(255,255,255,.08);
+  margin: 5px 0;
+}
+
+/* ── Mobile toggle ── */
+.ht-mobile-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 6px;
+  margin-left: auto;
+  border-radius: 6px;
+}
+.ht-mobile-toggle:hover { background: rgba(255,255,255,.08); }
+.ht-mobile-toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: rgba(255,255,255,.8);
+  border-radius: 2px;
+}
+@media (max-width: 767px) { .ht-mobile-toggle { display: flex; } }
+
+/* ── Mobile menu ── */
+.ht-mobile-menu {
+  background: #1e293b;
+  border-top: 1px solid rgba(255,255,255,.07);
+  padding: 8px 0 12px;
+}
+.ht-mobile-link {
+  display: block;
+  padding: 9px 1.5rem;
+  font-size: 0.88rem;
+  color: rgba(255,255,255,.75);
+  text-decoration: none;
+  transition: background 0.1s, color 0.1s;
+}
+.ht-mobile-link:hover       { background: rgba(255,255,255,.06); color: #fff; }
+.ht-mobile-link--hl         { color: #7cb9ff; font-weight: 600; }
+.ht-mobile-section {
+  font-size: 0.61rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #475569;
+  padding: 10px 1.5rem 3px;
 }
 

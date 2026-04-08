@@ -1,0 +1,81 @@
+/* ── Global data-table enhancements ─────────────────────────────────────── */
+
+/* Tabular numbers everywhere for aligned data */
+td, th {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sharper card look across all pages */
+.card {
+  border-radius: var(--ht-radius) !important;
+  border-color: var(--ht-gray-200) !important;
+}
+.card-header {
+  background: #fff !important;
+  border-bottom-color: var(--ht-gray-200) !important;
+  font-size: 0.875rem;
+}
+
+/* Stat highlight chip */
+.stat-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.stat-chip-green  { background: #dcfce7; color: #166534; }
+.stat-chip-red    { background: #fee2e2; color: #991b1b; }
+.stat-chip-blue   { background: #dbeafe; color: #1e40af; }
+.stat-chip-gray   { background: var(--ht-gray-100); color: var(--ht-gray-600); }
+
+/* Page section title */
+.section-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ht-gray-400);
+  margin-bottom: 0.5rem;
+}
+
+/* Mono numbers */
+.mono { font-family: var(--ht-font-mono); font-size: 0.88em; }
+
+/* Accent bar on card headers */
+.card-header-accent {
+  position: relative;
+  padding-left: 14px !important;
+}
+.card-header-accent::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 25%; bottom: 25%;
+  width: 3px;
+  background: var(--ht-blue);
+  border-radius: 2px;
+}
+
+/* Scrollable tables — always show scrollbar track so layout is stable */
+.table-responsive { scrollbar-width: thin; scrollbar-color: var(--ht-gray-200) transparent; }
+.table-responsive::-webkit-scrollbar { height: 5px; }
+.table-responsive::-webkit-scrollbar-thumb { background: var(--ht-gray-200); border-radius: 3px; }
+
+/* Fade-in for page content */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.3s ease both; }
+
+/* Model version badge */
+.model-badge {
+  font-family: var(--ht-font-mono);
+  font-size: 0.65rem;
+  background: var(--ht-navy-mid);
+  color: #94a3b8;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}

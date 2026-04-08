@@ -106,3 +106,86 @@
   border-bottom: 1px solid rgba(0,0,0,.08);
   font-size: 0.9rem;
 }
+
+/* ── Scouting Report ───────────────────────────────────────────────────── */
+.scout-prob-bar {
+  display: flex;
+  height: 18px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #e9ecef;
+}
+.scout-prob-away { background: #6c757d; transition: width 0.4s; }
+.scout-prob-home { background: #0d6efd; transition: width 0.4s; }
+.scout-prob-winner.scout-prob-away,
+.scout-prob-winner.scout-prob-home { background: #198754; }
+
+.scout-section {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 10px 12px;
+  height: 100%;
+}
+
+.scout-section-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6c757d;
+  margin-bottom: 8px;
+}
+
+.scout-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 2px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 0.78rem;
+  gap: 8px;
+}
+.scout-row:last-child { border-bottom: none; }
+
+.scout-label {
+  color: #6c757d;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.scout-val {
+  font-weight: 600;
+  color: #212529;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.scout-pitcher-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  font-size: 0.78rem;
+}
+
+.scout-pitcher-abbr {
+  font-weight: 700;
+  color: #495057;
+  min-width: 28px;
+  font-size: 0.72rem;
+}
+
+.scout-pitcher-name {
+  flex: 1;
+  color: #212529;
+}
+
+.scout-hand-badge {
+  font-size: 0.66rem;
+  background: #e9ecef;
+  color: #495057;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-weight: 600;
+}
