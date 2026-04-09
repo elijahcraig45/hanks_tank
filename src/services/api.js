@@ -276,6 +276,10 @@ class ApiService {
     return this.get(`/scouting-reports?date=${dateParam}`, { cacheTTL: 15 });
   }
 
+  async getScoutingReportByGame(gamePk) {
+    return this.get(`/scouting-reports/${gamePk}`, { cacheTTL: 15 });
+  }
+
   /**
    * Get game predictions and matchup signals for a date
    */

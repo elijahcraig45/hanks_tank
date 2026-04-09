@@ -292,16 +292,109 @@ function NewsSection({ report }) {
 
 // ─── main export ──────────────────────────────────────────────────────────────
 
-const ScoutingReport = ({ report, defaultOpen = false }) => {
-  const [open, setOpen] = useState(defaultOpen);
+function FunFactsSection({ report }) {
+  const facts = report?.fun_facts;
+  if (!facts?.length) return null;
+  return (
+    <div className="sr-section mb-3">
+      <div className="sr-section-title">⚡ Fun Facts &amp; Storylines</div>
+      <ul className="sr-facts-list mb-0">
+        {facts.map((f, i) => (
+          <li key={i} className="sr-fact-item">{f}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function MatchupSection({ report }) {
+  const mvt = report?.matchup_vs_team;
+  if (!mvt) return null;
+
+  const home = (mvt.home || []).filter(p => p.woba != null);
+  const away = (mvt.away || []).filter(p => p.woba != null);
+  if (!home.length && !away.length) return null;
+
+  const awayName = report.away_team_name?.split(" ").slice(-1)[0];
+  const homeName = report.home_team_name?.split(" ").slice(-1)[0];
+
+  const renderRows = (players, opp) => {
+    // Show top 5 sorted by abs(woba - 0.320)
+    const sorted = [...players].sort((a, b) =>
+      Math.abs((b.woba || 0.320) - 0.320) - Math.abs((a.woba || 0.320) - 0.320)
+    ).slice(0, 5);
+    return sorted.map((p, i) => {
+      const w = p.woba || 0;
+      const isHot  = w >= 0.375;
+      const isCold = w <= 0.235;
+      return (
+        <div key={i} className="sr-matchup-row">
+          <span className="sr-matchup-name">{p.player_name}</span>
+          <span className="sr-matchup-opp text-muted">vs {opp}</span>
+          <span className={`sr-matchup-woba ${isHot ? "text-danger" : isCold ? "text-primary" : ""}`}>
+            .{Math.round(w * 1000)} wOBA
+          </span>
+          <span className="sr-matchup-pa text-muted">{p.pa} PA</span>
+          {p.hr > 0 && <span className="sr-matchup-hr">{p.hr} HR</span>}
+        </div>
+      );
+    });
+  };
+
+  return (
+    <div className="sr-section mb-3">
+      <div className="sr-section-title">🔍 Career Matchup History (2024–2026)</div>
+      <div className="sr-matchup-grid">
+        {home.length > 0 && (
+          <div className="sr-matchup-col">
+            <div className="sr-matchup-team-header">{homeName} vs {awayName} pitching</div>
+            {renderRows(home, awayName)}
+          </div>
+        )}
+        {away.length > 0 && (
+          <div className="sr-matchup-col">
+            <div className="sr-matchup-team-header">{awayName} vs {homeName} pitching</div>
+            {renderRows(away, homeName)}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const ScoutingReport = ({ report, defaultOpen = false, alwaysExpanded = false }) => {
+  const [open, setOpen] = useState(defaultOpen || alwaysExpanded);
 
   if (!report) return null;
 
   const hasContent = report.prediction || report.starters?.home?.name ||
     report.momentum?.home || report.hot_cold || report.watch_list?.length ||
+    report.fun_facts?.length ||
     (report.news?.home?.length || 0) + (report.news?.away?.length || 0) > 0;
 
   if (!hasContent) return null;
+
+  const body = (
+    <div className="sr-body">
+      <PredictionBar report={report} />
+      <FunFactsSection report={report} />
+      <StartersSection report={report} />
+      <MomentumSection report={report} />
+      <MatchupSection report={report} />
+      <HotColdSection report={report} />
+      <WatchListSection list={report.watch_list} />
+      <NewsSection report={report} />
+      <div className="sr-footer text-muted">
+        {report.generated_at && (
+          <span>Updated {new Date(report.generated_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+        )}
+      </div>
+    </div>
+  );
+
+  if (alwaysExpanded) {
+    return <div className="scouting-report scouting-report--inline">{body}</div>;
+  }
 
   return (
     <div className="scouting-report" onClick={e => e.preventDefault()}>
@@ -314,22 +407,11 @@ const ScoutingReport = ({ report, defaultOpen = false }) => {
         <span className="sr-toggle-chevron">{open ? "▲" : "▼"}</span>
       </button>
       <Collapse in={open}>
-        <div className="sr-body">
-          <PredictionBar report={report} />
-          <StartersSection report={report} />
-          <WatchListSection list={report.watch_list} />
-          <MomentumSection report={report} />
-          <HotColdSection report={report} />
-          <NewsSection report={report} />
-          <div className="sr-footer text-muted">
-            {report.generated_at && (
-              <span>Updated {new Date(report.generated_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-            )}
-          </div>
-        </div>
+        {body}
       </Collapse>
     </div>
   );
 };
 
 export default ScoutingReport;
+

@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { Container, Row, Col, Card, Table, Badge, Button } from "react-bootstrap";
 import StrikeZone from './LiveGameStrikeZone';
 import BoxScore from './BoxScore';
+import ScoutingReport from './ScoutingReport';
 import apiService from '../services/api';
 import "./styles/Game.css";
 
@@ -33,157 +34,6 @@ const resultBadge = (description = "") => {
   return { label: "•", bg: "light" };
 };
 
-// ── Scouting report card from prediction data ─────────────────────────────────
-const ScoutingReport = ({ pred, awayAbbr, homeAbbr }) => {
-  if (!pred) return null;
-
-  const isV8 = pred.elo_differential != null || (pred.model_version || "").includes("8");
-
-  const statRow = (label, val, extra) => val != null ? (
-    <div className="scout-row" key={label}>
-      <span className="scout-label">{label}</span>
-      <span className="scout-val">{val}{extra}</span>
-    </div>
-  ) : null;
-
-  const fmt = (n, decimals = 0) => n != null ? Number(n).toFixed(decimals) : null;
-  const pct  = (n) => n != null ? `${Math.round(n * 100)}%` : null;
-  const sign  = (n) => n != null ? (n > 0 ? `+${Math.round(n)}` : String(Math.round(n))) : null;
-
-  return (
-    <Card className="shadow-sm mb-4">
-      <Card.Header className="py-2 d-flex align-items-center justify-content-between">
-        <span className="fw-semibold">Pre-Game Scouting Report</span>
-        <div className="d-flex gap-1 align-items-center">
-          {pred.model_version && (
-            <Badge bg="light" text="dark" style={{ fontSize: "0.68rem", border: "1px solid #dee2e6" }}>
-              {pred.model_version}
-            </Badge>
-          )}
-          {pred.confidence_tier && (
-            <Badge
-              bg={pred.confidence_tier.toUpperCase() === "HIGH" ? "success" :
-                  pred.confidence_tier.toUpperCase() === "MEDIUM" ? "warning" : "secondary"}
-              style={{ fontSize: "0.68rem" }}
-            >
-              {pred.confidence_tier}
-            </Badge>
-          )}
-        </div>
-      </Card.Header>
-      <Card.Body className="p-3">
-
-        {/* Win probability bar */}
-        {pred.home_win_probability != null && pred.away_win_probability != null && (
-          <div className="mb-3">
-            <div className="d-flex justify-content-between mb-1" style={{ fontSize: "0.77rem", fontWeight: 600 }}>
-              <span>{awayAbbr} {Math.round(pred.away_win_probability * 100)}%</span>
-              <span className="text-muted" style={{ fontWeight: 400 }}>win probability</span>
-              <span>{homeAbbr} {Math.round(pred.home_win_probability * 100)}%</span>
-            </div>
-            <div className="scout-prob-bar">
-              <div
-                className={`scout-prob-away${pred.predicted_winner === pred.away_team_name ? " scout-prob-winner" : ""}`}
-                style={{ width: `${Math.round(pred.away_win_probability * 100)}%` }}
-              />
-              <div
-                className={`scout-prob-home${pred.predicted_winner === pred.home_team_name ? " scout-prob-winner" : ""}`}
-                style={{ width: `${Math.round(pred.home_win_probability * 100)}%` }}
-              />
-            </div>
-            {pred.predicted_winner && (
-              <div className="mt-1 text-center" style={{ fontSize: "0.73rem", color: "#6c757d" }}>
-                Predicted winner: <strong style={{ color: "#198754" }}>{pred.predicted_winner}</strong>
-              </div>
-            )}
-          </div>
-        )}
-
-        <Row className="g-3">
-          {isV8 && (
-            <>
-              {/* Elo & Pythagorean */}
-              <Col xs={6} sm={4}>
-                <div className="scout-section">
-                  <div className="scout-section-title">Elo Ratings</div>
-                  {statRow(`${awayAbbr} Elo`, fmt(pred.elo_away))}
-                  {statRow(`${homeAbbr} Elo`, fmt(pred.elo_home))}
-                  {statRow("Differential", sign(pred.elo_differential))}
-                  {pred.elo_home_win_prob != null && statRow("Model win%", pct(pred.elo_home_win_prob), ` (${homeAbbr})`)}
-                </div>
-              </Col>
-
-              <Col xs={6} sm={4}>
-                <div className="scout-section">
-                  <div className="scout-section-title">Pythagorean</div>
-                  {statRow(`${awayAbbr} W%`, pct(pred.away_pythag_season))}
-                  {statRow(`${homeAbbr} W%`, pct(pred.home_pythag_season))}
-                  {statRow("Diff", sign(pred.pythag_differential != null ? pred.pythag_differential * 100 : null), pred.pythag_differential != null ? "%" : "")}
-                </div>
-              </Col>
-
-              <Col xs={6} sm={4}>
-                <div className="scout-section">
-                  <div className="scout-section-title">Recent Form</div>
-                  {statRow(`${awayAbbr} L10 RD`, sign(pred.away_run_diff_10g))}
-                  {statRow(`${homeAbbr} L10 RD`, sign(pred.home_run_diff_10g))}
-                  {pred.away_current_streak != null && statRow(`${awayAbbr} streak`, pred.away_current_streak > 0 ? `W${pred.away_current_streak}` : `L${Math.abs(pred.away_current_streak)}`)}
-                  {pred.home_current_streak != null && statRow(`${homeAbbr} streak`, pred.home_current_streak > 0 ? `W${pred.home_current_streak}` : `L${Math.abs(pred.home_current_streak)}`)}
-                </div>
-              </Col>
-            </>
-          )}
-
-          {/* Starting pitchers */}
-          {(pred.away_starter_name || pred.home_starter_name) && (
-            <Col xs={12} sm={6}>
-              <div className="scout-section">
-                <div className="scout-section-title">Starting Pitchers</div>
-                {pred.away_starter_name && (
-                  <div className="scout-pitcher-row">
-                    <span className="scout-pitcher-abbr">{awayAbbr}</span>
-                    <span className="scout-pitcher-name">{pred.away_starter_name}</span>
-                    {pred.away_starter_hand && (
-                      <span className="scout-hand-badge">{pred.away_starter_hand}HP</span>
-                    )}
-                  </div>
-                )}
-                {pred.home_starter_name && (
-                  <div className="scout-pitcher-row">
-                    <span className="scout-pitcher-abbr">{homeAbbr}</span>
-                    <span className="scout-pitcher-name">{pred.home_starter_name}</span>
-                    {pred.home_starter_hand && (
-                      <span className="scout-hand-badge">{pred.home_starter_hand}HP</span>
-                    )}
-                  </div>
-                )}
-                {pred.away_starter_era != null && statRow(`${pred.away_starter_name?.split(" ").slice(-1)[0]} ERA`, fmt(pred.away_starter_era, 2))}
-                {pred.home_starter_era != null && statRow(`${pred.home_starter_name?.split(" ").slice(-1)[0]} ERA`, fmt(pred.home_starter_era, 2))}
-                {pred.away_starter_woba_allowed != null && statRow(`${pred.away_starter_name?.split(" ").slice(-1)[0]} wOBA`, fmt(pred.away_starter_woba_allowed, 3))}
-                {pred.home_starter_woba_allowed != null && statRow(`${pred.home_starter_name?.split(" ").slice(-1)[0]} wOBA`, fmt(pred.home_starter_woba_allowed, 3))}
-              </div>
-            </Col>
-          )}
-
-          {/* H2H & Context */}
-          <Col xs={12} sm={6}>
-            <div className="scout-section">
-              <div className="scout-section-title">Context</div>
-              {pred.h2h_win_pct_3yr != null && statRow("H2H win% (3yr)", pct(pred.h2h_win_pct_3yr), ` (${homeAbbr})`)}
-              {pred.h2h_game_count_3yr != null && statRow("H2H games", pred.h2h_game_count_3yr)}
-              {pred.is_divisional != null && statRow("Divisional", pred.is_divisional ? "Yes" : "No")}
-              {pred.home_bullpen_era != null && statRow(`${homeAbbr} bullpen ERA`, fmt(pred.home_bullpen_era, 2))}
-              {pred.away_bullpen_era != null && statRow(`${awayAbbr} bullpen ERA`, fmt(pred.away_bullpen_era, 2))}
-              {pred.temperature != null && statRow("Temp", `${pred.temperature}°F`)}
-              {pred.wind_speed != null && statRow("Wind", `${pred.wind_speed} mph`)}
-            </div>
-          </Col>
-        </Row>
-      </Card.Body>
-    </Card>
-  );
-};
-
 // ── Main page ─────────────────────────────────────────────────────────────────
 const GameDetailsPage = () => {
   const { gamePk } = useParams();
@@ -191,6 +41,7 @@ const GameDetailsPage = () => {
   const [selectedAtBat, setSelectedAtBat] = useState(null);
   const [loading, setLoading]           = useState(true);
   const [prediction, setPrediction]     = useState(null);
+  const [scoutingReport, setScoutingReport] = useState(null);
 
   const fetchGameDetails = async () => {
     try {
@@ -224,6 +75,17 @@ const GameDetailsPage = () => {
       } catch { /* predictions are optional */ }
     };
     fetchPred();
+  }, [gamePk]);
+
+  // Fetch pre-computed BQ scouting report
+  useEffect(() => {
+    const fetchScout = async () => {
+      try {
+        const data = await apiService.getScoutingReportByGame(gamePk);
+        if (data?.report) setScoutingReport(data.report);
+      } catch { /* scouting report is optional */ }
+    };
+    fetchScout();
   }, [gamePk]);
 
   if (loading) {
@@ -350,13 +212,28 @@ const GameDetailsPage = () => {
         </p>
       </div>
 
-      {/* Scouting Report (pre-game or always if prediction available) */}
-      {prediction && (isPreGame || true) && (
-        <ScoutingReport
-          pred={prediction}
-          awayAbbr={awayTeam.abbreviation}
-          homeAbbr={homeTeam.abbreviation}
-        />
+      {/* Rich Scouting Report from BQ — always expanded on the game page */}
+      {(scoutingReport || prediction) && (
+        <Card className="shadow-sm mb-4">
+          <Card.Header className="py-2 fw-semibold d-flex align-items-center justify-content-between">
+            <span>🗒 Scouting Report</span>
+            {prediction?.confidence_tier && (
+              <Badge
+                bg={prediction.confidence_tier === "HIGH" ? "success" :
+                    prediction.confidence_tier === "MEDIUM" ? "warning" : "secondary"}
+                style={{ fontSize: "0.68rem" }}
+              >
+                {prediction.confidence_tier}
+              </Badge>
+            )}
+          </Card.Header>
+          <Card.Body className="p-3">
+            <ScoutingReport
+              report={scoutingReport}
+              alwaysExpanded={true}
+            />
+          </Card.Body>
+        </Card>
       )}
 
       {/* Linescore */}
