@@ -6,6 +6,52 @@
   font-weight: 700;
 }
 
+/* ── Date picker ── */
+.date-picker-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.date-input {
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 0.85rem;
+  color: #212529;
+  background: #fff;
+  cursor: pointer;
+}
+.date-input:focus {
+  outline: 2px solid #0d6efd40;
+  border-color: #0d6efd;
+}
+.date-nav-btn {
+  background: none;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 2px 9px;
+  font-size: 1.1rem;
+  line-height: 1.4;
+  color: #495057;
+  cursor: pointer;
+}
+.date-nav-btn:hover {
+  background: #f0f0f0;
+}
+.date-today-btn {
+  background: #0d6efd;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.date-today-btn:hover {
+  background: #0b5ed7;
+}
+
 .game-card {
   transition: transform 0.15s, box-shadow 0.15s;
   border: 1px solid rgba(0,0,0,.08) !important;

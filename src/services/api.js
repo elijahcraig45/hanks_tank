@@ -269,6 +269,14 @@ class ApiService {
   }
 
   /**
+   * Get pre-computed scouting reports for a date
+   */
+  async getScoutingReports(date = null) {
+    const dateParam = date || new Date().toISOString().split('T')[0];
+    return this.get(`/scouting-reports?date=${dateParam}`, { cacheTTL: 15 });
+  }
+
+  /**
    * Get game predictions and matchup signals for a date
    */
   async getPredictions(date = null) {

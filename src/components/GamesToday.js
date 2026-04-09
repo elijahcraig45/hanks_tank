@@ -2,7 +2,28 @@ import React, { useState, useEffect } from "react";
 import { Card, Container, Row, Col, Table, Badge } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import apiService from "../services/api";
+import ScoutingReport from "./ScoutingReport";
 import "./styles/TodaysGames.css";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+function todayISO() {
+  return new Date().toISOString().split("T")[0];
+}
+
+function offsetDate(iso, days) {
+  const d = new Date(iso + "T12:00:00Z");
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().split("T")[0];
+}
+
+function formatDisplayDate(iso) {
+  const [y, m, d] = iso.split("-");
+  return new Date(Number(y), Number(m) - 1, Number(d))
+    .toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" });
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Signal generation — branches on V8 (Elo/Pythagorean) vs V6-V7 (wOBA)
@@ -138,39 +159,44 @@ function generateSignals(pred) {
 }
 
 const TodaysGames = () => {
+  const [selectedDate, setSelectedDate] = useState(todayISO());
   const [games, setGames] = useState([]);
   const [livefeed, setLivefeed] = useState([]);
   const [predictions, setPredictions] = useState({}); // keyed by gamePk
+  const [scoutingReports, setScoutingReports] = useState({}); // keyed by gamePk
 
+  // Re-fetch games whenever the selected date changes
   useEffect(() => {
-    const fetchTodaysGames = async () => {
+    setGames([]);
+    setLivefeed([]);
+    setPredictions({});
+    setScoutingReports({});
+
+    const fetchGames = async () => {
       try {
         const response = await fetch(
-          `https://statsapi.mlb.com/api/v1/schedule/games/?sportId=1`
+          `https://statsapi.mlb.com/api/v1/schedule/games/?sportId=1&date=${selectedDate}`
         );
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
+        if (!response.ok) throw new Error("Network response was not ok");
         const data = await response.json();
-        if (data.dates && data.dates.length > 0 && data.dates[0].games) {
+        if (data.dates?.length > 0 && data.dates[0].games) {
           setGames(data.dates[0].games);
         } else {
           setGames([]);
         }
       } catch (error) {
-        console.error("Failed to fetch today's games:", error);
+        console.error("Failed to fetch games:", error);
       }
     };
 
-    fetchTodaysGames();
-  }, []);
+    fetchGames();
+  }, [selectedDate]);
 
-  // Fetch predictions once games load
+  // Fetch predictions whenever the date changes
   useEffect(() => {
-    if (!games.length) return;
     const fetchPredictions = async () => {
       try {
-        const data = await apiService.getPredictions();
+        const data = await apiService.getPredictions(selectedDate);
         if (data?.predictions) {
           const byPk = {};
           data.predictions.forEach((p) => { byPk[p.game_pk] = p; });
@@ -181,7 +207,24 @@ const TodaysGames = () => {
       }
     };
     fetchPredictions();
-  }, [games]);
+  }, [selectedDate]);
+
+  // Fetch pre-computed scouting reports for the selected date
+  useEffect(() => {
+    const fetchScoutingReports = async () => {
+      try {
+        const data = await apiService.getScoutingReports(selectedDate);
+        if (data?.reports) {
+          const byPk = {};
+          data.reports.forEach((r) => { byPk[r.game_pk] = r.report; });
+          setScoutingReports(byPk);
+        }
+      } catch (err) {
+        console.warn("Scouting reports unavailable:", err.message);
+      }
+    };
+    fetchScoutingReports();
+  }, [selectedDate]);
 
   useEffect(() => {
     const fetchGameDetails = async () => {
@@ -212,12 +255,43 @@ const TodaysGames = () => {
   return (
     <Container fluid className="games-page bg-light" style={{ minHeight: "100vh" }}>
       <div className="px-3 pt-4 pb-2">
-        <h4 className="games-page-title mb-0">Today's Games</h4>
+        <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+          <h4 className="games-page-title mb-0">Games</h4>
+          <div className="date-picker-wrap d-flex align-items-center gap-2">
+            <button
+              className="date-nav-btn"
+              onClick={() => setSelectedDate(d => offsetDate(d, -1))}
+              aria-label="Previous day"
+            >‹</button>
+            <input
+              type="date"
+              className="date-input"
+              value={selectedDate}
+              max={offsetDate(todayISO(), 7)}
+              onChange={e => setSelectedDate(e.target.value)}
+            />
+            <button
+              className="date-nav-btn"
+              onClick={() => setSelectedDate(d => offsetDate(d, 1))}
+              aria-label="Next day"
+            >›</button>
+            {selectedDate !== todayISO() && (
+              <button className="date-today-btn" onClick={() => setSelectedDate(todayISO())}>
+                Today
+              </button>
+            )}
+          </div>
+        </div>
         <p className="text-muted mb-0" style={{ fontSize: "0.82rem" }}>
-          {new Date().toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" })}
+          {formatDisplayDate(selectedDate)}
         </p>
       </div>
       <Row className="g-3 px-3 py-3">
+        {games.length === 0 && (
+          <Col xs={12}>
+            <p className="text-muted text-center py-5">No games scheduled for this date.</p>
+          </Col>
+        )}
         {games.map((game) => {
           const gameFeed = livefeed.find((feed) => feed.gamePk === game.gamePk);
           const statusCode = game.status.statusCode;
@@ -235,6 +309,7 @@ const TodaysGames = () => {
             : { runs: "—", hits: "—", errors: "—" };
 
           const pred = predictions[game.gamePk];
+          const scout = scoutingReports[game.gamePk];
           const awayProb = pred?.away_win_probability != null ? Math.round(pred.away_win_probability * 100) : null;
           const homeProb = pred?.home_win_probability != null ? Math.round(pred.home_win_probability * 100) : null;
 
@@ -365,6 +440,8 @@ const TodaysGames = () => {
                         )}
                       </div>
                     )}
+                    {/* Scouting report — collapsible, pre-computed from BQ */}
+                    <ScoutingReport report={scout} />
                   </Card.Body>
                 </Card>
               </Link>
