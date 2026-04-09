@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Card, Container, Row, Col, Table, Badge } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import apiService from "../services/api";
-import ScoutingReport from "./ScoutingReport";
 import "./styles/TodaysGames.css";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -163,15 +162,13 @@ const TodaysGames = () => {
   const [games, setGames] = useState([]);
   const [livefeed, setLivefeed] = useState([]);
   const [predictions, setPredictions] = useState({}); // keyed by gamePk
-  const [scoutingReports, setScoutingReports] = useState({}); // keyed by gamePk
+
 
   // Re-fetch games whenever the selected date changes
   useEffect(() => {
     setGames([]);
     setLivefeed([]);
     setPredictions({});
-    setScoutingReports({});
-
     const fetchGames = async () => {
       try {
         const response = await fetch(
@@ -207,23 +204,6 @@ const TodaysGames = () => {
       }
     };
     fetchPredictions();
-  }, [selectedDate]);
-
-  // Fetch pre-computed scouting reports for the selected date
-  useEffect(() => {
-    const fetchScoutingReports = async () => {
-      try {
-        const data = await apiService.getScoutingReports(selectedDate);
-        if (data?.reports) {
-          const byPk = {};
-          data.reports.forEach((r) => { byPk[r.game_pk] = r.report; });
-          setScoutingReports(byPk);
-        }
-      } catch (err) {
-        console.warn("Scouting reports unavailable:", err.message);
-      }
-    };
-    fetchScoutingReports();
   }, [selectedDate]);
 
   useEffect(() => {
@@ -309,7 +289,6 @@ const TodaysGames = () => {
             : { runs: "—", hits: "—", errors: "—" };
 
           const pred = predictions[game.gamePk];
-          const scout = scoutingReports[game.gamePk];
           const awayProb = pred?.away_win_probability != null ? Math.round(pred.away_win_probability * 100) : null;
           const homeProb = pred?.home_win_probability != null ? Math.round(pred.home_win_probability * 100) : null;
 
@@ -440,8 +419,7 @@ const TodaysGames = () => {
                         )}
                       </div>
                     )}
-                    {/* Scouting report — collapsible, pre-computed from BQ */}
-                    <ScoutingReport report={scout} />
+
                   </Card.Body>
                 </Card>
               </Link>
