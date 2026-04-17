@@ -498,13 +498,14 @@ function PredictionCard({ pred, game }) {
                 <div className="pred-reason-detail">{r.detail}</div>
               </div>
             ))}
-            {pred.game_pk && (
-              <div className="mt-2 text-end">
-                <Link to={`/game/${pred.game_pk}`} className="pred-game-link">
-                  View game →
-                </Link>
-              </div>
-            )}
+          </div>
+        )}
+
+        {pred.game_pk && (
+          <div className="mt-2 text-end">
+            <Link to={`/game/${pred.game_pk}`} className="pred-game-link">
+              🗒 View Scouting Report →
+            </Link>
           </div>
         )}
       </Card.Body>
