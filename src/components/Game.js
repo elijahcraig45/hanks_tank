@@ -82,7 +82,10 @@ const GameDetailsPage = () => {
     const fetchScout = async () => {
       try {
         const data = await apiService.getScoutingReportByGame(gamePk);
-        if (data?.report) setScoutingReport(data.report);
+        if (data?.report) {
+          const parsed = typeof data.report === 'string' ? JSON.parse(data.report) : data.report;
+          setScoutingReport(parsed);
+        }
       } catch { /* scouting report is optional */ }
     };
     fetchScout();
