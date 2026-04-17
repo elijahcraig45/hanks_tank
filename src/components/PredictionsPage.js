@@ -192,7 +192,7 @@ function generateWhyV7(pred) {
     });
   }
 
-  // Pitcher arsenal
+  // Pitcher arsenal — V7 (raw stats) or V10 (Baseball Savant percentile ranks)
   const homeVeloNorm = pred.home_starter_velo_norm;
   const awayVeloNorm = pred.away_starter_velo_norm;
   const homeKBB = pred.home_starter_k_bb_pct;
@@ -203,6 +203,24 @@ function generateWhyV7(pred) {
   const homeHasArsenal = homeVeloNorm != null && homeVeloNorm !== NEUTRAL_VELO_NORM;
   const awayHasArsenal = awayVeloNorm != null && awayVeloNorm !== NEUTRAL_VELO_NORM;
   const hasArsenal = homeHasArsenal || awayHasArsenal;
+
+  // V10 SP percentile rank fields (Baseball Savant, 0-100 scale)
+  const homeSpXera = pred.home_sp_xera;
+  const awaySpXera = pred.away_sp_xera;
+  const homeSpKPct = pred.home_sp_k_pct;
+  const awaySpKPct = pred.away_sp_k_pct;
+  const homeSpBbPct = pred.home_sp_bb_pct;
+  const awaySpBbPct = pred.away_sp_bb_pct;
+  const homeSpFbvPct = pred.home_sp_fbv_pct;
+  const awaySpFbvPct = pred.away_sp_fbv_pct;
+  const homeSpWhiffPct = pred.home_sp_whiff_pct;
+  const awaySpWhiffPct = pred.away_sp_whiff_pct;
+  const spCompDiff = pred.sp_quality_composite_diff;
+  const homeSpKnown = pred.home_sp_known;
+  const awaySpKnown = pred.away_sp_known;
+  const hasV10Sp = homeSpXera != null || awaySpXera != null;
+
+  const fmtPct = (v) => v != null ? `${Math.round(v)}th` : "—";
 
   if (hasArsenal) {
     const homeVelo = ((homeVeloNorm ?? 0) * 3 + NEUTRAL_VELO).toFixed(1);
@@ -236,6 +254,30 @@ function generateWhyV7(pred) {
         ? `${betterPitcher} has the arsenal edge`
         : "Pitchers roughly matched",
       detail: `${pred.home_starter_name?.split(" ").slice(-1)[0] || homeTeam}: ${homeLabel} · ${pred.away_starter_name?.split(" ").slice(-1)[0] || awayTeam}: ${awayLabel}`,
+    });
+  } else if (hasV10Sp) {
+    // V10 mode: show Baseball Savant percentile ranks instead of raw stats
+    const homeName = pred.home_starter_name?.split(" ").slice(-1)[0] || homeTeam;
+    const awayName = pred.away_starter_name?.split(" ").slice(-1)[0] || awayTeam;
+    const homeKnownStr = homeSpKnown ? "" : " (lg avg)";
+    const awayKnownStr = awaySpKnown ? "" : " (lg avg)";
+    const homeSpLabel = `xERA ${fmtPct(homeSpXera)} pct · K% ${fmtPct(homeSpKPct)} · BB% ${fmtPct(homeSpBbPct)} · Whiff ${fmtPct(homeSpWhiffPct)} · FBV ${fmtPct(homeSpFbvPct)}${homeKnownStr}`;
+    const awaySpLabel = `xERA ${fmtPct(awaySpXera)} pct · K% ${fmtPct(awaySpKPct)} · BB% ${fmtPct(awaySpBbPct)} · Whiff ${fmtPct(awaySpWhiffPct)} · FBV ${fmtPct(awaySpFbvPct)}${awayKnownStr}`;
+
+    // spCompDiff > 0 means home SP has better composite rank
+    const edgeName = spCompDiff != null && Math.abs(spCompDiff) > 3
+      ? spCompDiff > 0 ? homeName : awayName
+      : null;
+
+    reasons.push({
+      icon: "🎯",
+      type: edgeName
+        ? (edgeName === homeName) === isHomeWinner ? "positive" : "negative"
+        : "neutral",
+      title: edgeName
+        ? `${edgeName} has the SP quality edge`
+        : "SP quality roughly matched",
+      detail: `${homeName}: ${homeSpLabel} · ${awayName}: ${awaySpLabel}`,
     });
   } else {
     reasons.push({
