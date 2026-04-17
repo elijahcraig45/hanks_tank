@@ -286,9 +286,9 @@ function HomePage() {
       <div className="stat-pill-row justify-content-center mb-4">
         {[
           { icon: "⚾", val: games.length || "—", label: "Games Today" },
-          { icon: "📊", val: "35K+", label: "Records in BQ" },
-          { icon: "🤖", val: "V8", label: "Model Version" },
-          { icon: "🎯", val: "57.6%", label: "2025 Accuracy" },
+          { icon: "📊", val: "100K+", label: "Statcast PAs" },
+          { icon: "🤖", val: "V10", label: "Model Version" },
+          { icon: "🎯", val: "54.7%", label: "2026 Live Acc." },
           { icon: "🏟️", val: "30", label: "MLB Teams" },
         ].map(({ icon, val, label }) => (
           <div key={label} className="stat-pill fade-up">

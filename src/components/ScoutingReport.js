@@ -81,26 +81,52 @@ function StartersSection({ report }) {
   const ha = arsenal.home || {};
   const aa = arsenal.away || {};
 
+  const fmtPct = (v) => v != null ? `${Math.round(v)}th` : null;
+  const hasV10Home = ha.xera_pct != null || ha.k_pct != null;
+  const hasV10Away = aa.xera_pct != null || aa.k_pct != null;
+
   return (
     <div className="sr-section mb-3">
       <div className="sr-section-title">⚾ Probable Starters</div>
       <div className="sr-starters">
         <div className="sr-starter-col">
           <div className="sr-starter-name">{away.name || "TBD"} {away.hand && <span className="sr-hand">({away.hand}HP)</span>}</div>
-          <div className="sr-starter-stats text-muted">
-            {aa.mean_velo && <span>{aa.mean_velo} mph</span>}
-            {aa.k_bb_pct != null && <span> · K-BB {pct(aa.k_bb_pct)}</span>}
-            {aa.xwoba_allowed != null && <span> · xwOBA {woba(aa.xwoba_allowed)}</span>}
-          </div>
+          {hasV10Away ? (
+            <div className="sr-starter-stats text-muted">
+              {fmtPct(aa.xera_pct) && <span>xERA {fmtPct(aa.xera_pct)}</span>}
+              {fmtPct(aa.k_pct) && <span> · K% {fmtPct(aa.k_pct)}</span>}
+              {fmtPct(aa.bb_pct) && <span> · BB% {fmtPct(aa.bb_pct)}</span>}
+              {fmtPct(aa.whiff_pct) && <span> · Whiff {fmtPct(aa.whiff_pct)}</span>}
+              {fmtPct(aa.fbv_pct) && <span> · FBV {fmtPct(aa.fbv_pct)}</span>}
+              {aa.sp_known === false && <span className="text-warning"> (lg avg)</span>}
+            </div>
+          ) : (
+            <div className="sr-starter-stats text-muted">
+              {aa.mean_velo && <span>{aa.mean_velo} mph</span>}
+              {aa.k_bb_pct != null && <span> · K-BB {pct(aa.k_bb_pct)}</span>}
+              {aa.xwoba_allowed != null && <span> · xwOBA {woba(aa.xwoba_allowed)}</span>}
+            </div>
+          )}
         </div>
         <div className="sr-starter-vs text-muted">vs</div>
         <div className="sr-starter-col text-end">
           <div className="sr-starter-name">{home.name || "TBD"} {home.hand && <span className="sr-hand">({home.hand}HP)</span>}</div>
-          <div className="sr-starter-stats text-muted">
-            {ha.mean_velo && <span>{ha.mean_velo} mph</span>}
-            {ha.k_bb_pct != null && <span> · K-BB {pct(ha.k_bb_pct)}</span>}
-            {ha.xwoba_allowed != null && <span> · xwOBA {woba(ha.xwoba_allowed)}</span>}
-          </div>
+          {hasV10Home ? (
+            <div className="sr-starter-stats text-muted">
+              {fmtPct(ha.xera_pct) && <span>xERA {fmtPct(ha.xera_pct)}</span>}
+              {fmtPct(ha.k_pct) && <span> · K% {fmtPct(ha.k_pct)}</span>}
+              {fmtPct(ha.bb_pct) && <span> · BB% {fmtPct(ha.bb_pct)}</span>}
+              {fmtPct(ha.whiff_pct) && <span> · Whiff {fmtPct(ha.whiff_pct)}</span>}
+              {fmtPct(ha.fbv_pct) && <span> · FBV {fmtPct(ha.fbv_pct)}</span>}
+              {ha.sp_known === false && <span className="text-warning"> (lg avg)</span>}
+            </div>
+          ) : (
+            <div className="sr-starter-stats text-muted">
+              {ha.mean_velo && <span>{ha.mean_velo} mph</span>}
+              {ha.k_bb_pct != null && <span> · K-BB {pct(ha.k_bb_pct)}</span>}
+              {ha.xwoba_allowed != null && <span> · xwOBA {woba(ha.xwoba_allowed)}</span>}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -290,6 +316,128 @@ function NewsSection({ report }) {
   );
 }
 
+function H2HYearlySection({ report }) {
+  const rows = report?.h2h_yearly;
+  if (!rows?.length) return null;
+  const homeName = report.home_team_name?.split(" ").slice(-1)[0];
+  const awayName = report.away_team_name?.split(" ").slice(-1)[0];
+
+  return (
+    <div className="sr-section mb-3">
+      <div className="sr-section-title">📅 Head-to-Head by Year</div>
+      <table className="sr-h2h-table">
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th className="text-center">{awayName}</th>
+            <th className="text-center">{homeName}</th>
+            <th className="text-center">GP</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => {
+            const awayW = r.team2_wins;  // away = team2 in fetch (away_tid)
+            const homeW = r.team1_wins;  // home = team1 in fetch (home_tid)
+            const homeEdge = homeW > awayW;
+            const awayEdge = awayW > homeW;
+            return (
+              <tr key={r.year}>
+                <td className="sr-h2h-year">{r.year}</td>
+                <td className={`text-center sr-h2h-wins ${awayEdge ? "sr-h2h-leader" : ""}`}>{awayW}</td>
+                <td className={`text-center sr-h2h-wins ${homeEdge ? "sr-h2h-leader" : ""}`}>{homeW}</td>
+                <td className="text-center text-muted" style={{ fontSize: "0.72rem" }}>{r.total_games}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function BatterVsSPSection({ report }) {
+  const bvsp = report?.batter_vs_sp;
+  const home = bvsp?.home || [];
+  const away = bvsp?.away || [];
+  if (!home.length && !away.length) return null;
+
+  const homeSP = report?.starters?.home?.name;
+  const awaySP = report?.starters?.away?.name;
+  const homeName = report.home_team_name?.split(" ").slice(-1)[0];
+  const awayName = report.away_team_name?.split(" ").slice(-1)[0];
+
+  const renderRows = (players) => {
+    const sorted = [...players].sort((a, b) => Math.abs((b.woba || 0.32) - 0.32) - Math.abs((a.woba || 0.32) - 0.32));
+    return sorted.map((p, i) => {
+      const w = p.woba || 0;
+      const isHot  = w >= 0.380;
+      const isCold = w <= 0.230;
+      return (
+        <div key={i} className="sr-matchup-row">
+          <span className="sr-matchup-name">{p.player_name}</span>
+          <span className={`sr-matchup-woba ${isHot ? "text-danger" : isCold ? "text-primary" : ""}`}>
+            .{Math.round(w * 1000)} wOBA
+          </span>
+          <span className="sr-matchup-pa text-muted">{p.pa} PA</span>
+          {p.hr > 0 && <span className="sr-matchup-hr">{p.hr} HR</span>}
+        </div>
+      );
+    });
+  };
+
+  return (
+    <div className="sr-section mb-3">
+      <div className="sr-section-title">🎯 vs Today's Starters (Career)</div>
+      <div className="sr-matchup-grid">
+        {home.length > 0 && awaySP && (
+          <div className="sr-matchup-col">
+            <div className="sr-matchup-team-header">{homeName} vs {awaySP}</div>
+            {renderRows(home)}
+          </div>
+        )}
+        {away.length > 0 && homeSP && (
+          <div className="sr-matchup-col">
+            <div className="sr-matchup-team-header">{awayName} vs {homeSP}</div>
+            {renderRows(away)}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function VenueStatsSection({ report }) {
+  const vs = report?.venue_stats;
+  const home = vs?.home || [];
+  const away = vs?.away || [];
+  if (!away.length) return null;  // visiting batters at this park is most interesting
+  const venueName = report?.venue_name || "this park";
+  const awayName = report.away_team_name?.split(" ").slice(-1)[0];
+
+  return (
+    <div className="sr-section mb-3">
+      <div className="sr-section-title">🏟️ {awayName} Batters at {venueName}</div>
+      <div className="sr-venue-list">
+        {away.map((p, i) => {
+          const w = p.woba || 0;
+          const isHot  = w >= 0.380;
+          const isCold = w <= 0.230;
+          return (
+            <div key={i} className="sr-matchup-row">
+              <span className="sr-matchup-name">{p.player_name}</span>
+              <span className={`sr-matchup-woba ${isHot ? "text-danger" : isCold ? "text-primary" : ""}`}>
+                .{Math.round(w * 1000)} wOBA
+              </span>
+              <span className="sr-matchup-pa text-muted">{p.pa} PA</span>
+              {p.hr > 0 && <span className="sr-matchup-hr">{p.hr} HR</span>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ─── main export ──────────────────────────────────────────────────────────────
 
 function FunFactsSection({ report }) {
@@ -369,7 +517,8 @@ const ScoutingReport = ({ report, defaultOpen = false, alwaysExpanded = false })
 
   const hasContent = report.prediction || report.starters?.home?.name ||
     report.momentum?.home || report.hot_cold || report.watch_list?.length ||
-    report.fun_facts?.length ||
+    report.fun_facts?.length || report.h2h_yearly?.length ||
+    report.batter_vs_sp?.home?.length || report.batter_vs_sp?.away?.length ||
     (report.news?.home?.length || 0) + (report.news?.away?.length || 0) > 0;
 
   if (!hasContent) return null;
@@ -380,7 +529,10 @@ const ScoutingReport = ({ report, defaultOpen = false, alwaysExpanded = false })
       <FunFactsSection report={report} />
       <StartersSection report={report} />
       <MomentumSection report={report} />
+      <H2HYearlySection report={report} />
+      <BatterVsSPSection report={report} />
       <MatchupSection report={report} />
+      <VenueStatsSection report={report} />
       <HotColdSection report={report} />
       <WatchListSection list={report.watch_list} />
       <NewsSection report={report} />

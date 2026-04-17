@@ -386,3 +386,40 @@
   flex-shrink: 0;
 }
 
+/* ---- H2H yearly table ---- */
+.sr-h2h-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.sr-h2h-table th {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.4rem;
+  border-bottom: 1px solid #dee2e6;
+}
+.sr-h2h-table td {
+  padding: 0.25rem 0.4rem;
+  border-bottom: 1px solid rgba(0,0,0,.05);
+}
+.sr-h2h-year {
+  font-weight: 600;
+  color: #495057;
+}
+.sr-h2h-wins {
+  font-weight: 600;
+}
+.sr-h2h-leader {
+  color: #198754;
+  font-weight: 700;
+}
+
+/* ---- venue stats ---- */
+.sr-venue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
