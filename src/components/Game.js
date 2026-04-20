@@ -111,8 +111,6 @@ const GameDetailsPage = () => {
   const status          = gameDetails.gameData.status;
   const venue           = gameDetails.gameData.venue;
   const events          = gameDetails.liveData.plays.allPlays.slice().reverse();
-  const isPreGame       = status.abstractGameState === "Preview";
-
   const getPlayerDetails = (playerId, team) =>
     gameDetails.liveData.boxscore.teams[team].players[`ID${playerId}`];
 

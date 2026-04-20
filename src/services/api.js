@@ -347,6 +347,9 @@ class ApiService {
 const apiService = new ApiService();
 
 // Clear expired cache every 5 minutes
-setInterval(() => apiService.clearExpiredCache(), 5 * 60 * 1000);
+if (process.env.NODE_ENV !== 'test') {
+  setInterval(() => apiService.clearExpiredCache(), 5 * 60 * 1000);
+}
 
+export { ApiService, API_BASE_URL };
 export default apiService;

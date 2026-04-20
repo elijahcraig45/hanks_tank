@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { Badge, Collapse } from "react-bootstrap";
 import "./styles/ScoutingReport.css";
 
@@ -56,7 +56,7 @@ function buildLede(report) {
     if (homeHot && awayCold) {
       parts.push(`${homeLast} (${homeStr}) welcome a struggling ${awayLast} squad (${awayStr}) to town.`);
     } else if (awayHot && homeCold) {
-      parts.push(`${awayLast} (${awayStr}) roll into ${homeLast}'\''s park riding momentum against a cold home side (${homeStr}).`);
+      parts.push(`${awayLast} (${awayStr}) roll into ${homeLast}'s park riding momentum against a cold home side (${homeStr}).`);
     } else if (homeHot && awayHot) {
       parts.push(`Both squads come in hot — ${awayLast} (${awayStr}) visit ${homeLast} (${homeStr}) in a clash of winners.`);
     } else if (homeCold && awayCold) {
