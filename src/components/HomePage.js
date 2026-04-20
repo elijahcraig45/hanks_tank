@@ -9,9 +9,6 @@ import "./styles/HomePage.css";
 
 // ── constants ────────────────────────────────────────────────────────────────
 
-const BASE_URL =
-  process.env.REACT_APP_API_URL || "https://hankstank.uc.r.appspot.com/api";
-
 const DIVISION_MAP = {
   200: "AL West", 201: "AL East", 202: "AL Central",
   203: "NL West", 204: "NL East", 205: "NL Central",
@@ -195,19 +192,21 @@ function HomePage() {
   const [lastUpdated, setLastUpdated] = useState(null);
 
   const fetchNews = async () => {
-    const [mlbRes, bravesRes] = await Promise.all([
-      fetch(`${BASE_URL}/mlb-news`).catch(() => null),
-      fetch(`${BASE_URL}/braves-news`).catch(() => null),
+    const [mlbResult, bravesResult] = await Promise.allSettled([
+      apiService.getMLBNews(),
+      apiService.getBravesNews(),
     ]);
-    const mlb = mlbRes?.ok ? (await mlbRes.json()).articles || [] : [];
-    const braves = bravesRes?.ok ? (await bravesRes.json()).articles || [] : [];
-    setNews({ mlb, braves });
+
+    setNews({
+      mlb: mlbResult.status === "fulfilled" ? mlbResult.value?.articles || [] : [],
+      braves: bravesResult.status === "fulfilled" ? bravesResult.value?.articles || [] : [],
+    });
   };
 
   const handleRefreshNews = async () => {
     setNewsRefreshing(true);
     try {
-      await fetch(`${BASE_URL}/news/refresh`, { method: "POST" });
+      await apiService.refreshNews();
       await fetchNews();
     } catch (e) {
       console.error("News refresh failed:", e);

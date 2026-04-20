@@ -20,6 +20,116 @@ function teamLast(name) {
   return name?.split(" ").slice(-1)[0] || name || "";
 }
 
+function ordinal(value) {
+  if (value == null) return "—";
+  const rounded = Math.round(value);
+  const mod100 = rounded % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${rounded}th`;
+  switch (rounded % 10) {
+    case 1:
+      return `${rounded}st`;
+    case 2:
+      return `${rounded}nd`;
+    case 3:
+      return `${rounded}rd`;
+    default:
+      return `${rounded}th`;
+  }
+}
+
+function formatPitcherHand(hand) {
+  if (!hand) return "";
+  return `(${hand}HP)`;
+}
+
+function formatConfidenceTier(tier) {
+  if (!tier) return "";
+  const normalized = String(tier).toLowerCase();
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
+function confidenceBadgeVariant(tier) {
+  const normalized = String(tier || "").toUpperCase();
+  if (normalized === "HIGH") return "success";
+  if (normalized === "MEDIUM") return "warning";
+  return "secondary";
+}
+
+function formatRelativeTime(timestamp) {
+  if (!timestamp) return "";
+  const diffMs = Date.now() - new Date(timestamp).getTime();
+  const diffMinutes = Math.round(diffMs / 60000);
+  if (!Number.isFinite(diffMinutes)) return "";
+  if (Math.abs(diffMinutes) < 1) return "just now";
+  if (Math.abs(diffMinutes) < 60) return `${Math.abs(diffMinutes)} min ago`;
+  const diffHours = Math.round(diffMinutes / 60);
+  if (Math.abs(diffHours) < 24) return `${Math.abs(diffHours)} hr ago`;
+  const diffDays = Math.round(diffHours / 24);
+  return `${Math.abs(diffDays)} day${Math.abs(diffDays) === 1 ? "" : "s"} ago`;
+}
+
+function buildPredictionInsights(report) {
+  const pred = report?.prediction;
+  const momentum = report?.momentum;
+  const bullpen = report?.bullpen;
+  if (!pred) return [];
+
+  const homeName = teamLast(report.home_team_name);
+  const awayName = teamLast(report.away_team_name);
+  const homeProb = pred.home_win_probability ?? 0;
+  const awayProb = pred.away_win_probability ?? 0;
+  const edgePoints = Math.round(Math.abs(homeProb - awayProb) * 100);
+  const winner = pred.predicted_winner === report.home_team_name ? homeName : awayName;
+
+  const insights = [];
+
+  if (edgePoints > 0) {
+    insights.push({
+      tone: "positive",
+      text: `${winner} by ${edgePoints} model pts`,
+    });
+  }
+
+  if (momentum?.elo_differential != null && Math.abs(momentum.elo_differential) >= 18) {
+    const eloFavored = momentum.elo_differential > 0 ? homeName : awayName;
+    insights.push({
+      tone: "neutral",
+      text: `${eloFavored} Elo +${Math.abs(momentum.elo_differential)}`,
+    });
+  }
+
+  if (momentum?.home?.pythag_pct != null && momentum?.away?.pythag_pct != null) {
+    const homePythag = momentum.home.pythag_pct;
+    const awayPythag = momentum.away.pythag_pct;
+    if (Math.abs(homePythag - awayPythag) >= 0.045) {
+      const strongerClub = homePythag > awayPythag ? homeName : awayName;
+      insights.push({
+        tone: "neutral",
+        text: `${strongerClub} better form profile`,
+      });
+    }
+  }
+
+  if (bullpen?.home_fatigue != null && bullpen?.away_fatigue != null) {
+    const homeFatigue = bullpen.home_fatigue;
+    const awayFatigue = bullpen.away_fatigue;
+    if (Math.abs(homeFatigue - awayFatigue) >= 0.2) {
+      const fresherClub = homeFatigue < awayFatigue ? homeName : awayName;
+      insights.push({
+        tone: "warning",
+        text: `${fresherClub} bullpen edge`,
+      });
+    }
+  }
+
+  insights.push({
+    tone: pred.lineup_confirmed ? "positive" : "warning",
+    text: pred.lineup_confirmed ? "Confirmed lineups" : "Probable lineups",
+  });
+
+  return insights.slice(0, 4);
+}
+
 const HOT_COLOR  = "#e84040";
 const COLD_COLOR = "#2979ff";
 
@@ -82,8 +192,8 @@ function buildLede(report) {
   const awayP = starters?.away?.name;
 
   if (homeP && awayP) {
-    const awayPctText = aa.xera_pct != null ? `xERA ${aa.xera_pct}th pct` : null;
-    const homePctText = ha.xera_pct != null ? `xERA ${ha.xera_pct}th pct` : null;
+    const awayPctText = aa.xera_pct != null ? `xERA ${ordinal(aa.xera_pct)} pct` : null;
+    const homePctText = ha.xera_pct != null ? `xERA ${ordinal(ha.xera_pct)} pct` : null;
     if (awayPctText && homePctText) {
       parts.push(`On the mound: ${awayP} (${awayPctText}) vs ${homeP} (${homePctText}).`);
     } else {
@@ -124,11 +234,13 @@ function PredictionBar({ report }) {
           {pred.model_version && <Badge bg="dark" className="sr-badge">{pred.model_version}</Badge>}
           {pred.confidence_tier && (
             <Badge
-              bg={pred.confidence_tier === "HIGH" ? "success" : pred.confidence_tier === "MEDIUM" ? "warning" : "secondary"}
+              bg={confidenceBadgeVariant(pred.confidence_tier)}
               className="sr-badge"
-            >{pred.confidence_tier}</Badge>
+            >{formatConfidenceTier(pred.confidence_tier)}</Badge>
           )}
-          {!pred.lineup_confirmed && <Badge bg="secondary" className="sr-badge">PROBABLE</Badge>}
+          <Badge bg={pred.lineup_confirmed ? "success" : "secondary" } className="sr-badge">
+            {pred.lineup_confirmed ? "Lineups in" : "Probable"}
+          </Badge>
         </div>
       </div>
       <div className="sr-prob-bar">
@@ -143,6 +255,21 @@ function PredictionBar({ report }) {
         <span className="sr-team-label">{teamLast(report.away_team_name)}</span>
         <span className="sr-team-label">{teamLast(report.home_team_name)}</span>
       </div>
+    </div>
+  );
+}
+
+function PredictionInsights({ report }) {
+  const insights = buildPredictionInsights(report);
+  if (!insights.length) return null;
+
+  return (
+    <div className="sr-insight-row mb-3" aria-label="Why the model leans this way">
+      {insights.map((insight) => (
+        <span key={insight.text} className={`sr-insight-chip sr-insight-chip--${insight.tone}`}>
+          {insight.text}
+        </span>
+      ))}
     </div>
   );
 }
@@ -170,7 +297,7 @@ function StatBar({ label, value, flipped = false }) {
           style={{ width: `${display}%`, background: color, ...(flipped ? { marginLeft: "auto" } : {}) }}
         />
       </div>
-      <span className="sr-stat-value" style={{ color }}>{display}<sup>th</sup></span>
+      <span className="sr-stat-value" style={{ color }}>{ordinal(display)}</span>
       {flipped && <span className="sr-stat-label sr-stat-label--right">{label}</span>}
     </div>
   );
@@ -183,7 +310,7 @@ function PitcherCard({ pitcher, arsenal, side }) {
     <div className={`sr-pitcher-card${flipped ? " sr-pitcher-card--home" : ""}`}>
       <div className="sr-pitcher-name">
         {pitcher?.name || "TBD"}
-        {pitcher?.hand && <span className="sr-hand ms-1">({pitcher.hand}HP)</span>}
+        {pitcher?.hand && <span className="sr-hand ms-1">{formatPitcherHand(pitcher.hand)}</span>}
       </div>
       {!knownSP && <div className="sr-pitcher-unknown">league avg used</div>}
       <div className="sr-pitcher-bars">
@@ -285,6 +412,70 @@ function MomentumSection({ report }) {
           <div className="sr-form-team">{homeName}</div>
           <StreakDots streak={home.streak} />
           <div className="sr-form-streak-label">{home.streak}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BullpenSection({ report }) {
+  const bullpen = report?.bullpen;
+  if (!bullpen || (bullpen.home_fatigue == null && bullpen.away_fatigue == null)) return null;
+
+  const rows = [
+    {
+      label: "Fatigue",
+      awayV: bullpen.away_fatigue,
+      homeV: bullpen.home_fatigue,
+      fmt: (value) => value?.toFixed(2) ?? "—",
+      lowerIsBetter: true,
+    },
+    {
+      label: "Closer rest",
+      awayV: bullpen.away_closer_rest,
+      homeV: bullpen.home_closer_rest,
+      fmt: (value) => (value == null ? "—" : `${value}d`),
+      lowerIsBetter: false,
+    },
+  ].filter((row) => row.awayV != null || row.homeV != null);
+
+  if (!rows.length) return null;
+
+  const homeName = teamLast(report.home_team_name);
+  const awayName = teamLast(report.away_team_name);
+  const fatigueGap =
+    bullpen.home_fatigue != null && bullpen.away_fatigue != null
+      ? bullpen.home_fatigue - bullpen.away_fatigue
+      : null;
+  const edgeText =
+    fatigueGap == null || Math.abs(fatigueGap) < 0.2
+      ? "Bullpens project similarly rested"
+      : `${fatigueGap < 0 ? homeName : awayName} bullpen projects fresher`;
+
+  return (
+    <div className="sr-section mb-3">
+      <div className="sr-section-title">🧯 Bullpen Readiness</div>
+      <div className="sr-bullpen-summary">{edgeText}</div>
+      <div className="sr-form-grid">
+        <div className="sr-form-col">
+          <div className="sr-form-team">{awayName}</div>
+        </div>
+        <div className="sr-form-center">
+          {rows.map((row) => {
+            const comparable = row.awayV != null && row.homeV != null;
+            const awayEdge = comparable && (row.lowerIsBetter ? row.awayV < row.homeV : row.awayV > row.homeV);
+            const homeEdge = comparable && (row.lowerIsBetter ? row.homeV < row.awayV : row.homeV > row.awayV);
+            return (
+              <div key={row.label} className="sr-form-row">
+                <span className={`sr-form-val${awayEdge ? " sr-form-edge" : ""}`}>{row.fmt(row.awayV)}</span>
+                <span className="sr-form-key">{row.label}</span>
+                <span className={`sr-form-val text-end${homeEdge ? " sr-form-edge" : ""}`}>{row.fmt(row.homeV)}</span>
+              </div>
+            );
+          })}
+        </div>
+        <div className="sr-form-col sr-form-col--right">
+          <div className="sr-form-team">{homeName}</div>
         </div>
       </div>
     </div>
@@ -529,6 +720,24 @@ function NewsSection({ report }) {
   );
 }
 
+function ReportFooter({ generatedAt }) {
+  if (!generatedAt) return null;
+
+  return (
+    <div className="sr-footer text-muted">
+      <span className="sr-footer-freshness">Updated {formatRelativeTime(generatedAt)}</span>
+      <span className="sr-footer-divider">·</span>
+      <span>
+        Generated{" "}
+        {new Date(generatedAt).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })}
+      </span>
+    </div>
+  );
+}
+
 // ─── Main export ──────────────────────────────────────────────────────────────
 
 const ScoutingReport = ({ report, defaultOpen = false, alwaysExpanded = false }) => {
@@ -544,10 +753,12 @@ const ScoutingReport = ({ report, defaultOpen = false, alwaysExpanded = false })
   const body = (
     <div className="sr-body">
       <PredictionBar report={report} />
+      <PredictionInsights report={report} />
       <NarrativeLede report={report} />
       <FunFactsSection report={report} />
       <PitcherDuelSection report={report} />
       <MomentumSection report={report} />
+      <BullpenSection report={report} />
       <H2HYearlySection report={report} />
       <BatterVsSPSection report={report} />
       <MatchupSection report={report} />
@@ -555,11 +766,7 @@ const ScoutingReport = ({ report, defaultOpen = false, alwaysExpanded = false })
       <HotColdSection report={report} />
       <WatchListSection list={report.watch_list} />
       <NewsSection report={report} />
-      <div className="sr-footer text-muted">
-        {report.generated_at && (
-          <span>Generated {new Date(report.generated_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-        )}
-      </div>
+      <ReportFooter generatedAt={report.generated_at} />
     </div>
   );
 
