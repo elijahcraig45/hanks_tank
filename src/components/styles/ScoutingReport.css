@@ -79,6 +79,41 @@
 .sr-prob-lbl { color: #fff; font-size: 0.75rem; font-weight: 700; }
 .sr-team-label { font-size: 0.72rem; color: #6c757d; }
 
+.sr-insight-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.sr-insight-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.24rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1;
+  border: 1px solid transparent;
+}
+
+.sr-insight-chip--positive {
+  background: rgba(25, 135, 84, 0.12);
+  color: #146c43;
+  border-color: rgba(25, 135, 84, 0.18);
+}
+
+.sr-insight-chip--warning {
+  background: rgba(255, 193, 7, 0.16);
+  color: #8a6800;
+  border-color: rgba(255, 193, 7, 0.28);
+}
+
+.sr-insight-chip--neutral {
+  background: rgba(13, 110, 253, 0.08);
+  color: #0a58ca;
+  border-color: rgba(13, 110, 253, 0.15);
+}
+
 /* ── Pitcher duel ── */
 .sr-duel {
   display: grid;
@@ -209,6 +244,13 @@
 }
 .sr-form-h2h-val { font-weight: 600; color: #495057; }
 
+.sr-bullpen-summary {
+  margin-bottom: 0.5rem;
+  font-size: 0.78rem;
+  color: #495057;
+  font-weight: 600;
+}
+
 /* ── H2H visual bars ── */
 .sr-h2h-bars { display: flex; flex-direction: column; gap: 6px; }
 .sr-h2h-bar-header {
@@ -270,7 +312,28 @@
 .sr-news-meta { font-size: 0.68rem; color: #adb5bd; margin-top: 2px; }
 
 /* ── Footer ── */
-.sr-footer { font-size: 0.68rem; color: #adb5bd; text-align: right; padding-top: 0.25rem; margin-top: 0.5rem; border-top: 1px solid rgba(0,0,0,.05); }
+.sr-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  font-size: 0.68rem;
+  color: #adb5bd;
+  text-align: right;
+  padding-top: 0.25rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid rgba(0,0,0,.05);
+}
+
+.sr-footer-freshness {
+  color: #6c757d;
+  font-weight: 600;
+}
+
+.sr-footer-divider {
+  color: #ced4da;
+}
 
 /* ── Fun facts ── */
 .sr-facts-list { display: flex; flex-direction: column; gap: 0.35rem; }
@@ -321,3 +384,32 @@
 /* ── inline (game page) variant ── */
 .scouting-report--inline { border-top: none; margin-top: 0; padding-top: 0; }
 .scouting-report--inline .sr-body { padding: 0; }
+
+@media (max-width: 575.98px) {
+  .sr-duel {
+    grid-template-columns: 1fr;
+  }
+
+  .sr-duel-vs {
+    padding-top: 0;
+  }
+
+  .sr-form-grid {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+
+  .sr-form-col,
+  .sr-form-col--right {
+    min-width: 0;
+  }
+
+  .sr-form-center {
+    padding-top: 0;
+  }
+
+  .sr-footer {
+    justify-content: flex-start;
+    text-align: left;
+  }
+}
