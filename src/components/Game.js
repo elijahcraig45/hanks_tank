@@ -77,18 +77,33 @@ const GameDetailsPage = () => {
     fetchPred();
   }, [gamePk]);
 
-  // Fetch pre-computed BQ scouting report
+  // Fetch pre-computed BQ scouting report whenever one is available for this game.
   useEffect(() => {
+    let isMounted = true;
+    setScoutingReport(null);
+
     const fetchScout = async () => {
       try {
         const data = await apiService.getScoutingReportByGame(gamePk);
+        if (!isMounted) return;
         if (data?.report) {
           const parsed = typeof data.report === 'string' ? JSON.parse(data.report) : data.report;
           setScoutingReport(parsed);
+          return;
         }
-      } catch { /* scouting report is optional */ }
+      } catch (error) {
+        if (!isMounted) return;
+        if (error?.message !== 'Resource not found') {
+          console.warn('Failed to fetch scouting report:', error);
+        }
+      }
+      setScoutingReport(null);
     };
     fetchScout();
+
+    return () => {
+      isMounted = false;
+    };
   }, [gamePk]);
 
   if (loading) {
@@ -111,6 +126,14 @@ const GameDetailsPage = () => {
   const status          = gameDetails.gameData.status;
   const venue           = gameDetails.gameData.venue;
   const events          = gameDetails.liveData.plays.allPlays.slice().reverse();
+  const reportCardData  = scoutingReport || (
+    prediction ? {
+      prediction,
+      away_team_name: awayTeam.name,
+      home_team_name: homeTeam.name,
+    } : null
+  );
+  const reportCardTitle = scoutingReport ? "🗒 Scouting Report" : "🔮 Model Outlook";
   const getPlayerDetails = (playerId, team) =>
     gameDetails.liveData.boxscore.teams[team].players[`ID${playerId}`];
 
@@ -176,7 +199,7 @@ const GameDetailsPage = () => {
             <span className="pbp-desc text-muted d-block">{result?.description}</span>
           </div>
           <span className="pbp-count text-muted flex-shrink-0">
-            {count?.balls}-{count?.strikes} {count?.outs}out
+            {count?.balls}-{count?.strikes} {count?.outs} out
           </span>
         </div>
       </button>
@@ -214,10 +237,10 @@ const GameDetailsPage = () => {
       </div>
 
       {/* Rich Scouting Report from BQ — always expanded on the game page */}
-      {(scoutingReport || prediction) && (
+      {reportCardData && (
         <Card className="shadow-sm mb-4">
           <Card.Header className="py-2 fw-semibold d-flex align-items-center justify-content-between">
-            <span>🗒 Scouting Report</span>
+            <span>{reportCardTitle}</span>
             {prediction?.confidence_tier && (
               <Badge
                 bg={prediction.confidence_tier === "HIGH" ? "success" :
@@ -229,8 +252,13 @@ const GameDetailsPage = () => {
             )}
           </Card.Header>
           <Card.Body className="p-3">
+            {!scoutingReport && (
+              <p className="text-muted small mb-3">
+                Full pregame scouting detail is not available for this matchup, but the model prediction is still shown below.
+              </p>
+            )}
             <ScoutingReport
-              report={scoutingReport}
+              report={reportCardData}
               alwaysExpanded={true}
             />
           </Card.Body>

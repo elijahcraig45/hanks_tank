@@ -34,6 +34,9 @@ const NEUTRAL_VELO_NORM = 0.0;
 const fmt = (v, digits = 3) =>
   v != null ? `.${String(Math.round(v * 1000)).padStart(3, "0")}` : "—";
 
+const pluralize = (count, singular, plural = `${singular}s`) =>
+  `${count} ${count === 1 ? singular : plural}`;
+
 const confidenceColor = (tier) => {
   if (!tier) return "secondary";
   const t = tier.toUpperCase();
@@ -504,7 +507,7 @@ function PredictionCard({ pred, game }) {
         {pred.game_pk && (
           <div className="mt-2 text-end">
             <Link to={`/game/${pred.game_pk}`} className="pred-game-link">
-              🗒 View Scouting Report →
+              🔎 Open Game Center →
             </Link>
           </div>
         )}
@@ -626,20 +629,20 @@ const PredictionsPage = () => {
       {/* Summary chips */}
       {!loading && predictions.length > 0 && (
         <div className="pred-summary-chips mb-3">
-          <span className="pred-chip">{predictions.length} games</span>
+          <span className="pred-chip">{pluralize(predictions.length, "game")}</span>
           {highConf.length > 0 && (
             <span className="pred-chip pred-chip--high">
-              {highConf.length} high confidence
+              {pluralize(highConf.length, "high-confidence pick", "high-confidence picks")}
             </span>
           )}
           {medConf.length > 0 && (
             <span className="pred-chip pred-chip--med">
-              {medConf.length} medium confidence
+              {pluralize(medConf.length, "medium-confidence pick", "medium-confidence picks")}
             </span>
           )}
           {lineupPreds.length > 0 && (
             <span className="pred-chip pred-chip--lineup">
-              {lineupPreds.length} with confirmed lineups
+              {pluralize(lineupPreds.length, "confirmed lineup")}
             </span>
           )}
         </div>
