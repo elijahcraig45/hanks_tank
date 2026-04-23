@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { SEASONS } from '../config/constants';
 import './styles/Navbar.css';
 
 function BasicExample() {
@@ -39,7 +40,7 @@ function BasicExample() {
         <Link to="/" className="ht-brand" onClick={closeAll}>
           <span className="ht-brand-icon">⚾</span>
           <span className="ht-brand-name">Hank's Tank</span>
-          <span className="ht-brand-year">2026</span>
+          <span className="ht-brand-year">{SEASONS.DEFAULT}</span>
         </Link>
 
         {/* Desktop links */}

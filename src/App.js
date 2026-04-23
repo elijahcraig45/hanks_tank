@@ -18,11 +18,15 @@ import AdvancedPlayerAnalysis from './components/AdvancedPlayerAnalysis';
 import Transactions from './components/Transactions';
 import TeamTransactions from './components/TeamTransactions';
 import PredictionsPage from './components/PredictionsPage';
+import NotFoundPage from './components/NotFoundPage';
+import RouteMetadata from './components/RouteMetadata';
+import RecentViewTracker from './components/RecentViewTracker';
 
-function App() {
+function AppShell() {
   return (
-    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      
+    <>
+      <RouteMetadata />
+      <RecentViewTracker />
       <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -42,7 +46,16 @@ function App() {
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/transactions/:teamAbbr" element={<TeamTransactions />} />
         <Route path="/predictions" element={<PredictionsPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <AppShell />
     </Router>
   );
 }
