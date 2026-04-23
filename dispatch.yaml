@@ -1,0 +1,6 @@
+dispatch:
+  - url: "hankstank.com/*"
+    service: frontend
+
+  - url: "www.hankstank.com/*"
+    service: frontend
