@@ -1,4 +1,12 @@
 dispatch:
+  # Route API calls to the default (backend) service first
+  - url: "hankstank.com/api/*"
+    service: default
+
+  - url: "www.hankstank.com/api/*"
+    service: default
+
+  # Route everything else to the frontend service
   - url: "hankstank.com/*"
     service: frontend
 
