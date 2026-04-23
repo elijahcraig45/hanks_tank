@@ -12,6 +12,7 @@ Hank's Tank is a production-style MLB analytics frontend built to showcase appli
 - Live scoreboard and game pages backed by the MLB Stats API and the Hank's Tank backend
 - Daily prediction cards with confidence tiers, matchup signals, and scouting report links
 - Team, player, transaction, and comparison views over historical BigQuery-backed data
+- Route-aware metadata, canonical tags, and a custom 404 flow for cleaner sharing and search indexing
 - Rich baseball-specific visuals including D3 strike-zone charts and Recharts trend views
 
 ## System context
@@ -41,7 +42,7 @@ Browser (React SPA)
 | Predictions | Win-probability cards, confidence tiers, model-specific signal blocks, scouting report entry points |
 | Game detail | Real-time linescore, play-by-play, strike-zone rendering, starter/scouting context |
 | Stats UI | Sortable leaderboards, player/team pages, seasonal comparisons, transaction views |
-| UX polish | Custom dark navigation, responsive layouts, homepage recent-view shortcuts, component-scoped styling, centralized API client |
+| UX polish | Custom dark navigation, responsive layouts, homepage recent-view shortcuts, route metadata/canonical tags, 404 recovery, component-scoped styling, centralized API client |
 
 ## Stack
 
@@ -97,11 +98,16 @@ src/
 │   ├── GamesToday.js
 │   ├── HomePage.js
 │   ├── Navbar.js
+│   ├── NotFoundPage.js
 │   ├── PlayerPage.js
 │   ├── PredictionsPage.js
+│   ├── RecentViewTracker.js
+│   ├── RouteMetadata.js
 │   ├── TeamPage.js
 │   └── styles/
 ├── config/
+├── utils/
+│   └── recentViews.js
 └── services/
     └── api.js
 ```
