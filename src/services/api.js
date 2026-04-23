@@ -5,8 +5,14 @@
 
 import { SEASONS } from '../config/constants';
 
+// Default to same-origin API routing in production so hankstank.com/api/* stays primary.
+const DEFAULT_API_ORIGIN =
+  process.env.NODE_ENV === 'production' && typeof window !== 'undefined'
+    ? window.location.origin
+    : 'https://hankstank.uc.r.appspot.com';
+
 // Construct full API URL - add /api if not already present
-const BASE_URL = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com';
+const BASE_URL = process.env.REACT_APP_API_URL || DEFAULT_API_ORIGIN;
 const API_BASE_URL = BASE_URL.endsWith('/api') ? BASE_URL : `${BASE_URL}/api`;
 const API_TIMEOUT = 60000; // 60 seconds for mobile networks
 const RETRY_ATTEMPTS = 3;

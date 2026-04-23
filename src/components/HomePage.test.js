@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import HomePage from './HomePage';
 import apiService from '../services/api';
+import { STORAGE_KEY } from '../utils/recentViews';
 
 jest.mock('../services/api', () => ({
   __esModule: true,
@@ -61,6 +62,7 @@ describe('HomePage', () => {
 
   afterEach(() => {
     jest.resetAllMocks();
+    window.localStorage.clear();
   });
 
   test('loads homepage news through the api service', async () => {
@@ -80,5 +82,30 @@ describe('HomePage', () => {
     expect(global.fetch).toHaveBeenCalledWith(
       'https://statsapi.mlb.com/api/v1/schedule/games/?sportId=1'
     );
+  });
+
+  test('shows recent views shortcuts when present', async () => {
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([
+        {
+          path: '/team/BOS',
+          label: 'BOS Team',
+          hint: 'Club dashboard',
+          icon: '🏟️',
+          visitedAt: new Date().toISOString(),
+        },
+      ])
+    );
+
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText(/continue where you left off/i)).toBeInTheDocument();
+    expect(screen.getByText('BOS Team')).toBeInTheDocument();
+    expect(screen.getByText('Club dashboard')).toBeInTheDocument();
   });
 });

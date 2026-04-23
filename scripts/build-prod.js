@@ -4,7 +4,6 @@ const path = require('path');
 const repoRoot = path.resolve(__dirname, '..');
 const env = {
   ...process.env,
-  REACT_APP_API_URL: 'https://hankstank.uc.r.appspot.com/api',
   REACT_APP_ENV: 'production',
   REACT_APP_DEBUG: 'false',
   REACT_APP_DEFAULT_SEASON: '2026',

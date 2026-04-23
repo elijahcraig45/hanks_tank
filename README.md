@@ -1,6 +1,8 @@
 # Hank's Tank Frontend
 
-> **Live app:** https://frontend-dot-hankstank.uc.r.appspot.com  
+> **Live app:** https://hankstank.com  
+> **Alternate host:** https://www.hankstank.com  
+> **Legacy App Engine URL:** https://frontend-dot-hankstank.uc.r.appspot.com  
 > **Companion repos:** [hanks_tank_backend](../hanks_tank_backend) · [hanks_tank_ml](../hanks_tank_ml)
 
 Hank's Tank is a production-style MLB analytics frontend built to showcase applied frontend engineering on top of a real data and ML stack. This repo owns the React SPA: live game views, prediction UX, scouting report presentation, team and player pages, and interactive stat visualizations.
@@ -39,7 +41,7 @@ Browser (React SPA)
 | Predictions | Win-probability cards, confidence tiers, model-specific signal blocks, scouting report entry points |
 | Game detail | Real-time linescore, play-by-play, strike-zone rendering, starter/scouting context |
 | Stats UI | Sortable leaderboards, player/team pages, seasonal comparisons, transaction views |
-| UX polish | Custom dark navigation, responsive layouts, component-scoped styling, centralized API client |
+| UX polish | Custom dark navigation, responsive layouts, homepage recent-view shortcuts, component-scoped styling, centralized API client |
 
 ## Stack
 
@@ -49,7 +51,7 @@ Browser (React SPA)
 | UI | Bootstrap 5, React Bootstrap |
 | Charts | D3 v7, Recharts |
 | Data access | Centralized `ApiService` with timeout, retry, and caching behavior |
-| Hosting | Google Cloud App Engine |
+| Hosting | Google Cloud App Engine with custom-domain routing on `hankstank.com` and `www.hankstank.com` |
 | CI/CD | GitHub Actions build/test workflow plus App Engine deploy on `main` |
 
 ## Local development
@@ -78,6 +80,12 @@ Browser (React SPA)
 | `npm run build` | Build a production bundle |
 | `npm run build:prod` | Build with production env values |
 | `npm run deploy` | Build and deploy to App Engine |
+
+## Production routing
+
+- `https://hankstank.com/*` and `https://www.hankstank.com/*` serve the React frontend.
+- `https://hankstank.com/api/*` and `https://www.hankstank.com/api/*` are dispatched to the backend App Engine service.
+- In production, the frontend defaults to same-origin `/api` requests so the custom domain is the primary entry point.
 
 ## Repository structure
 

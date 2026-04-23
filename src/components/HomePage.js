@@ -5,6 +5,11 @@ import {
 } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import apiService from "../services/api";
+import {
+  clearRecentViews,
+  formatRecentViewTime,
+  loadRecentViews,
+} from "../utils/recentViews";
 import "./styles/HomePage.css";
 
 // ── constants ────────────────────────────────────────────────────────────────
@@ -186,6 +191,7 @@ function HomePage() {
   const [news, setNews] = useState({ mlb: [], braves: [] });
   const [standings, setStandings] = useState({});
   const [games, setGames] = useState([]);
+  const [recentViews, setRecentViews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newsRefreshing, setNewsRefreshing] = useState(false);
   const [error, setError] = useState(null);
@@ -214,6 +220,10 @@ function HomePage() {
       setNewsRefreshing(false);
     }
   };
+
+  useEffect(() => {
+    setRecentViews(loadRecentViews());
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -250,6 +260,11 @@ function HomePage() {
     [...(arr || [])].sort(
       (a, b) => new Date(b.publishedAt) - new Date(a.publishedAt)
     );
+
+  const handleClearRecentViews = () => {
+    clearRecentViews();
+    setRecentViews([]);
+  };
 
   if (loading) {
     return (
@@ -330,6 +345,41 @@ function HomePage() {
               </Link>
             ))}
           </div>
+
+          {recentViews.length > 0 && (
+            <Card className="recent-views-card mb-4">
+              <Card.Header className="d-flex justify-content-between align-items-center">
+                <span className="fw-semibold">🧭 Continue where you left off</span>
+                <Button
+                  size="sm"
+                  variant="outline-secondary"
+                  onClick={handleClearRecentViews}
+                >
+                  Clear
+                </Button>
+              </Card.Header>
+              <Card.Body className="p-0">
+                <div className="recent-views-grid">
+                  {recentViews.map((view) => (
+                    <Link
+                      key={view.path}
+                      to={view.path}
+                      className="recent-view-link text-decoration-none"
+                    >
+                      <div className="recent-view-icon" aria-hidden="true">{view.icon}</div>
+                      <div className="recent-view-copy">
+                        <div className="recent-view-title">{view.label}</div>
+                        <div className="recent-view-hint">{view.hint}</div>
+                      </div>
+                      <div className="recent-view-time">
+                        {formatRecentViewTime(view.visitedAt)}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </Card.Body>
+            </Card>
+          )}
 
           {/* News columns */}
           <Row className="g-3">
