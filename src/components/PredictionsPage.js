@@ -1,29 +1,16 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Container, Row, Col, Card, Badge, Spinner, Alert } from "react-bootstrap";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { Container, Row, Col, Card, Badge, Spinner, Alert, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import apiService from "../services/api";
+import { loadFavoriteTeams, toggleFavoriteTeam } from "../utils/favorites";
+import {
+  getTeamAbbreviationFromName,
+  getTeamColor,
+  getTeamLogoUrl,
+  getTeamMetaByAbbr,
+} from "../utils/teamMetadata";
+import SaveResearchViewButton from "./analytics/SaveResearchViewButton";
 import "./styles/PredictionsPage.css";
-
-const TEAM_COLORS = {
-  "Arizona Diamondbacks": "#A71930", "Atlanta Braves": "#CE1141",
-  "Baltimore Orioles": "#DF4601", "Boston Red Sox": "#BD3039",
-  "Chicago Cubs": "#0E3386", "Chicago White Sox": "#27251F",
-  "Cincinnati Reds": "#C6011F", "Cleveland Guardians": "#E31937",
-  "Colorado Rockies": "#33006F", "Detroit Tigers": "#FA4616",
-  "Houston Astros": "#002D62", "Kansas City Royals": "#004687",
-  "Los Angeles Angels": "#BA0021", "Los Angeles Dodgers": "#005A9C",
-  "Miami Marlins": "#00A3E0", "Milwaukee Brewers": "#FFC52F",
-  "Minnesota Twins": "#002B5C", "New York Mets": "#002D72",
-  "New York Yankees": "#0C2340", "Oakland Athletics": "#003831",
-  "Philadelphia Phillies": "#E81828", "Pittsburgh Pirates": "#27251F",
-  "San Diego Padres": "#2F241D", "San Francisco Giants": "#FD5A1E",
-  "Seattle Mariners": "#0C2C56", "St. Louis Cardinals": "#C41E3A",
-  "Tampa Bay Rays": "#092C5C", "Texas Rangers": "#003278",
-  "Toronto Blue Jays": "#134A8E", "Washington Nationals": "#AB0003",
-};
-const teamColor = (name) => TEAM_COLORS[name] || "#6c757d";
-const teamLogoUrl = (teamId) =>
-  `https://www.mlbstatic.com/team-logos/${teamId}.svg`;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -44,6 +31,20 @@ const confidenceColor = (tier) => {
   if (t === "MEDIUM") return "warning";
   return "secondary";
 };
+
+const confidenceRank = {
+  HIGH: 3,
+  MEDIUM: 2,
+  LOW: 1,
+};
+
+const formatDateLabel = (value) =>
+  new Date(`${value}T12:00:00`).toLocaleDateString([], {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
 
 function generateWhyText(pred) {
   if (!pred) return [];
@@ -360,7 +361,7 @@ function ConfidencePill({ tier, lineupConfirmed }) {
 
 // ─── Single game prediction card ────────────────────────────────────────────
 
-function PredictionCard({ pred, game }) {
+function PredictionCard({ pred, game, favoriteTeams, onToggleFavorite }) {
   const [expanded, setExpanded] = useState(false);
 
   const homeProb = pred.home_win_probability != null
@@ -370,11 +371,18 @@ function PredictionCard({ pred, game }) {
 
   const awayWins = pred.predicted_winner === pred.away_team_name;
   const homeWins = pred.predicted_winner === pred.home_team_name;
-  const awayColor = teamColor(pred.away_team_name);
-  const homeColor = teamColor(pred.home_team_name);
-
   const awayId = game?.teams?.away?.team?.id;
   const homeId = game?.teams?.home?.team?.id;
+  const awayAbbr = getTeamAbbreviationFromName(pred.away_team_name);
+  const homeAbbr = getTeamAbbreviationFromName(pred.home_team_name);
+  const awayMeta = getTeamMetaByAbbr(awayAbbr);
+  const homeMeta = getTeamMetaByAbbr(homeAbbr);
+  const awayColor = getTeamColor(awayAbbr, "#6c757d");
+  const homeColor = getTeamColor(homeAbbr, "#6c757d");
+  const awayFavorite = favoriteTeams.has(awayAbbr);
+  const homeFavorite = favoriteTeams.has(homeAbbr);
+  const awayLogoUrl = getTeamLogoUrl(awayId || awayMeta?.id);
+  const homeLogoUrl = getTeamLogoUrl(homeId || homeMeta?.id);
 
   const reasons = generateWhyText(pred);
 
@@ -385,18 +393,40 @@ function PredictionCard({ pred, game }) {
         <div className="pred-matchup-row">
           {/* Away */}
           <div className={`pred-team-cell ${awayWins ? "pred-team-winner" : "pred-team-loser"}`}>
-            {awayId && (
+            {awayAbbr && (
+              <button
+                type="button"
+                className={`pred-favorite-btn${awayFavorite ? " pred-favorite-btn--active" : ""}`}
+                onClick={() => onToggleFavorite({
+                  abbreviation: awayAbbr,
+                  name: awayMeta?.name || pred.away_team_name,
+                  teamId: awayId || awayMeta?.id,
+                })}
+                aria-label={`${awayFavorite ? "Remove" : "Add"} ${pred.away_team_name} favorite`}
+              >
+                ★
+              </button>
+            )}
+            {awayLogoUrl && (
               <img
-                src={teamLogoUrl(awayId)}
+                src={awayLogoUrl}
                 alt=""
                 className="pred-team-logo"
                 onError={(e) => { e.target.style.display = "none"; }}
               />
             )}
             <div>
-              <div className="pred-team-name" style={{ color: awayWins ? awayColor : undefined }}>
-                {pred.away_team_name}
-              </div>
+              {awayAbbr ? (
+                <Link to={`/team/${awayAbbr}`} className="pred-team-link">
+                  <div className="pred-team-name" style={{ color: awayWins ? awayColor : undefined }}>
+                    {pred.away_team_name}
+                  </div>
+                </Link>
+              ) : (
+                <div className="pred-team-name" style={{ color: awayWins ? awayColor : undefined }}>
+                  {pred.away_team_name}
+                </div>
+              )}
               <div className="pred-team-record text-muted">
                 {game?.teams?.away?.leagueRecord
                   ? `${game.teams.away.leagueRecord.wins}–${game.teams.away.leagueRecord.losses}`
@@ -412,22 +442,44 @@ function PredictionCard({ pred, game }) {
           <div className={`pred-team-cell pred-team-cell--home ${homeWins ? "pred-team-winner" : "pred-team-loser"}`}>
             {homeWins && <span className="pred-winner-crown">👑</span>}
             <div className="text-end">
-              <div className="pred-team-name" style={{ color: homeWins ? homeColor : undefined }}>
-                {pred.home_team_name}
-              </div>
+              {homeAbbr ? (
+                <Link to={`/team/${homeAbbr}`} className="pred-team-link">
+                  <div className="pred-team-name" style={{ color: homeWins ? homeColor : undefined }}>
+                    {pred.home_team_name}
+                  </div>
+                </Link>
+              ) : (
+                <div className="pred-team-name" style={{ color: homeWins ? homeColor : undefined }}>
+                  {pred.home_team_name}
+                </div>
+              )}
               <div className="pred-team-record text-muted">
                 {game?.teams?.home?.leagueRecord
                   ? `${game.teams.home.leagueRecord.wins}–${game.teams.home.leagueRecord.losses}`
                   : ""}
               </div>
             </div>
-            {homeId && (
+            {homeLogoUrl && (
               <img
-                src={teamLogoUrl(homeId)}
+                src={homeLogoUrl}
                 alt=""
                 className="pred-team-logo"
                 onError={(e) => { e.target.style.display = "none"; }}
               />
+            )}
+            {homeAbbr && (
+              <button
+                type="button"
+                className={`pred-favorite-btn${homeFavorite ? " pred-favorite-btn--active" : ""}`}
+                onClick={() => onToggleFavorite({
+                  abbreviation: homeAbbr,
+                  name: homeMeta?.name || pred.home_team_name,
+                  teamId: homeId || homeMeta?.id,
+                })}
+                aria-label={`${homeFavorite ? "Remove" : "Add"} ${pred.home_team_name} favorite`}
+              >
+                ★
+              </button>
             )}
           </div>
         </div>
@@ -522,9 +574,16 @@ const PredictionsPage = () => {
   const today = new Date().toISOString().split("T")[0];
   const [selectedDate, setSelectedDate] = useState(today);
   const [predictions, setPredictions] = useState([]);
-  const [games, setGames] = useState([]);
+  const [games, setGames] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [confidenceFilter, setConfidenceFilter] = useState("all");
+  const [lineupOnly, setLineupOnly] = useState(false);
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [sortMode, setSortMode] = useState("time");
+  const [favoriteTeams, setFavoriteTeams] = useState([]);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   const fetchData = useCallback(async (date) => {
     setLoading(true);
@@ -533,9 +592,7 @@ const PredictionsPage = () => {
       // Fetch predictions and schedule in parallel
       const [predData, scheduleData] = await Promise.all([
         apiService.getPredictions(date),
-        fetch(
-          `https://statsapi.mlb.com/api/v1/schedule/games/?sportId=1&date=${date}&hydrate=team`
-        ).then((r) => r.json()),
+        apiService.getGames(date),
       ]);
 
       const preds = predData?.predictions || [];
@@ -548,6 +605,7 @@ const PredictionsPage = () => {
 
       setPredictions(preds);
       setGames(gameMap);
+      setLastUpdated(new Date());
     } catch (err) {
       setError("Could not load predictions for this date.");
       setPredictions([]);
@@ -558,32 +616,133 @@ const PredictionsPage = () => {
   }, []);
 
   useEffect(() => {
+    setFavoriteTeams(loadFavoriteTeams());
+  }, []);
+
+  useEffect(() => {
     fetchData(selectedDate);
   }, [selectedDate, fetchData]);
 
+  const favoriteTeamSet = useMemo(
+    () => new Set(favoriteTeams.map((team) => team.abbreviation)),
+    [favoriteTeams]
+  );
+
+  const filteredPredictions = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+
+    return [...predictions]
+      .filter((prediction) => {
+        if (confidenceFilter === "all") {
+          return true;
+        }
+
+        return (prediction.confidence_tier?.toUpperCase() || "LOW") === confidenceFilter;
+      })
+      .filter((prediction) => !lineupOnly || prediction.lineup_confirmed)
+      .filter((prediction) => {
+        if (!favoritesOnly) {
+          return true;
+        }
+
+        const awayAbbr = getTeamAbbreviationFromName(prediction.away_team_name);
+        const homeAbbr = getTeamAbbreviationFromName(prediction.home_team_name);
+        return favoriteTeamSet.has(awayAbbr) || favoriteTeamSet.has(homeAbbr);
+      })
+      .filter((prediction) => {
+        if (!normalizedSearch) {
+          return true;
+        }
+
+        const haystack = [
+          prediction.away_team_name,
+          prediction.home_team_name,
+          prediction.predicted_winner,
+          prediction.away_starter_name,
+          prediction.home_starter_name,
+          getTeamAbbreviationFromName(prediction.away_team_name),
+          getTeamAbbreviationFromName(prediction.home_team_name),
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return haystack.includes(normalizedSearch);
+      })
+      .sort((left, right) => {
+        if (sortMode === "edge") {
+          const edgeDelta = Math.abs((right.home_win_probability || 0) - (right.away_win_probability || 0)) -
+            Math.abs((left.home_win_probability || 0) - (left.away_win_probability || 0));
+          if (edgeDelta !== 0) {
+            return edgeDelta;
+          }
+        }
+
+        if (sortMode === "confidence") {
+          const confidenceDelta = (confidenceRank[right.confidence_tier?.toUpperCase()] || 1) -
+            (confidenceRank[left.confidence_tier?.toUpperCase()] || 1);
+          if (confidenceDelta !== 0) {
+            return confidenceDelta;
+          }
+        }
+
+        if (sortMode === "matchup") {
+          const matchupLeft = `${left.away_team_name} ${left.home_team_name}`;
+          const matchupRight = `${right.away_team_name} ${right.home_team_name}`;
+          const matchupDelta = matchupLeft.localeCompare(matchupRight);
+          if (matchupDelta !== 0) {
+            return matchupDelta;
+          }
+        }
+
+        return new Date(games[left.game_pk]?.gameDate || 0).getTime() -
+          new Date(games[right.game_pk]?.gameDate || 0).getTime();
+      });
+  }, [confidenceFilter, favoritesOnly, favoriteTeamSet, games, lineupOnly, predictions, searchTerm, sortMode]);
+
   // Summary stats
-  const highConf = predictions.filter(
+  const highConf = filteredPredictions.filter(
     (p) => p.confidence_tier?.toUpperCase() === "HIGH"
   );
-  const medConf = predictions.filter(
+  const medConf = filteredPredictions.filter(
     (p) => p.confidence_tier?.toUpperCase() === "MEDIUM"
   );
-  const lineupPreds = predictions.filter((p) => p.lineup_confirmed);
+  const lineupPreds = filteredPredictions.filter((p) => p.lineup_confirmed);
+
+  const handleToggleFavorite = (team) => {
+    setFavoriteTeams(toggleFavoriteTeam(team));
+  };
 
   return (
     <Container fluid className="predictions-page py-4 px-3 px-md-4">
       {/* Header */}
       <div className="mb-4">
-        <h3 className="fw-bold mb-0">Predictions</h3>
-        <p className="text-muted mb-0" style={{ fontSize: "0.875rem" }}>
-          {predictions.length > 0
-            ? `Daily game outcome forecasts · ${predictions[0].model_version ?? "—"}${
-                predictions[0].model_version?.toLowerCase().includes("v8")
-                  ? " (Elo + Pythagorean ensemble, 57.7% overall · 65.4% high-confidence)"
-                  : " (pitcher-venue stacked ensemble)"
-              }`
-            : "Daily game outcome forecasts"}
-        </p>
+        <div className="d-flex flex-wrap justify-content-between gap-2 align-items-start">
+          <div>
+            <h3 className="fw-bold mb-0">Predictions</h3>
+            <p className="text-muted mb-0" style={{ fontSize: "0.875rem" }}>
+              {filteredPredictions.length > 0
+                ? `Daily game outcome forecasts · ${filteredPredictions[0].model_version ?? "—"}${
+                    filteredPredictions[0].model_version?.toLowerCase().includes("v8")
+                      ? " (Elo + Pythagorean ensemble, 57.7% overall · 65.4% high-confidence)"
+                      : " (pitcher-venue stacked ensemble)"
+                  }`
+                : "Daily game outcome forecasts"}
+            </p>
+          </div>
+          <div className="d-flex flex-wrap gap-2">
+            <Link to="/prediction-diagnostics" className="btn btn-outline-primary btn-sm">
+              Open diagnostics
+            </Link>
+            <Link to="/scenario-simulator" className="btn btn-outline-secondary btn-sm">
+              Open simulator
+            </Link>
+            <SaveResearchViewButton
+              label="Predictions Board"
+              hint="Daily model board filters and matchup date"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Date picker */}
@@ -617,19 +776,95 @@ const PredictionsPage = () => {
           ›
         </button>
         <span className="pred-date-label text-muted ms-2">
-          {new Date(selectedDate + "T12:00:00").toLocaleDateString([], {
-            weekday: "long",
-            month: "long",
-            day: "numeric",
-            year: "numeric",
-          })}
+          {formatDateLabel(selectedDate)}
         </span>
       </div>
 
+      <Card className="border-0 shadow-sm mb-4">
+        <Card.Body className="pred-toolbar">
+          <div className="pred-toolbar-grid">
+            <Form.Group controlId="prediction-search">
+              <Form.Label className="pred-toolbar-label">Search</Form.Label>
+              <Form.Control
+                size="sm"
+                type="search"
+                placeholder="Team, starter, abbreviation"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group controlId="prediction-confidence">
+              <Form.Label className="pred-toolbar-label">Confidence</Form.Label>
+              <Form.Select
+                size="sm"
+                value={confidenceFilter}
+                onChange={(e) => setConfidenceFilter(e.target.value)}
+              >
+                <option value="all">All tiers</option>
+                <option value="HIGH">High</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="LOW">Low</option>
+              </Form.Select>
+            </Form.Group>
+            <Form.Group controlId="prediction-sort">
+              <Form.Label className="pred-toolbar-label">Sort</Form.Label>
+              <Form.Select
+                size="sm"
+                value={sortMode}
+                onChange={(e) => setSortMode(e.target.value)}
+              >
+                <option value="time">Game time</option>
+                <option value="edge">Strongest edge</option>
+                <option value="confidence">Confidence tier</option>
+                <option value="matchup">Matchup</option>
+              </Form.Select>
+            </Form.Group>
+            <Form.Group controlId="prediction-lineups" className="pred-toolbar-switch">
+              <Form.Check
+                type="switch"
+                label="Confirmed lineups only"
+                checked={lineupOnly}
+                onChange={(e) => setLineupOnly(e.target.checked)}
+              />
+            </Form.Group>
+            <Form.Group controlId="prediction-favorites" className="pred-toolbar-switch">
+              <Form.Check
+                type="switch"
+                label="Favorite teams only"
+                checked={favoritesOnly}
+                onChange={(e) => setFavoritesOnly(e.target.checked)}
+                disabled={favoriteTeams.length === 0}
+              />
+            </Form.Group>
+          </div>
+          <div className="pred-toolbar-footer">
+            <div className="pred-favorites-row">
+              {favoriteTeams.length > 0 ? favoriteTeams.map((team) => (
+                <button
+                  key={team.abbreviation}
+                  type="button"
+                  className={`pred-favorite-chip${favoriteTeamSet.has(team.abbreviation) ? " pred-favorite-chip--active" : ""}`}
+                  onClick={() => setSearchTerm(team.abbreviation)}
+                >
+                  ★ {team.abbreviation}
+                </button>
+              )) : (
+                <span className="text-muted small">Favorite a team on a card to create a quick predictions filter.</span>
+              )}
+            </div>
+            {lastUpdated && (
+              <span className="text-muted small">
+                Updated {lastUpdated.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+              </span>
+            )}
+          </div>
+        </Card.Body>
+      </Card>
+
       {/* Summary chips */}
-      {!loading && predictions.length > 0 && (
+      {!loading && filteredPredictions.length > 0 && (
         <div className="pred-summary-chips mb-3">
-          <span className="pred-chip">{pluralize(predictions.length, "game")}</span>
+          <span className="pred-chip">{pluralize(filteredPredictions.length, "game")}</span>
           {highConf.length > 0 && (
             <span className="pred-chip pred-chip--high">
               {pluralize(highConf.length, "high-confidence pick", "high-confidence picks")}
@@ -671,11 +906,17 @@ const PredictionsPage = () => {
         </div>
       )}
 
-      {!loading && !error && predictions.length > 0 && (
+      {!loading && !error && predictions.length > 0 && filteredPredictions.length === 0 && (
+        <Alert variant="light" className="border">
+          No predictions match the active filters.
+        </Alert>
+      )}
+
+      {!loading && !error && filteredPredictions.length > 0 && (
         <>
           {/* High confidence first, then medium, then low */}
           {["HIGH", "MEDIUM", "LOW"].map((tier) => {
-            const group = predictions.filter(
+            const group = filteredPredictions.filter(
               (p) => (p.confidence_tier?.toUpperCase() || "LOW") === tier
             );
             if (!group.length) return null;
@@ -699,6 +940,8 @@ const PredictionsPage = () => {
                       <PredictionCard
                         pred={pred}
                         game={games[pred.game_pk]}
+                        favoriteTeams={favoriteTeamSet}
+                        onToggleFavorite={handleToggleFavorite}
                       />
                     </Col>
                   ))}

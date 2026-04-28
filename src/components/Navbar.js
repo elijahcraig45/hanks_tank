@@ -74,13 +74,20 @@ function BasicExample() {
           {/* Analysis dropdown */}
           <div ref={analysisRef} className="ht-dropdown">
             <button
-              className={`ht-link ht-link--btn${isActive(['/season-comparison','/team-comparison','/player-comparison','/advanced-analysis']) ? ' ht-link--active' : ''}`}
+              className={`ht-link ht-link--btn${isActive(['/season-comparison','/team-comparison','/player-comparison','/advanced-analysis','/prediction-diagnostics','/split-explorer','/statcast-lab','/comparison-workbench','/scenario-simulator','/research-workflow']) ? ' ht-link--active' : ''}`}
               onClick={() => { setAnalysisOpen(o => !o); setStatsOpen(false); }}
             >
               Analysis <span className="ht-caret">{analysisOpen ? '▴' : '▾'}</span>
             </button>
             {analysisOpen && (
               <div className="ht-dropdown-menu">
+                <Link className="ht-dropdown-item" to="/prediction-diagnostics" onClick={closeAll}>Prediction Diagnostics</Link>
+                <Link className="ht-dropdown-item" to="/split-explorer" onClick={closeAll}>Split Explorer</Link>
+                <Link className="ht-dropdown-item" to="/statcast-lab" onClick={closeAll}>Statcast Lab</Link>
+                <Link className="ht-dropdown-item" to="/comparison-workbench" onClick={closeAll}>Comparison Workbench</Link>
+                <Link className="ht-dropdown-item" to="/scenario-simulator" onClick={closeAll}>Scenario Simulator</Link>
+                <Link className="ht-dropdown-item" to="/research-workflow" onClick={closeAll}>Research Workflow</Link>
+                <div className="ht-dropdown-divider" />
                 <Link className="ht-dropdown-item" to="/season-comparison"  onClick={closeAll}>Season Comparison</Link>
                 <Link className="ht-dropdown-item" to="/team-comparison"    onClick={closeAll}>Team Comparison</Link>
                 <Link className="ht-dropdown-item" to="/player-comparison"  onClick={closeAll}>Player Comparison</Link>
@@ -111,6 +118,12 @@ function BasicExample() {
           <Link className="ht-mobile-link" to="/PlayerBatting" onClick={closeAll}>Player Batting</Link>
           <Link className="ht-mobile-link" to="/PlayerPitching" onClick={closeAll}>Player Pitching</Link>
           <div className="ht-mobile-section">Analysis</div>
+          <Link className="ht-mobile-link" to="/prediction-diagnostics" onClick={closeAll}>Prediction Diagnostics</Link>
+          <Link className="ht-mobile-link" to="/split-explorer" onClick={closeAll}>Split Explorer</Link>
+          <Link className="ht-mobile-link" to="/statcast-lab" onClick={closeAll}>Statcast Lab</Link>
+          <Link className="ht-mobile-link" to="/comparison-workbench" onClick={closeAll}>Comparison Workbench</Link>
+          <Link className="ht-mobile-link" to="/scenario-simulator" onClick={closeAll}>Scenario Simulator</Link>
+          <Link className="ht-mobile-link" to="/research-workflow" onClick={closeAll}>Research Workflow</Link>
           <Link className="ht-mobile-link" to="/season-comparison"  onClick={closeAll}>Season Comparison</Link>
           <Link className="ht-mobile-link" to="/team-comparison"    onClick={closeAll}>Team Comparison</Link>
           <Link className="ht-mobile-link" to="/player-comparison"  onClick={closeAll}>Player Comparison</Link>

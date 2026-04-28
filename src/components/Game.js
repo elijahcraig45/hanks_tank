@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from "react";
+import { Link, useParams } from "react-router-dom";
 import { Container, Row, Col, Card, Table, Badge, Button } from "react-bootstrap";
 import StrikeZone from './LiveGameStrikeZone';
 import BoxScore from './BoxScore';
@@ -470,15 +470,13 @@ const GameDetailsPage = () => {
   const [loading, setLoading]           = useState(true);
   const [prediction, setPrediction]     = useState(null);
   const [scoutingReport, setScoutingReport] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
-  const fetchGameDetails = async () => {
+  const fetchGameDetails = useCallback(async () => {
     try {
-      const response = await fetch(
-        `https://statsapi.mlb.com/api/v1.1/game/${gamePk}/feed/live`
-      );
-      if (!response.ok) throw new Error("Network response was not ok");
-      const data = await response.json();
+      const data = await apiService.getGameDetails(gamePk);
       setGameDetails(data);
+      setLastUpdated(new Date());
       if (data?.liveData?.plays?.currentPlay) {
         setSelectedAtBat(data.liveData.plays.currentPlay);
       }
@@ -487,9 +485,9 @@ const GameDetailsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [gamePk]);
 
-  useEffect(() => { fetchGameDetails(); }, [gamePk]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchGameDetails(); }, [fetchGameDetails]);
 
   // Fetch today's predictions and find matching game
   useEffect(() => {
@@ -558,6 +556,25 @@ const GameDetailsPage = () => {
     setSelectedAtBat(nextVisibleEvents[0]);
   }, [gameDetails, playFilter, selectedAtBat]);
 
+  useEffect(() => {
+    if (process.env.NODE_ENV === "test" || !gameDetails) {
+      return undefined;
+    }
+
+    const gameState = gameDetails.gameData?.status?.abstractGameState;
+    if (gameState === "Final" || gameState === "Completed") {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchGameDetails();
+      }
+    }, 20000);
+
+    return () => window.clearInterval(intervalId);
+  }, [fetchGameDetails, gameDetails]);
+
   if (loading) {
     return (
       <Container className="py-5 text-center">
@@ -598,7 +615,11 @@ const GameDetailsPage = () => {
     const season = player.seasonStats.batting;
     return (
       <tr key={player.person.id}>
-        <td className="fw-semibold">{player.person.fullName}</td>
+        <td className="fw-semibold">
+          <Link to={`/player/${player.person.id}`} className="game-player-link">
+            {player.person.fullName}
+          </Link>
+        </td>
         <td className="text-muted">{player.position?.abbreviation || "—"}</td>
         <td>{stats.atBats}</td>
         <td>{stats.hits}</td>
@@ -619,7 +640,11 @@ const GameDetailsPage = () => {
     const season = player.seasonStats.pitching;
     return (
       <tr key={player.person.id}>
-        <td className="fw-semibold">{player.person.fullName}</td>
+        <td className="fw-semibold">
+          <Link to={`/player/${player.person.id}`} className="game-player-link">
+            {player.person.fullName}
+          </Link>
+        </td>
         <td>{season.wins}–{season.losses}</td>
         <td>{season.era}</td>
         <td>{stats.inningsPitched}</td>
@@ -638,25 +663,43 @@ const GameDetailsPage = () => {
     const badge      = resultBadge(result?.description);
     const isSelected = selectedAtBat?.about?.atBatIndex === about?.atBatIndex;
     return (
-      <button
+      <div
         key={about.atBatIndex}
         className={`pbp-item w-100 text-start border-0 bg-transparent px-3 py-2${isSelected ? " pbp-item--selected" : ""}`}
+        role="button"
+        tabIndex={0}
         onClick={() => setSelectedAtBat(event)}
+        onKeyDown={(keyboardEvent) => {
+          if (keyboardEvent.key === "Enter" || keyboardEvent.key === " ") {
+            keyboardEvent.preventDefault();
+            setSelectedAtBat(event);
+          }
+        }}
       >
         <div className="d-flex align-items-start gap-2">
-          <span className="pbp-inning text-muted flex-shrink-0">
-            {halfInningLabel(about.halfInning)}{about.inning}
-          </span>
-          <Badge bg={badge.bg} className="pbp-badge flex-shrink-0">{badge.label}</Badge>
-          <div className="pbp-text flex-grow-1">
-            <span className="pbp-batter">{matchup?.batter?.fullName}</span>
-            <span className="pbp-desc text-muted d-block">{result?.description}</span>
-          </div>
+            <span className="pbp-inning text-muted flex-shrink-0">
+              {halfInningLabel(about.halfInning)}{about.inning}
+            </span>
+            <Badge bg={badge.bg} className="pbp-badge flex-shrink-0">{badge.label}</Badge>
+            <div className="pbp-text flex-grow-1">
+              {matchup?.batter?.id ? (
+                <Link
+                  to={`/player/${matchup.batter.id}`}
+                  className="pbp-batter"
+                  onClick={(clickEvent) => clickEvent.stopPropagation()}
+                >
+                  {matchup.batter.fullName}
+                </Link>
+              ) : (
+                <span className="pbp-batter">{matchup?.batter?.fullName}</span>
+              )}
+              <span className="pbp-desc text-muted d-block">{result?.description}</span>
+            </div>
           <span className="pbp-count text-muted flex-shrink-0">
             {count?.balls}-{count?.strikes} {count?.outs} out
           </span>
         </div>
-      </button>
+      </div>
     );
   };
 
@@ -668,11 +711,15 @@ const GameDetailsPage = () => {
       {/* Header */}
       <div className="game-header mb-4">
         <h2 className="game-title mb-1">
-          <span className="text-muted">{awayTeam.abbreviation}</span>
+          <Link to={`/team/${awayTeam.abbreviation}`} className="game-team-link game-team-link--muted">
+            {awayTeam.abbreviation}
+          </Link>
           {" "}
           <span className="text-muted fw-light">@</span>
           {" "}
-          <span>{homeTeam.abbreviation}</span>
+          <Link to={`/team/${homeTeam.abbreviation}`} className="game-team-link">
+            {homeTeam.abbreviation}
+          </Link>
           <Badge
             bg={status.abstractGameState === "Live" ? "success" : "secondary"}
             className="ms-2 game-status-badge"
@@ -687,7 +734,27 @@ const GameDetailsPage = () => {
           })}
           {" · "}{venue.name}
           {weather?.condition && ` · ${weather.condition} ${weather.temp}°F · ${weather.wind}`}
+          {lastUpdated && ` · Updated ${lastUpdated.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`}
+          {status.abstractGameState !== "Final" && status.abstractGameState !== "Completed" && " · Auto refresh on"}
         </p>
+        <div className="game-header-links mt-2">
+          <Link to={`/team/${awayTeam.abbreviation}`} className="game-header-pill">
+            {awayTeam.teamName} hub
+          </Link>
+          <Link to={`/team/${homeTeam.abbreviation}`} className="game-header-pill">
+            {homeTeam.teamName} hub
+          </Link>
+          {probablePitchers.away?.id && (
+            <Link to={`/player/${probablePitchers.away.id}`} className="game-header-pill">
+              {awayTeam.abbreviation} starter
+            </Link>
+          )}
+          {probablePitchers.home?.id && (
+            <Link to={`/player/${probablePitchers.home.id}`} className="game-header-pill">
+              {homeTeam.abbreviation} starter
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Rich Scouting Report from BQ — always expanded on the game page */}
@@ -765,7 +832,14 @@ const GameDetailsPage = () => {
                   </button>
                 </div>
               </div>
-              <Button size="sm" variant="outline-secondary" onClick={fetchGameDetails}>↻ Refresh</Button>
+              <div className="d-flex align-items-center gap-2">
+                {lastUpdated && (
+                  <span className="text-muted game-refresh-meta">
+                    Updated {lastUpdated.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                  </span>
+                )}
+                <Button size="sm" variant="outline-secondary" onClick={fetchGameDetails}>↻ Refresh</Button>
+              </div>
             </Card.Header>
             <div className="pbp-scroll">
               {visibleEvents.length > 0 ? (
@@ -786,7 +860,21 @@ const GameDetailsPage = () => {
                 <span className="fw-semibold">Strike Zone</span>
                 {selectedAtBat?.matchup && (
                   <span className="text-muted" style={{ fontSize: "0.78rem" }}>
-                    {selectedAtBat.matchup.batter?.fullName} vs {selectedAtBat.matchup.pitcher?.fullName}
+                    {selectedAtBat.matchup.batter?.id ? (
+                      <Link to={`/player/${selectedAtBat.matchup.batter.id}`} className="game-inline-link">
+                        {selectedAtBat.matchup.batter.fullName}
+                      </Link>
+                    ) : (
+                      selectedAtBat.matchup.batter?.fullName
+                    )}
+                    {" vs "}
+                    {selectedAtBat.matchup.pitcher?.id ? (
+                      <Link to={`/player/${selectedAtBat.matchup.pitcher.id}`} className="game-inline-link">
+                        {selectedAtBat.matchup.pitcher.fullName}
+                      </Link>
+                    ) : (
+                      selectedAtBat.matchup.pitcher?.fullName
+                    )}
                   </span>
                 )}
               </div>
@@ -810,7 +898,12 @@ const GameDetailsPage = () => {
           return (
             <Col xs={12} lg={6} key={side}>
               <Card className="shadow-sm">
-                <Card.Header className="py-2 fw-semibold">{team.teamName} Batting</Card.Header>
+                <Card.Header className="py-2 fw-semibold">
+                  <Link to={`/team/${team.abbreviation}`} className="game-team-card-link">
+                    {team.teamName}
+                  </Link>{" "}
+                  Batting
+                </Card.Header>
                 <div className="table-responsive">
                   <Table size="sm" className="game-table mb-0">
                     <thead className="table-light">
@@ -839,7 +932,12 @@ const GameDetailsPage = () => {
           return (
             <Col xs={12} lg={6} key={side}>
               <Card className="shadow-sm">
-                <Card.Header className="py-2 fw-semibold">{team.teamName} Pitching</Card.Header>
+                <Card.Header className="py-2 fw-semibold">
+                  <Link to={`/team/${team.abbreviation}`} className="game-team-card-link">
+                    {team.teamName}
+                  </Link>{" "}
+                  Pitching
+                </Card.Header>
                 <div className="table-responsive">
                   <Table size="sm" className="game-table mb-0">
                     <thead className="table-light">
@@ -869,11 +967,23 @@ const GameDetailsPage = () => {
               <Card.Body className="py-2">
                 <p className="mb-1">
                   <span className="text-muted">{awayTeam.abbreviation}:</span>{" "}
-                  {probablePitchers.away?.fullName || "TBD"}
+                  {probablePitchers.away?.id ? (
+                    <Link to={`/player/${probablePitchers.away.id}`} className="game-inline-link">
+                      {probablePitchers.away.fullName}
+                    </Link>
+                  ) : (
+                    probablePitchers.away?.fullName || "TBD"
+                  )}
                 </p>
                 <p className="mb-0">
                   <span className="text-muted">{homeTeam.abbreviation}:</span>{" "}
-                  {probablePitchers.home?.fullName || "TBD"}
+                  {probablePitchers.home?.id ? (
+                    <Link to={`/player/${probablePitchers.home.id}`} className="game-inline-link">
+                      {probablePitchers.home.fullName}
+                    </Link>
+                  ) : (
+                    probablePitchers.home?.fullName || "TBD"
+                  )}
                 </p>
               </Card.Body>
             </Card>
@@ -892,12 +1002,18 @@ const GameDetailsPage = () => {
         )}
         <Col xs={12} sm={6} md={4}>
           <Card className="shadow-sm h-100">
-            <Card.Header className="py-2 fw-semibold">Venue</Card.Header>
-            <Card.Body className="py-2">
-              <p className="mb-0">{venue.name}</p>
-            </Card.Body>
-          </Card>
-        </Col>
+              <Card.Header className="py-2 fw-semibold">Venue</Card.Header>
+              <Card.Body className="py-2">
+                <p className="mb-1">{venue.name}</p>
+                <p className="mb-0 text-muted">
+                  Home club:{" "}
+                  <Link to={`/team/${homeTeam.abbreviation}`} className="game-inline-link">
+                    {homeTeam.teamName}
+                  </Link>
+                </p>
+              </Card.Body>
+            </Card>
+          </Col>
       </Row>
     </Container>
   );

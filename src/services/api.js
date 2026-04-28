@@ -19,6 +19,14 @@ const RETRY_ATTEMPTS = 3;
 const RETRY_DELAY = 1000; // 1 second
 const CURRENT_SEASON = SEASONS.DEFAULT; // Centralized current season
 
+function unwrapApiEnvelope(payload) {
+  if (payload && typeof payload === 'object' && 'success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+
+  return payload;
+}
+
 class ApiService {
   constructor() {
     this.cache = new Map();
@@ -262,7 +270,7 @@ class ApiService {
    * Get Statcast data
    */
   async getStatcast(year = CURRENT_SEASON, options = {}) {
-    const { playerId, position = 'batter', p_throws = '', stands = '', events = '' } = options;
+    const { playerId, position = 'batter', p_throws = '', stands = '', events = '', limit } = options;
     const params = new URLSearchParams({
       year: year.toString(),
       position,
@@ -270,6 +278,7 @@ class ApiService {
       ...(p_throws && { p_throws }),
       ...(stands && { stands }),
       ...(events && { events }),
+      ...(limit && { limit: limit.toString() }),
     });
     return this.get(`/statcast?${params}`, { cacheTTL: 60 });
   }
@@ -302,12 +311,48 @@ class ApiService {
   }
 
   /**
+   * Get prediction diagnostics over a date range
+   */
+  async getPredictionDiagnostics(options = {}) {
+    const today = new Date().toISOString().split('T')[0];
+    const { startDate, endDate = today } = options;
+    const params = new URLSearchParams({
+      endDate,
+      ...(startDate && { startDate }),
+    });
+
+    return this.get(`/predictions/diagnostics?${params.toString()}`, { cacheTTL: 15 });
+  }
+
+  /**
+   * Get split explorer data for a team or player
+   */
+  async getSplits(options = {}) {
+    const {
+      entityType = 'player',
+      entityId,
+      season = CURRENT_SEASON,
+      group = 'hitting',
+      family = 'location',
+    } = options;
+
+    const params = new URLSearchParams({
+      entityType,
+      entityId: String(entityId),
+      season: String(season),
+      group,
+      family,
+    });
+
+    return this.get(`/splits?${params.toString()}`, { cacheTTL: 30 });
+  }
+
+  /**
    * Get games for a specific date
    */
   async getGames(date = null) {
     const dateParam = date || new Date().toISOString().split('T')[0];
-    // MLB Stats API direct call (not cached)
-    return this.get(`https://statsapi.mlb.com/api/v1/schedule/games/?sportId=1&date=${dateParam}`, {
+    return this.get(`/games?date=${dateParam}`, {
       cacheTTL: 2 // 2 minutes for live games
     });
   }
@@ -316,7 +361,7 @@ class ApiService {
    * Get game details
    */
   async getGameDetails(gamePk) {
-    return this.get(`https://statsapi.mlb.com/api/v1.1/game/${gamePk}/feed/live`, {
+    return this.get(`/games/${gamePk}`, {
       cacheTTL: 1 // 1 minute for live game data
     });
   }
@@ -325,7 +370,64 @@ class ApiService {
    * Get team details
    */
   async getTeamDetails(teamId, year = CURRENT_SEASON) {
-    return this.get(`/v2/teams/${teamId}?season=${year}`, { cacheTTL: 60 });
+    const response = await this.get(`/v2/teams/${teamId}?season=${year}`, {
+      cacheTTL: 60,
+    });
+    return unwrapApiEnvelope(response)?.team || null;
+  }
+
+  /**
+   * Get active team roster
+   */
+  async getTeamRoster(teamId, year = CURRENT_SEASON) {
+    const response = await this.get(`/v2/teams/${teamId}/roster?season=${year}`, { cacheTTL: 30 });
+    const rosterPayload = unwrapApiEnvelope(response)?.roster;
+    if (Array.isArray(rosterPayload)) {
+      return rosterPayload;
+    }
+
+    return rosterPayload?.roster || [];
+  }
+
+  /**
+   * Get upcoming team schedule
+   */
+  async getTeamSchedule(teamId, options = {}) {
+    const { date, startDate, endDate, hydrate = 'team,linescore' } = options;
+    const params = new URLSearchParams({
+      sportId: '1',
+      teamId: teamId.toString(),
+      hydrate,
+      ...(date && { date }),
+      ...(startDate && { startDate }),
+      ...(endDate && { endDate }),
+    });
+
+    const response = await this.get(`/v2/teams/${teamId}/schedule?${params.toString()}`, {
+      cacheTTL: 10,
+    });
+    return unwrapApiEnvelope(response)?.schedule || { dates: [] };
+  }
+
+  /**
+   * Get player bio/profile details
+   */
+  async getPlayerDetails(playerId) {
+    const response = await this.get(`/players/${playerId}/profile`, {
+      cacheTTL: 60,
+    });
+    return unwrapApiEnvelope(response)?.people?.[0] || unwrapApiEnvelope(response)?.player || null;
+  }
+
+  /**
+   * Get recent player game log entries
+   */
+  async getPlayerGameLog(playerId, options = {}) {
+    const { season = CURRENT_SEASON, group = 'hitting' } = options;
+    const response = await this.get(`/players/${playerId}/game-log?season=${season}&group=${group}`, {
+      cacheTTL: 10,
+    });
+    return unwrapApiEnvelope(response)?.stats?.[0]?.splits || response?.stats?.[0]?.splits || [];
   }
 
   /**

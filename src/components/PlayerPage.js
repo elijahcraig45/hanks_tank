@@ -6,6 +6,13 @@ import {
 } from 'react-bootstrap';
 import apiService from '../services/api';
 import { SEASONS } from '../config/constants';
+import { loadFavoritePlayers, toggleFavoritePlayer } from '../utils/favorites';
+import {
+  getTeamAbbreviationFromId,
+  getTeamAbbreviationFromName,
+  getTeamMetaByAbbr,
+  getTeamLogoUrl,
+} from '../utils/teamMetadata';
 import StrikeZone from './StrikeZone';
 import './styles/PlayerPage.css';
 
@@ -25,6 +32,11 @@ const PlayerPage = () => {
   const [trendData, setTrendData] = useState([]);
   const [trendsLoaded, setTrendsLoaded] = useState(false);
   const [trendsLoading, setTrendsLoading] = useState(false);
+  const [playerDetails, setPlayerDetails] = useState(null);
+  const [favorite, setFavorite] = useState(false);
+  const [gameLog, setGameLog] = useState([]);
+  const [gameLogLoaded, setGameLogLoaded] = useState(false);
+  const [gameLogLoading, setGameLogLoading] = useState(false);
 
   const fetchSeasonStats = useCallback(async (year) => {
     if (!playerId || playerId === 'undefined') {
@@ -35,14 +47,16 @@ const PlayerPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const [allBatting, allPitching] = await Promise.all([
+      const [allBatting, allPitching, detailsData] = await Promise.all([
         apiService.getPlayerBatting(year, { limit: 500 }),
         apiService.getPlayerPitching(year, { limit: 500 }),
+        apiService.getPlayerDetails(playerId).catch(() => null),
       ]);
       const b = allBatting.find(p => p.playerId?.toString() === playerId);
       const p = allPitching.find(p => p.playerId?.toString() === playerId);
       setBattingData(b || null);
       setPitchingData(p || null);
+      setPlayerDetails(detailsData || null);
       if (!b && !p) setError(`No stats found for this player in ${year}.`);
     } catch (err) {
       console.error('Error fetching player stats:', err);
@@ -57,6 +71,16 @@ const PlayerPage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedYear, playerId]);
 
+  useEffect(() => {
+    setFavorite(loadFavoritePlayers().some((player) => String(player.playerId) === String(playerId)));
+  }, [playerId]);
+
+  useEffect(() => {
+    setGameLog([]);
+    setGameLogLoaded(false);
+    setGameLogLoading(false);
+  }, [playerId, selectedYear]);
+
   // Set default active tab once initial data loads
   useEffect(() => {
     if (!loading && activeTab === null) {
@@ -65,6 +89,10 @@ const PlayerPage = () => {
       else setActiveTab('statcast');
     }
   }, [loading, battingData, pitchingData, activeTab]);
+
+  const isBatter = !!battingData;
+  const isPitcher = !!pitchingData;
+  const gameLogGroup = isPitcher && !isBatter ? 'pitching' : 'hitting';
 
   const loadTrends = useCallback(async () => {
     if (trendsLoaded || trendsLoading) return;
@@ -91,9 +119,28 @@ const PlayerPage = () => {
     }
   }, [playerId, trendsLoaded, trendsLoading]);
 
+  const loadGameLog = useCallback(async () => {
+    if (gameLogLoaded || gameLogLoading) {
+      return;
+    }
+
+    setGameLogLoading(true);
+    try {
+      const entries = await apiService.getPlayerGameLog(playerId, {
+        season: selectedYear,
+        group: gameLogGroup,
+      });
+      setGameLog(entries);
+      setGameLogLoaded(true);
+    } finally {
+      setGameLogLoading(false);
+    }
+  }, [gameLogGroup, gameLogLoaded, gameLogLoading, playerId, selectedYear]);
+
   const handleTabSelect = (key) => {
     setActiveTab(key);
     if (key === 'trends') loadTrends();
+    if (key === 'game-log') loadGameLog();
   };
 
   if (loading) {
@@ -120,15 +167,38 @@ const PlayerPage = () => {
     );
   }
 
-  const playerName = battingData?.Name || pitchingData?.Name || 'Unknown Player';
-  const team = battingData?.Team || pitchingData?.Team || '';
-  const isBatter = !!battingData;
-  const isPitcher = !!pitchingData;
+  const playerName = playerDetails?.fullName || battingData?.Name || pitchingData?.Name || 'Unknown Player';
+  const team = battingData?.Team || pitchingData?.Team || playerDetails?.currentTeam?.name || '';
+  const teamAbbreviation =
+    getTeamAbbreviationFromName(team) ||
+    getTeamAbbreviationFromId(playerDetails?.currentTeam?.id);
+  const teamMeta = getTeamMetaByAbbr(teamAbbreviation);
   const strikezonePosition = isPitcher && !isBatter ? 'pitcher' : 'batter';
-  const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${playerId}/headshot/67/current`;
+  const accentColor = teamMeta?.primaryColor || (isPitcher && !isBatter ? '#dc3545' : '#0d6efd');
+  const accentAltColor = teamMeta?.secondaryColor || '#0f172a';
+  const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_320,q_auto:best/v1/people/${playerId}/headshot/67/current`;
   const initials = playerName.split(' ').map(n => n[0]).join('').slice(0, 2);
   const hasTrendBatting = trendData.some(d => d.batting !== null);
   const hasTrendPitching = trendData.some(d => d.pitching !== null);
+  const bioItems = [
+    { label: 'Team', value: teamMeta?.name || team || '—' },
+    { label: 'Position', value: playerDetails?.primaryPosition?.name || '—' },
+    { label: 'Bats / Throws', value: `${playerDetails?.batSide?.description || '—'} / ${playerDetails?.pitchHand?.description || '—'}` },
+    { label: 'Age', value: playerDetails?.currentAge || '—' },
+    { label: 'Height / Weight', value: playerDetails?.height && playerDetails?.weight ? `${playerDetails.height} / ${playerDetails.weight} lb` : '—' },
+    { label: 'Born', value: playerDetails?.birthDate ? `${playerDetails.birthDate} · ${[playerDetails.birthCity, playerDetails.birthStateProvince, playerDetails.birthCountry].filter(Boolean).join(', ')}` : '—' },
+    { label: 'MLB Debut', value: playerDetails?.mlbDebutDate || '—' },
+    { label: 'Nickname', value: playerDetails?.nickName || '—' },
+  ];
+
+  const handleFavoriteToggle = () => {
+    const next = toggleFavoritePlayer({
+      playerId,
+      name: playerName,
+      team: teamMeta?.abbreviation || teamAbbreviation,
+    });
+    setFavorite(next.some((player) => String(player.playerId) === String(playerId)));
+  };
 
   const battingAccent = [
     { label: 'AVG', value: battingData?.AVG },
@@ -182,13 +252,37 @@ const PlayerPage = () => {
     { label: 'BK', value: pitchingData?.BK },
     { label: 'BF', value: pitchingData?.BF },
   ];
+  const trendHighlights = (() => {
+    const bestOps = trendData
+      .filter((entry) => entry.batting?.OPS != null)
+      .sort((left, right) => parseFloat(right.batting.OPS) - parseFloat(left.batting.OPS))[0];
+    const peakHr = trendData
+      .filter((entry) => entry.batting?.HR != null)
+      .sort((left, right) => Number(right.batting.HR) - Number(left.batting.HR))[0];
+    const bestEra = trendData
+      .filter((entry) => entry.pitching?.ERA != null)
+      .sort((left, right) => parseFloat(left.pitching.ERA) - parseFloat(right.pitching.ERA))[0];
+    const peakStrikeouts = trendData
+      .filter((entry) => entry.pitching?.SO != null)
+      .sort((left, right) => Number(right.pitching.SO) - Number(left.pitching.SO))[0];
+
+    return [
+      bestOps ? { label: 'Best OPS', value: `${bestOps.year} · ${bestOps.batting.OPS}` } : null,
+      peakHr ? { label: 'Peak HR', value: `${peakHr.year} · ${peakHr.batting.HR}` } : null,
+      bestEra ? { label: 'Best ERA', value: `${bestEra.year} · ${bestEra.pitching.ERA}` } : null,
+      peakStrikeouts ? { label: 'Peak strikeouts', value: `${peakStrikeouts.year} · ${peakStrikeouts.pitching.SO}` } : null,
+    ].filter(Boolean);
+  })();
 
   return (
     <div className="player-page">
       <Container fluid="lg" className="py-4">
 
         {/* Header */}
-        <Card className="player-header-card mb-4 border-0 shadow-sm">
+        <Card
+          className="player-header-card mb-4 border-0 shadow-sm"
+          style={{ background: `linear-gradient(135deg, ${accentColor} 0%, ${accentAltColor} 100%)` }}
+        >
           <Card.Body className="p-4">
             <Row className="align-items-center g-3">
               <Col xs="auto">
@@ -205,7 +299,7 @@ const PlayerPage = () => {
                   />
                   <div
                     className="player-initials-avatar"
-                    style={{ background: isBatter ? '#0d6efd' : '#dc3545', display: 'none' }}
+                    style={{ background: accentColor, display: 'none' }}
                   >
                     {initials}
                   </div>
@@ -214,13 +308,36 @@ const PlayerPage = () => {
               <Col>
                 <h1 className="player-name mb-2">{playerName}</h1>
                 <div className="d-flex flex-wrap align-items-center gap-2">
-                  {team && <Badge bg="secondary" className="fs-6">{team}</Badge>}
+                  {teamMeta?.id && (
+                    <img
+                      src={getTeamLogoUrl(teamMeta.id)}
+                      alt=""
+                      className="player-team-logo"
+                    />
+                  )}
+                  {team && (
+                    <Badge bg="light" text="dark" className="fs-6">
+                      {teamMeta?.shortName || team}
+                    </Badge>
+                  )}
+                  {playerDetails?.primaryPosition?.abbreviation && (
+                    <Badge bg="dark">{playerDetails.primaryPosition.abbreviation}</Badge>
+                  )}
                   {isBatter && <Badge bg="primary">Batter</Badge>}
                   {isPitcher && <Badge bg="danger">Pitcher</Badge>}
                 </div>
+                <div className="player-subtitle mt-2">
+                  {playerDetails?.primaryNumber && <span>#{playerDetails.primaryNumber}</span>}
+                  {playerDetails?.primaryNumber && team && <span className="mx-2">•</span>}
+                  {team && (
+                    <span>
+                      {teamMeta?.name || team}
+                    </span>
+                  )}
+                </div>
               </Col>
               <Col xs={12} sm="auto">
-                <div className="d-flex align-items-center gap-2">
+                <div className="player-header-actions">
                   <span className="text-muted small fw-semibold">Season</span>
                   <Form.Select
                     size="sm"
@@ -232,11 +349,62 @@ const PlayerPage = () => {
                       <option key={y} value={y}>{y}</option>
                     ))}
                   </Form.Select>
+                  <Button
+                    variant={favorite ? 'warning' : 'outline-light'}
+                    size="sm"
+                    onClick={handleFavoriteToggle}
+                  >
+                    {favorite ? '★ Favorite' : '☆ Favorite'}
+                  </Button>
+                  {teamAbbreviation && (
+                    <Button
+                      as={Link}
+                      to={`/team/${teamAbbreviation}`}
+                      variant="outline-light"
+                      size="sm"
+                    >
+                      Team Hub
+                    </Button>
+                  )}
                 </div>
               </Col>
             </Row>
           </Card.Body>
         </Card>
+
+        <Row className="g-4 mb-4">
+          <Col lg={7}>
+            <Card className="border-0 shadow-sm h-100">
+              <Card.Header className="bg-white fw-semibold">Player Snapshot</Card.Header>
+              <Card.Body className="player-info-grid">
+                {bioItems.map((item) => (
+                  <div key={item.label} className="player-info-item">
+                    <div className="player-info-label">{item.label}</div>
+                    <div className="player-info-value">{item.value}</div>
+                  </div>
+                ))}
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col lg={5}>
+            <Card className="border-0 shadow-sm h-100">
+              <Card.Header className="bg-white fw-semibold">Quick Links</Card.Header>
+              <Card.Body className="d-flex flex-column gap-2">
+                {teamAbbreviation && (
+                  <Button as={Link} to={`/team/${teamAbbreviation}`} variant="outline-primary">
+                    Open {teamMeta?.shortName || team} Team Page
+                  </Button>
+                )}
+                <Button as={Link} to="/PlayerBatting" variant="outline-secondary">
+                  Player Batting Leaders
+                </Button>
+                <Button as={Link} to="/PlayerPitching" variant="outline-secondary">
+                  Player Pitching Leaders
+                </Button>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
 
         {/* Year message if data missing for selected year */}
         {!battingData && !pitchingData && !error && (
@@ -259,8 +427,8 @@ const PlayerPage = () => {
                 {battingAccent.map(s => (
                   <Col xs={6} md={3} key={s.label}>
                     <Card className="text-center border-0 shadow-sm">
-                      <Card.Body className="py-3">
-                        <div className="fs-3 fw-bold text-primary">{s.value ?? '—'}</div>
+                        <Card.Body className="py-3">
+                        <div className="fs-3 fw-bold" style={{ color: accentColor }}>{s.value ?? '—'}</div>
                         <div className="text-muted small">{s.label}</div>
                       </Card.Body>
                     </Card>
@@ -289,8 +457,8 @@ const PlayerPage = () => {
                 {pitchingAccent.map(s => (
                   <Col xs={6} md={3} key={s.label}>
                     <Card className="text-center border-0 shadow-sm">
-                      <Card.Body className="py-3">
-                        <div className="fs-3 fw-bold text-danger">{s.value ?? '—'}</div>
+                        <Card.Body className="py-3">
+                        <div className="fs-3 fw-bold" style={{ color: accentColor }}>{s.value ?? '—'}</div>
                         <div className="text-muted small">{s.label}</div>
                       </Card.Body>
                     </Card>
@@ -331,6 +499,20 @@ const PlayerPage = () => {
               </Alert>
             ) : (
               <div className="pt-2">
+                {trendHighlights.length > 0 && (
+                  <Row className="g-3 mb-4">
+                    {trendHighlights.map((highlight) => (
+                      <Col xs={6} md={3} key={highlight.label}>
+                        <Card className="text-center border-0 shadow-sm h-100">
+                          <Card.Body className="py-3">
+                            <div className="player-trend-highlight-label">{highlight.label}</div>
+                            <div className="player-trend-highlight-value">{highlight.value}</div>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    ))}
+                  </Row>
+                )}
                 {hasTrendBatting && (
                   <Card className="border-0 shadow-sm mb-4">
                     <Card.Header className="bg-white fw-semibold">Batting by Season</Card.Header>
@@ -408,9 +590,111 @@ const PlayerPage = () => {
             )}
           </Tab>
 
+          <Tab eventKey="game-log" title="🗓 Recent Games">
+            {gameLogLoading ? (
+              <div className="text-center py-5">
+                <Spinner animation="border" variant="primary" />
+                <p className="mt-2 text-muted">Loading recent games…</p>
+              </div>
+            ) : !gameLogLoaded ? (
+              <div className="text-center py-5">
+                <Button variant="outline-primary" onClick={loadGameLog}>
+                  Load Recent Games
+                </Button>
+              </div>
+            ) : gameLog.length === 0 ? (
+              <Alert variant="info" className="mt-3">
+                No recent game log entries are available for {selectedYear}.
+              </Alert>
+            ) : (
+              <Card className="border-0 shadow-sm mt-2">
+                <Card.Header className="bg-white fw-semibold">
+                  {isPitcher && !isBatter ? 'Pitching' : 'Batting'} Game Log
+                </Card.Header>
+                <div className="table-responsive">
+                  <table className="table table-sm table-hover mb-0">
+                    <thead className="table-light">
+                      <tr>
+                        <th>Date</th>
+                        <th>Matchup</th>
+                        {isPitcher && !isBatter ? (
+                          <>
+                            <th>IP</th>
+                            <th>H</th>
+                            <th>ER</th>
+                            <th>BB</th>
+                            <th>SO</th>
+                            <th>ERA</th>
+                          </>
+                        ) : (
+                          <>
+                            <th>AB</th>
+                            <th>H</th>
+                            <th>R</th>
+                            <th>RBI</th>
+                            <th>BB</th>
+                            <th>SO</th>
+                            <th>HR</th>
+                          </>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {gameLog.slice(0, 15).map((entry) => {
+                        const stat = entry.stat || {};
+                        const opponent = entry.opponent?.name || 'Opponent';
+                        return (
+                          <tr key={`${entry.date}-${opponent}`}>
+                            <td className="fw-semibold">
+                              {entry.date ? new Date(`${entry.date}T12:00:00`).toLocaleDateString([], {
+                                month: 'short',
+                                day: 'numeric',
+                              }) : '—'}
+                            </td>
+                            <td>{entry.isHome ? 'vs' : '@'} {opponent}</td>
+                            {isPitcher && !isBatter ? (
+                              <>
+                                <td>{stat.inningsPitched || '—'}</td>
+                                <td>{stat.hits || '—'}</td>
+                                <td>{stat.earnedRuns || '—'}</td>
+                                <td>{stat.baseOnBalls || '—'}</td>
+                                <td>{stat.strikeOuts || '—'}</td>
+                                <td>{stat.era || '—'}</td>
+                              </>
+                            ) : (
+                              <>
+                                <td>{stat.atBats || '—'}</td>
+                                <td>{stat.hits || '—'}</td>
+                                <td>{stat.runs || '—'}</td>
+                                <td>{stat.rbi || '—'}</td>
+                                <td>{stat.baseOnBalls || '—'}</td>
+                                <td>{stat.strikeOuts || '—'}</td>
+                                <td>{stat.homeRuns || '—'}</td>
+                              </>
+                            )}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            )}
+          </Tab>
+
           {/* Statcast */}
           <Tab eventKey="statcast" title="🎯 Statcast">
             <div className="pt-2">
+              <div className="d-flex justify-content-end mb-3">
+                <Button
+                  as={Link}
+                  to={`/statcast-lab?playerId=${playerId}&position=${strikezonePosition}&season=${selectedYear}&q=${encodeURIComponent(playerName)}`}
+                  variant="outline-primary"
+                  size="sm"
+                >
+                  Open Statcast Lab
+                </Button>
+              </div>
               <StrikeZone MLBAMId={playerId} position={strikezonePosition} />
             </div>
           </Tab>

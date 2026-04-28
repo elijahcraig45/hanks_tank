@@ -7,6 +7,7 @@ jest.mock('../services/api', () => ({
   __esModule: true,
   default: {
     getPredictions: jest.fn(),
+    getGames: jest.fn(),
   },
 }));
 
@@ -53,9 +54,7 @@ function renderPredictionsPage() {
 describe('PredictionsPage', () => {
   beforeEach(() => {
     apiService.getPredictions.mockResolvedValue({ predictions: [mockPrediction] });
-    global.fetch = jest.fn().mockResolvedValue({
-      json: async () => mockSchedule,
-    });
+    apiService.getGames.mockResolvedValue(mockSchedule);
   });
 
   afterEach(() => {

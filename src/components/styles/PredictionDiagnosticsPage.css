@@ -1,0 +1,96 @@
+.prediction-diagnostics-page {
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+
+.prediction-diagnostics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.prediction-diagnostics-eyebrow {
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.prediction-diagnostics-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.prediction-diagnostics-toolbar {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.9rem;
+  align-items: end;
+}
+
+.prediction-diagnostics-toolbar .form-label {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.prediction-diagnostics-search {
+  grid-column: span 2;
+}
+
+.prediction-diagnostics-chart {
+  width: 100%;
+  height: 320px;
+}
+
+.prediction-diagnostics-table th {
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.prediction-diagnostics-table td {
+  vertical-align: middle;
+}
+
+.prediction-diagnostics-review-wrap {
+  max-height: 520px;
+}
+
+.prediction-diagnostics-link {
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+.prediction-diagnostics-link:hover {
+  color: #0b5ed7;
+}
+
+@media (max-width: 991.98px) {
+  .prediction-diagnostics-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .prediction-diagnostics-search {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .prediction-diagnostics-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .prediction-diagnostics-search {
+    grid-column: span 1;
+  }
+}
+

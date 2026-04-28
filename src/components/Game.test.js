@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import GameDetailsPage from './Game';
 import apiService from '../services/api';
 
@@ -18,6 +19,7 @@ jest.mock('./ScoutingReport', () => ({ report }) => (
 jest.mock('../services/api', () => ({
   __esModule: true,
   default: {
+    getGameDetails: jest.fn(),
     getPredictions: jest.fn(),
     getScoutingReportByGame: jest.fn(),
   },
@@ -294,16 +296,20 @@ const mockPrediction = {
 
 describe('GameDetailsPage', () => {
   beforeEach(() => {
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: async () => mockGameDetails,
-    });
+    apiService.getGameDetails.mockResolvedValue(mockGameDetails);
     apiService.getPredictions.mockResolvedValue({ predictions: [mockPrediction] });
   });
 
   afterEach(() => {
     jest.resetAllMocks();
   });
+
+  const renderGamePage = () =>
+    render(
+      <MemoryRouter>
+        <GameDetailsPage />
+      </MemoryRouter>
+    );
 
   test('renders a scouting report for a live game when one exists', async () => {
     apiService.getScoutingReportByGame.mockResolvedValue({
@@ -314,7 +320,7 @@ describe('GameDetailsPage', () => {
       }),
     });
 
-    render(<GameDetailsPage />);
+    renderGamePage();
 
     await waitFor(() => {
       expect(apiService.getScoutingReportByGame).toHaveBeenCalledWith('824776');
@@ -341,7 +347,7 @@ describe('GameDetailsPage', () => {
   test('falls back to model outlook when no scouting report exists', async () => {
     apiService.getScoutingReportByGame.mockRejectedValue(new Error('Resource not found'));
 
-    render(<GameDetailsPage />);
+    renderGamePage();
 
     await waitFor(() => {
       expect(apiService.getScoutingReportByGame).toHaveBeenCalledWith('824776');
@@ -354,7 +360,7 @@ describe('GameDetailsPage', () => {
   test('filters the play log down to scoring plays', async () => {
     apiService.getScoutingReportByGame.mockRejectedValue(new Error('Resource not found'));
 
-    render(<GameDetailsPage />);
+    renderGamePage();
 
     const playByPlayCard = (await screen.findByText(/play by play/i)).closest('.card');
     expect(playByPlayCard).not.toBeNull();

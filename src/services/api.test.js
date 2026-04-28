@@ -68,4 +68,58 @@ describe('ApiService', () => {
     expect(global.fetch).toHaveBeenCalledTimes(2);
     expect(service.sleep).toHaveBeenCalledTimes(1);
   });
+
+  test('builds prediction diagnostics range requests', async () => {
+    const service = new ApiService();
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ diagnostics: [] }),
+    });
+
+    await service.getPredictionDiagnostics({ startDate: '2026-04-01', endDate: '2026-04-30' });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      `${API_BASE_URL}/predictions/diagnostics?endDate=2026-04-30&startDate=2026-04-01`,
+      expect.objectContaining({ method: 'GET' })
+    );
+  });
+
+  test('builds split explorer requests', async () => {
+    const service = new ApiService();
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ splits: [] }),
+    });
+
+    await service.getSplits({
+      entityType: 'player',
+      entityId: 660271,
+      season: 2025,
+      group: 'hitting',
+      family: 'handedness',
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      `${API_BASE_URL}/splits?entityType=player&entityId=660271&season=2025&group=hitting&family=handedness`,
+      expect.objectContaining({ method: 'GET' })
+    );
+  });
+
+  test('normalizes nested hybrid roster responses', async () => {
+    const service = new ApiService();
+    const roster = [{ person: { id: 660670, fullName: 'Ronald Acuna Jr.' } }];
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: {
+          roster: {
+            roster,
+          },
+        },
+      }),
+    });
+
+    await expect(service.getTeamRoster(144, 2026)).resolves.toEqual(roster);
+  });
 });

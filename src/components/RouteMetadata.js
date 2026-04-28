@@ -31,6 +31,42 @@ const ROUTE_METADATA = [
       'See daily MLB win probabilities, confidence tiers, model signals, and links into each scouting report.',
   },
   {
+    path: '/prediction-diagnostics',
+    title: 'Prediction Diagnostics',
+    description:
+      'Audit MLB model performance with calibration, rolling diagnostics, confidence-tier results, and exportable postgame review.',
+  },
+  {
+    path: '/split-explorer',
+    title: 'Split Explorer',
+    description:
+      'Compare MLB team and player split performance across home-away, handedness, and day-night contexts.',
+  },
+  {
+    path: '/statcast-lab',
+    title: 'Statcast Lab',
+    description:
+      'Explore MLB Statcast pitch mix, rolling trends, contact quality, and zone behavior for individual players.',
+  },
+  {
+    path: '/comparison-workbench',
+    title: 'Comparison Workbench',
+    description:
+      'Compare MLB teams and players with league-relative percentiles, z-scores, season deltas, and similarity comps.',
+  },
+  {
+    path: '/scenario-simulator',
+    title: 'Scenario Simulator',
+    description:
+      'Run what-if MLB matchup scenarios with starter, lineup, bullpen, and context adjustments that shift the forecast distribution.',
+  },
+  {
+    path: '/research-workflow',
+    title: 'Research Workflow',
+    description:
+      'Save Hank\'s Tank analysis views, maintain an MLB watchlist, and export research artifacts for notebook workflows.',
+  },
+  {
     path: '/TeamBatting',
     title: 'Team Batting',
     description: 'Browse team batting leaderboards and compare MLB offense across the current season.',

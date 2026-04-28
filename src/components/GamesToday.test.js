@@ -7,6 +7,8 @@ jest.mock('../services/api', () => ({
   __esModule: true,
   default: {
     getPredictions: jest.fn(),
+    getGames: jest.fn(),
+    getGameDetails: jest.fn(),
   },
 }));
 
@@ -121,48 +123,6 @@ const liveFeeds = {
   },
 };
 
-function mockFetch(input) {
-  const url = String(input);
-
-  if (url.includes('/schedule/games/')) {
-    return Promise.resolve({
-      ok: true,
-      json: async () => scheduleResponse,
-    });
-  }
-
-  const gamePk = Number(url.match(/game\/(\d+)\/feed\/live/)?.[1]);
-  if (liveFeeds[gamePk]) {
-    return Promise.resolve({
-      ok: true,
-      json: async () => liveFeeds[gamePk],
-    });
-  }
-
-  return Promise.resolve({
-    ok: true,
-    json: async () => ({
-      gamePk: gamePk || 0,
-      gameData: {
-        teams: {
-          away: { abbreviation: 'AWY' },
-          home: { abbreviation: 'HME' },
-        },
-      },
-      liveData: {
-        linescore: {
-          innings: [],
-          teams: {
-            away: { runs: '—', hits: '—', errors: '—' },
-            home: { runs: '—', hits: '—', errors: '—' },
-          },
-        },
-        plays: {},
-      },
-    }),
-  });
-}
-
 describe('TodaysGames', () => {
   let consoleErrorSpy;
 
@@ -199,7 +159,28 @@ describe('TodaysGames', () => {
         },
       ],
     });
-    global.fetch = jest.fn().mockImplementation(mockFetch);
+    apiService.getGames.mockResolvedValue(scheduleResponse);
+    apiService.getGameDetails.mockImplementation(async (gamePk) => (
+      liveFeeds[gamePk] || {
+        gamePk: gamePk || 0,
+        gameData: {
+          teams: {
+            away: { abbreviation: 'AWY' },
+            home: { abbreviation: 'HME' },
+          },
+        },
+        liveData: {
+          linescore: {
+            innings: [],
+            teams: {
+              away: { runs: '—', hits: '—', errors: '—' },
+              home: { runs: '—', hits: '—', errors: '—' },
+            },
+          },
+          plays: {},
+        },
+      }
+    ));
   });
 
   afterEach(() => {

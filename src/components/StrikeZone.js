@@ -1,11 +1,9 @@
 import * as d3 from 'd3';
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Badge, Form, Spinner } from 'react-bootstrap';
+import { AVAILABLE_SEASONS, SEASONS } from '../config/constants';
+import apiService from '../services/api';
 import './styles/Strikezone.css';
-
-// Normalize API base — REACT_APP_API_URL may or may not include /api suffix
-const RAW_BASE = process.env.REACT_APP_API_URL || 'https://hankstank.uc.r.appspot.com';
-const API_BASE = RAW_BASE.endsWith('/api') ? RAW_BASE : `${RAW_BASE}/api`;
 
 const SVG_SIZE = 440;
 const MARGIN = 30;
@@ -19,43 +17,96 @@ const StrikeZone = ({ MLBAMId, position }) => {
   const [pitchThrows, setPitchThrows] = useState('');
   const [batterStands, setBatterStands] = useState('');
   const [selectedEvent, setSelectedEvent] = useState('');
-  const [selectedYear, setSelectedYear] = useState('2025');
+  const [selectedYear, setSelectedYear] = useState(SEASONS.DEFAULT.toString());
 
   // ── Data fetch ────────────────────────────────────────────────────
   useEffect(() => {
     if (!MLBAMId) return;
-    const controller = new AbortController();
     const fetchData = async () => {
       setLoading(true);
       setError(null);
       setTooltipData(null);
-      let url = `${API_BASE}/statcast?year=${selectedYear}&playerId=${MLBAMId}&position=${position}&limit=1000`;
-      if (pitchThrows)   url += `&p_throws=${pitchThrows}`;
-      if (batterStands)  url += `&stands=${batterStands}`;
-      if (selectedEvent) url += `&events=${selectedEvent}`;
       try {
-        const res = await fetch(url, { signal: controller.signal });
-        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-        const data = await res.json();
+        const data = await apiService.getStatcast(selectedYear, {
+          playerId: MLBAMId,
+          position,
+          p_throws: pitchThrows,
+          stands: batterStands,
+          events: selectedEvent,
+          limit: 1000,
+        });
         setPitchData(Array.isArray(data) ? data : []);
       } catch (err) {
-        if (err.name !== 'AbortError') setError(err.message);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-    return () => controller.abort();
   }, [MLBAMId, position, pitchThrows, batterStands, selectedEvent, selectedYear]);
 
   // ── Derived data ──────────────────────────────────────────────────
-  const uniqueEvents = [...new Set(pitchData.map(d => d.events))];
-  const colorScale   = d3.scaleOrdinal().domain(uniqueEvents).range(d3.schemeCategory10);
-  const totalWithEvent = pitchData.filter(d => d.events !== null).length;
+  const visiblePitchData = useMemo(() => pitchData.filter(d =>
+    (pitchThrows === '' || d.p_throws === pitchThrows) &&
+    (batterStands === '' || d.stand === batterStands) &&
+    (selectedEvent === '' || d.events === selectedEvent)
+  ), [pitchData, pitchThrows, batterStands, selectedEvent]);
+
+  const uniqueEvents = [...new Set(visiblePitchData.map(d => d.events))];
+  const colorScale = d3.scaleOrdinal().domain(uniqueEvents).range(d3.schemeCategory10);
+  const totalWithEvent = visiblePitchData.filter(d => d.events !== null).length;
   const eventCounts = uniqueEvents.reduce((acc, ev) => {
-    acc[ev ?? 'No event'] = pitchData.filter(d => d.events === ev).length;
+    acc[ev ?? 'No event'] = visiblePitchData.filter(d => d.events === ev).length;
     return acc;
   }, {});
+  const summaryMetrics = useMemo(() => {
+    if (!visiblePitchData.length) {
+      return [];
+    }
+
+    const average = (values, digits = 1) => {
+      if (!values.length) {
+        return null;
+      }
+
+      return (values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(digits);
+    };
+
+    const whiffs = visiblePitchData.filter((pitch) =>
+      ['swinging_strike', 'swinging_strike_blocked', 'missed_bunt'].includes(pitch.description)
+    ).length;
+    const strikes = visiblePitchData.filter((pitch) =>
+      [
+        'called_strike',
+        'swinging_strike',
+        'swinging_strike_blocked',
+        'foul',
+        'foul_tip',
+        'hit_into_play',
+        'hit_into_play_no_out',
+        'hit_into_play_score',
+      ].includes(pitch.description)
+    ).length;
+    const hardHitBalls = visiblePitchData.filter((pitch) => Number(pitch.launch_speed) >= 95).length;
+    const releaseSpeeds = visiblePitchData
+      .map((pitch) => Number(pitch.release_speed))
+      .filter((value) => Number.isFinite(value));
+    const exitVelos = visiblePitchData
+      .map((pitch) => Number(pitch.launch_speed))
+      .filter((value) => Number.isFinite(value));
+    const launchAngles = visiblePitchData
+      .map((pitch) => Number(pitch.launch_angle))
+      .filter((value) => Number.isFinite(value));
+
+    return [
+      { label: 'Pitches', value: visiblePitchData.length.toLocaleString() },
+      { label: 'Strike rate', value: `${Math.round((strikes / visiblePitchData.length) * 100)}%` },
+      { label: 'Whiff rate', value: `${Math.round((whiffs / visiblePitchData.length) * 100)}%` },
+      { label: 'Avg velo', value: releaseSpeeds.length ? `${average(releaseSpeeds)} mph` : '—' },
+      { label: 'Hard-hit', value: exitVelos.length ? `${Math.round((hardHitBalls / exitVelos.length) * 100)}%` : '—' },
+      { label: 'Avg EV / LA', value: exitVelos.length ? `${average(exitVelos)} mph / ${average(launchAngles, 0) || '—'}°` : '—' },
+    ];
+  }, [visiblePitchData]);
 
   // ── D3 render ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -106,14 +157,8 @@ const StrikeZone = ({ MLBAMId, position }) => {
     [['inner', scaleX(-0.5), scaleY(3.2)], ['middle', scaleX(0), scaleY(2.5)], ['outer', scaleX(0.5), scaleY(1.8)]].forEach(([, , ]) => {});
 
     // pitches
-    const visible = pitchData.filter(d =>
-      (pitchThrows   === '' || d.p_throws === pitchThrows) &&
-      (batterStands  === '' || d.stand    === batterStands) &&
-      (selectedEvent === '' || d.events   === selectedEvent)
-    );
-
     g.selectAll('circle')
-      .data(visible)
+      .data(visiblePitchData)
       .enter()
       .append('circle')
       .attr('cx', d => scaleX(d.plate_x))
@@ -141,7 +186,7 @@ const StrikeZone = ({ MLBAMId, position }) => {
     const handleOutside = () => setTooltipData(null);
     document.addEventListener('click', handleOutside);
     return () => document.removeEventListener('click', handleOutside);
-  }, [pitchData, pitchThrows, batterStands, selectedEvent, colorScale]);
+  }, [visiblePitchData, colorScale]);
 
   // ── Helpers ───────────────────────────────────────────────────────
   const stat = (label, value, unit = '') =>
@@ -157,8 +202,8 @@ const StrikeZone = ({ MLBAMId, position }) => {
       {/* ── Filter bar ── */}
       <div className="sz-filters">
         <Form.Select size="sm" value={selectedYear} onChange={e => setSelectedYear(e.target.value)} style={{ width: 100 }}>
-          {['2020','2021','2022','2023','2024','2025','2026'].map(y => (
-            <option key={y} value={y}>{y}</option>
+          {AVAILABLE_SEASONS.map((year) => (
+            <option key={year} value={year}>{year}</option>
           ))}
         </Form.Select>
         <Form.Select size="sm" value={pitchThrows} onChange={e => setPitchThrows(e.target.value)} style={{ width: 130 }}>
@@ -178,8 +223,8 @@ const StrikeZone = ({ MLBAMId, position }) => {
           ))}
         </Form.Select>
         {loading && <Spinner animation="border" size="sm" variant="secondary" />}
-        {!loading && pitchData.length > 0 && (
-          <span className="text-muted" style={{ fontSize: '0.82rem' }}>{pitchData.length.toLocaleString()} pitches</span>
+        {!loading && visiblePitchData.length > 0 && (
+          <span className="text-muted" style={{ fontSize: '0.82rem' }}>{visiblePitchData.length.toLocaleString()} pitches</span>
         )}
       </div>
 
@@ -216,6 +261,23 @@ const StrikeZone = ({ MLBAMId, position }) => {
 
         {/* Right panel */}
         <div className="sz-panel">
+          {summaryMetrics.length > 0 && (
+            <div className="sz-detail-card">
+              <div className="sz-detail-header">
+                <span className="fw-semibold">Filtered Statcast Summary</span>
+              </div>
+              <div className="sz-detail-body">
+                <div className="sz-stat-grid">
+                  {summaryMetrics.map((metric) => (
+                    <div className="sz-stat-item" key={metric.label}>
+                      <span className="sz-stat-label">{metric.label}</span>
+                      <span className="sz-stat-value">{metric.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Pitch detail */}
           <div className="sz-detail-card">
