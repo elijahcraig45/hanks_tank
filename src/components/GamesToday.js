@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, Container, Row, Col, Table, Badge, Form } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import apiService from "../services/api";
+import { getTeamAbbreviationFromId } from "../utils/teamMetadata";
 import "./styles/TodaysGames.css";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -207,6 +208,7 @@ function generateSignals(pred) {
 }
 
 const TodaysGames = () => {
+  const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(todayISO());
   const [games, setGames] = useState([]);
   const [livefeed, setLivefeed] = useState([]);
@@ -215,97 +217,101 @@ const TodaysGames = () => {
   const [confidenceFilter, setConfidenceFilter] = useState("all");
   const [confirmedOnly, setConfirmedOnly] = useState(false);
   const [sortMode, setSortMode] = useState("time");
+  const [lastUpdated, setLastUpdated] = useState(null);
 
+  const isToday = selectedDate === todayISO();
 
-  // Re-fetch games whenever the selected date changes
+  const loadLiveFeeds = useCallback(async (scheduleGames, isActive = () => true) => {
+    if (!scheduleGames.length) {
+      if (isActive()) {
+        setLivefeed([]);
+        setLastUpdated(new Date());
+      }
+      return;
+    }
+
+    try {
+      const responses = await Promise.allSettled(
+        scheduleGames.map((game) => apiService.getGameDetails(game.gamePk))
+      );
+
+      if (!isActive()) {
+        return;
+      }
+
+      setLivefeed(
+        responses
+          .filter((result) => result.status === "fulfilled")
+          .map((result) => result.value)
+      );
+      setLastUpdated(new Date());
+    } catch (error) {
+      if (isActive()) {
+        console.error("Failed to fetch game details:", error);
+      }
+    }
+  }, []);
+
+  const loadBoard = useCallback(async (isActive = () => true) => {
+    try {
+      const [scheduleData, predictionData] = await Promise.all([
+        apiService.getGames(selectedDate),
+        apiService.getPredictions(selectedDate),
+      ]);
+
+      if (!isActive()) {
+        return;
+      }
+
+      const nextGames = scheduleData?.dates?.[0]?.games || [];
+      const nextPredictions = {};
+      (predictionData?.predictions || []).forEach((prediction) => {
+        nextPredictions[prediction.game_pk] = prediction;
+      });
+
+      setGames(nextGames);
+      setPredictions(nextPredictions);
+      await loadLiveFeeds(nextGames, isActive);
+    } catch (error) {
+      if (!isActive()) {
+        return;
+      }
+
+      console.error("Failed to load games board:", error);
+      setGames([]);
+      setLivefeed([]);
+      setPredictions({});
+    }
+  }, [loadLiveFeeds, selectedDate]);
+
   useEffect(() => {
     setGames([]);
     setLivefeed([]);
     setPredictions({});
-    let isMounted = true;
-    const fetchGames = async () => {
-      try {
-        const response = await fetch(
-          `https://statsapi.mlb.com/api/v1/schedule/games/?sportId=1&date=${selectedDate}`
-        );
-        if (!response?.ok) throw new Error("Network response was not ok");
-        const data = await response.json();
-        if (!isMounted) return;
-        if (data.dates?.length > 0 && data.dates[0].games) {
-          setGames(data.dates[0].games);
-        } else {
-          setGames([]);
-        }
-      } catch (error) {
-        console.error("Failed to fetch games:", error);
-      }
-    };
 
-    fetchGames();
+    let active = true;
+    const isActive = () => active;
+
+    loadBoard(isActive);
 
     return () => {
-      isMounted = false;
+      active = false;
     };
-  }, [selectedDate]);
-
-  // Fetch predictions whenever the date changes
-  useEffect(() => {
-    let isMounted = true;
-    const fetchPredictions = async () => {
-      try {
-        const data = await apiService.getPredictions(selectedDate);
-        if (!isMounted) return;
-        if (data?.predictions) {
-          const byPk = {};
-          data.predictions.forEach((p) => { byPk[p.game_pk] = p; });
-          setPredictions(byPk);
-        }
-      } catch (err) {
-        console.warn("Predictions unavailable:", err.message);
-      }
-    };
-    fetchPredictions();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [selectedDate]);
+  }, [loadBoard]);
 
   useEffect(() => {
-    let isMounted = true;
-    const fetchGameDetails = async () => {
-      try {
-        const responses = await Promise.allSettled(
-          games.map(async (game) => {
-            const gamePk = game.gamePk;
-            const response = await fetch(
-              `https://statsapi.mlb.com/api/v1.1/game/${gamePk}/feed/live`
-            );
-            if (!response?.ok) {
-              throw new Error("Network response was not ok");
-            }
-            return response.json();
-          })
-        );
-        if (!isMounted) return;
-        setLivefeed(
-          responses
-            .filter((result) => result.status === "fulfilled")
-            .map((result) => result.value)
-        );
-      } catch (error) {
-        console.error("Failed to fetch game details:", error);
-      }
-    };
-
-    if (games.length) {
-      fetchGameDetails();
+    if (process.env.NODE_ENV === "test" || !isToday) {
+      return undefined;
     }
 
-    return () => {
-      isMounted = false;
-    };
-  }, [games]);
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        loadBoard();
+      }
+    }, 30000);
+
+    return () => window.clearInterval(intervalId);
+  }, [isToday, loadBoard]);
 
   const gameEntries = games.map((game) => {
     const gameFeed = livefeed.find((feed) => feed.gamePk === game.gamePk);
@@ -380,6 +386,14 @@ const TodaysGames = () => {
     const signalItems = generateSignals(pred).slice(0, 2);
     const edgePoints = predictionEdgePoints(pred);
     const liveColSpan = entries.length === 1 ? { xs: 12 } : { xs: 12, xl: 6 };
+    const awayTeamAbbr =
+      gameFeed?.gameData?.teams?.away?.abbreviation ||
+      game.teams.away.team.abbreviation ||
+      getTeamAbbreviationFromId(game.teams.away.team.id);
+    const homeTeamAbbr =
+      gameFeed?.gameData?.teams?.home?.abbreviation ||
+      game.teams.home.team.abbreviation ||
+      getTeamAbbreviationFromId(game.teams.home.team.id);
 
     return (
       <Col
@@ -389,9 +403,34 @@ const TodaysGames = () => {
         xl={sectionClass === "games-section--live" ? liveColSpan.xl : 4}
         className="game-grid-col"
       >
-        <Link to={`/game/${game.gamePk}`} className="game-card-link text-decoration-none">
-          <Card className={`game-card shadow-sm${inProgress ? " game-card--live" : ""}`}>
-            <Card.Body className="p-3">
+        <Card
+          className={`game-card shadow-sm${inProgress ? " game-card--live" : ""}`}
+          role="button"
+          tabIndex={0}
+          onClick={() => navigate(`/game/${game.gamePk}`)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              navigate(`/game/${game.gamePk}`);
+            }
+          }}
+        >
+          <Card.Body className="p-3">
+              <div className="game-card-actions mb-2" onClick={(event) => event.stopPropagation()}>
+                {awayTeamAbbr && (
+                  <Link to={`/team/${awayTeamAbbr}`} className="game-quick-link">
+                    {awayTeamAbbr} hub
+                  </Link>
+                )}
+                {homeTeamAbbr && (
+                  <Link to={`/team/${homeTeamAbbr}`} className="game-quick-link">
+                    {homeTeamAbbr} hub
+                  </Link>
+                )}
+                <Link to={`/game/${game.gamePk}`} className="game-quick-link game-quick-link--primary">
+                  Open Game Center
+                </Link>
+              </div>
               <div className="d-flex justify-content-between align-items-start mb-2">
                 <div className="game-team">
                   <div className="game-team-name">{game.teams.away.team.name}</div>
@@ -478,7 +517,7 @@ const TodaysGames = () => {
               </div>
 
               {pred && (
-                <div className="prediction-panel mt-2" onClick={(e) => e.preventDefault()}>
+                <div className="prediction-panel mt-2" onClick={(event) => event.stopPropagation()}>
                   <div className="prediction-header d-flex align-items-center justify-content-between mb-1">
                     <span className="prediction-label">
                       Prediction
@@ -525,9 +564,8 @@ const TodaysGames = () => {
                   )}
                 </div>
               )}
-            </Card.Body>
-          </Card>
-        </Link>
+          </Card.Body>
+        </Card>
       </Col>
     );
   };
@@ -579,6 +617,12 @@ const TodaysGames = () => {
         </div>
         <p className="text-muted mb-0" style={{ fontSize: "0.82rem" }}>
           {formatDisplayDate(selectedDate)}
+          {lastUpdated && (
+            <>
+              {" · "}Updated {lastUpdated.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+              {isToday ? " · live refresh on" : ""}
+            </>
+          )}
         </p>
       </div>
       <div className="games-toolbar px-3 pb-3">

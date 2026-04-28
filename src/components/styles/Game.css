@@ -14,10 +14,53 @@
   color: #212529;
 }
 
+.game-team-link {
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+.game-team-link:hover {
+  color: #0b5ed7;
+}
+
+.game-team-link--muted {
+  color: #6c757d;
+}
+
+.game-header-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.game-header-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(13, 110, 253, 0.16);
+  background: rgba(13, 110, 253, 0.06);
+  color: #0d6efd;
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.38rem 0.72rem;
+  text-decoration: none;
+}
+
+.game-header-pill:hover {
+  color: #0b5ed7;
+  background: rgba(13, 110, 253, 0.1);
+}
+
 .game-status-badge {
   font-size: 0.7rem;
   vertical-align: middle;
   padding: 0.3em 0.6em;
+}
+
+.game-refresh-meta {
+  font-size: 0.74rem;
+  font-weight: 600;
 }
 
 .game-flow-summary {
@@ -278,6 +321,11 @@
   font-size: 0.82rem;
   font-weight: 600;
   color: #212529;
+  text-decoration: none;
+}
+
+.pbp-batter:hover {
+  color: #0d6efd;
 }
 
 .pbp-desc {
@@ -334,6 +382,19 @@
 
 .game-table .fw-semibold {
   white-space: nowrap;
+}
+
+.game-player-link,
+.game-inline-link,
+.game-team-card-link {
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+.game-player-link:hover,
+.game-inline-link:hover,
+.game-team-card-link:hover {
+  color: #0b5ed7;
 }
 
 /* Cards */

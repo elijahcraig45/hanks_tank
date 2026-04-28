@@ -33,7 +33,7 @@ test('opens stats menu and switches to analysis menu', async () => {
     userEvent.click(screen.getByRole('button', { name: /analysis/i }));
   });
   expect(screen.queryByText('Team Batting')).not.toBeInTheDocument();
-  expect(screen.getByText('Season Comparison')).toBeInTheDocument();
+  expect(screen.getByText('Comparison Workbench')).toBeInTheDocument();
 });
 
 test('opens the mobile menu drawer', async () => {

@@ -129,11 +129,49 @@
   transition: transform 0.15s, box-shadow 0.15s;
   border: 1px solid rgba(0,0,0,.08) !important;
   background: #fff;
+  cursor: pointer;
 }
 
 .game-card-link {
   display: block;
   color: inherit;
+}
+
+.game-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.game-quick-link {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid #d0d7de;
+  background: #fff;
+  color: #495057;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.35rem 0.65rem;
+  text-decoration: none;
+}
+
+.game-quick-link:hover {
+  color: #0d6efd;
+  border-color: rgba(13, 110, 253, 0.35);
+}
+
+.game-quick-link--primary {
+  background: #0d6efd;
+  border-color: #0d6efd;
+  color: #fff;
+}
+
+.game-quick-link--primary:hover {
+  color: #fff;
+  background: #0b5ed7;
+  border-color: #0b5ed7;
 }
 
 .game-grid-col {

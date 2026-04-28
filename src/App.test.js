@@ -20,6 +20,12 @@ jest.mock('./components/AdvancedPlayerAnalysis', () => () => <div>AdvancedPlayer
 jest.mock('./components/Transactions', () => () => <div>Transactions</div>);
 jest.mock('./components/TeamTransactions', () => () => <div>TeamTransactions</div>);
 jest.mock('./components/PredictionsPage', () => () => <div>PredictionsPage</div>);
+jest.mock('./components/PredictionDiagnosticsPage', () => () => <div>PredictionDiagnosticsPage</div>);
+jest.mock('./components/SplitExplorerPage', () => () => <div>SplitExplorerPage</div>);
+jest.mock('./components/StatcastLabPage', () => () => <div>StatcastLabPage</div>);
+jest.mock('./components/ComparisonWorkbenchPage', () => () => <div>ComparisonWorkbenchPage</div>);
+jest.mock('./components/ScenarioSimulatorPage', () => () => <div>ScenarioSimulatorPage</div>);
+jest.mock('./components/ResearchWorkflowPage', () => () => <div>ResearchWorkflowPage</div>);
 jest.mock('./components/NotFoundPage', () => () => <div>NotFoundPage</div>);
 
 beforeEach(() => {

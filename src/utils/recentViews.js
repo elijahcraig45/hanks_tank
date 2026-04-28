@@ -3,6 +3,12 @@ const MAX_RECENT_VIEWS = 6;
 
 const STATIC_VIEWS = {
   "/predictions": { label: "Predictions", hint: "Daily model board", icon: "🔮" },
+  "/prediction-diagnostics": { label: "Prediction Diagnostics", hint: "Model audit view", icon: "📊" },
+  "/split-explorer": { label: "Split Explorer", hint: "Context splits", icon: "🧭" },
+  "/statcast-lab": { label: "Statcast Lab", hint: "Pitch and contact lab", icon: "🎯" },
+  "/comparison-workbench": { label: "Comparison Workbench", hint: "League-relative comps", icon: "🧰" },
+  "/scenario-simulator": { label: "Scenario Simulator", hint: "What-if matchup tool", icon: "🎲" },
+  "/research-workflow": { label: "Research Workflow", hint: "Saved views and watchlists", icon: "🗂️" },
   "/games": { label: "Games", hint: "Today's scoreboard", icon: "📅" },
   "/TeamBatting": { label: "Team Batting", hint: "Club leaderboards", icon: "🏏" },
   "/TeamPitching": { label: "Team Pitching", hint: "Staff leaderboards", icon: "⚾" },

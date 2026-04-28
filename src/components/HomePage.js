@@ -1,15 +1,21 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Container, Row, Col, Card, Table,
   Spinner, Alert, Button, ListGroup,
 } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import apiService from "../services/api";
+import { loadFavoriteTeams } from "../utils/favorites";
 import {
   clearRecentViews,
   formatRecentViewTime,
   loadRecentViews,
 } from "../utils/recentViews";
+import {
+  getTeamAbbreviationFromName,
+  getTeamLogoUrl,
+  getTeamShortName,
+} from "../utils/teamMetadata";
 import "./styles/HomePage.css";
 
 // ── constants ────────────────────────────────────────────────────────────────
@@ -23,41 +29,9 @@ const DIVISION_ORDER = [
   "NL East", "NL Central", "NL West",
 ];
 
-const TEAM_ABBR = {
-  "Atlanta Braves": "ATL", "Braves": "ATL",
-  "Miami Marlins": "MIA", "Marlins": "MIA",
-  "New York Mets": "NYM", "Mets": "NYM",
-  "Philadelphia Phillies": "PHI", "Phillies": "PHI",
-  "Washington Nationals": "WSN", "Nationals": "WSN",
-  "Chicago Cubs": "CHC", "Cubs": "CHC",
-  "Cincinnati Reds": "CIN", "Reds": "CIN",
-  "Milwaukee Brewers": "MIL", "Brewers": "MIL",
-  "Pittsburgh Pirates": "PIT", "Pirates": "PIT",
-  "St. Louis Cardinals": "STL", "Cardinals": "STL",
-  "Arizona Diamondbacks": "ARI", "D-backs": "ARI",
-  "Colorado Rockies": "COL", "Rockies": "COL",
-  "Los Angeles Dodgers": "LAD", "Dodgers": "LAD",
-  "San Diego Padres": "SDP", "Padres": "SDP",
-  "San Francisco Giants": "SFG", "Giants": "SFG",
-  "Baltimore Orioles": "BAL", "Orioles": "BAL",
-  "Boston Red Sox": "BOS", "Red Sox": "BOS",
-  "New York Yankees": "NYY", "Yankees": "NYY",
-  "Tampa Bay Rays": "TBR", "Rays": "TBR",
-  "Toronto Blue Jays": "TOR", "Blue Jays": "TOR",
-  "Chicago White Sox": "CWS", "White Sox": "CWS",
-  "Cleveland Guardians": "CLE", "Guardians": "CLE",
-  "Detroit Tigers": "DET", "Tigers": "DET",
-  "Kansas City Royals": "KC", "Royals": "KC",
-  "Minnesota Twins": "MIN", "Twins": "MIN",
-  "Houston Astros": "HOU", "Astros": "HOU",
-  "Los Angeles Angels": "LAA", "Angels": "LAA",
-  "Oakland Athletics": "OAK", "Athletics": "OAK",
-  "Seattle Mariners": "SEA", "Mariners": "SEA",
-  "Texas Rangers": "TEX", "Rangers": "TEX",
-};
-
-const abbr = (name) => TEAM_ABBR[name] || (name || "").substring(0, 3).toUpperCase();
-const logoUrl = (id) => `https://www.mlbstatic.com/team-logos/${id}.svg`;
+const abbr = (name) =>
+  getTeamAbbreviationFromName(name) || (name || "").substring(0, 3).toUpperCase();
+const logoUrl = (id) => getTeamLogoUrl(id);
 
 const fmtTime = (utc) => {
   if (!utc) return "";
@@ -164,14 +138,14 @@ function GamesCarousel({ games }) {
                 </div>
                 <div className="game-team-row">
                   <img src={logoUrl(away.team.id)} alt="" className="game-logo" onError={(e) => { e.target.style.display = "none"; }} />
-                  <span className="game-team-name">{away.team.name.split(" ").slice(-1)[0]}</span>
+                  <span className="game-team-name">{getTeamShortName(away.team.name)}</span>
                   <span className="game-record text-muted">{away.leagueRecord.wins}-{away.leagueRecord.losses}</span>
                   {(isLive || isFinal) && <span className="game-score">{away.score ?? ""}</span>}
                 </div>
                 <div className="game-at">@</div>
                 <div className="game-team-row">
                   <img src={logoUrl(home.team.id)} alt="" className="game-logo" onError={(e) => { e.target.style.display = "none"; }} />
-                  <span className="game-team-name">{home.team.name.split(" ").slice(-1)[0]}</span>
+                  <span className="game-team-name">{getTeamShortName(home.team.name)}</span>
                   <span className="game-record text-muted">{home.leagueRecord.wins}-{home.leagueRecord.losses}</span>
                   {(isLive || isFinal) && <span className="game-score">{home.score ?? ""}</span>}
                 </div>
@@ -192,6 +166,7 @@ function HomePage() {
   const [standings, setStandings] = useState({});
   const [games, setGames] = useState([]);
   const [recentViews, setRecentViews] = useState([]);
+  const [favoriteTeams, setFavoriteTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newsRefreshing, setNewsRefreshing] = useState(false);
   const [error, setError] = useState(null);
@@ -221,40 +196,60 @@ function HomePage() {
     }
   };
 
-  useEffect(() => {
-    setRecentViews(loadRecentViews());
-  }, []);
-
-  useEffect(() => {
-    const load = async () => {
+  const loadHomepageData = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) {
       setLoading(true);
-      setError(null);
-      try {
-        const year = new Date().getFullYear();
-        const [, standingsData, gamesData] = await Promise.all([
-          fetchNews(),
-          apiService.getStandings(year).catch(() => null),
-          fetch("https://statsapi.mlb.com/api/v1/schedule/games/?sportId=1")
-            .then((r) => (r.ok ? r.json() : null))
-            .catch(() => null),
-        ]);
+    }
 
-        const raw = standingsData?.data?.standings?.records;
-        if (raw) setStandings(formatStandings(raw));
+    setError(null);
+    try {
+      const year = new Date().getFullYear();
+      const [, standingsData, gamesData] = await Promise.all([
+        fetchNews(),
+        apiService.getStandings(year).catch(() => null),
+        apiService.getGames().catch(() => null),
+      ]);
 
-        const todayGames = gamesData?.dates?.[0]?.games || [];
-        setGames(todayGames);
+      const raw = standingsData?.data?.standings?.records;
+      if (raw) {
+        setStandings(formatStandings(raw));
+      }
 
-        setLastUpdated(new Date());
-      } catch (e) {
-        console.error(e);
-        setError("Failed to load data.");
-      } finally {
+      const todayGames = gamesData?.dates?.[0]?.games || [];
+      setGames(todayGames);
+      setLastUpdated(new Date());
+    } catch (e) {
+      console.error(e);
+      setError("Failed to load data.");
+    } finally {
+      if (!silent) {
         setLoading(false);
       }
-    };
-    load();
+    }
   }, []);
+
+  useEffect(() => {
+    setRecentViews(loadRecentViews());
+    setFavoriteTeams(loadFavoriteTeams());
+  }, []);
+
+  useEffect(() => {
+    loadHomepageData();
+  }, [loadHomepageData]);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === "test") {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        loadHomepageData({ silent: true });
+      }
+    }, 60000);
+
+    return () => window.clearInterval(intervalId);
+  }, [loadHomepageData]);
 
   const sortedNews = (arr) =>
     [...(arr || [])].sort(
@@ -373,6 +368,40 @@ function HomePage() {
                       </div>
                       <div className="recent-view-time">
                         {formatRecentViewTime(view.visitedAt)}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </Card.Body>
+            </Card>
+          )}
+
+          {favoriteTeams.length > 0 && (
+            <Card className="favorite-teams-card mb-4">
+              <Card.Header className="fw-semibold">⭐ Favorite Teams</Card.Header>
+              <Card.Body>
+                <div className="favorite-team-grid">
+                  {favoriteTeams.map((team) => (
+                    <Link
+                      key={team.abbreviation}
+                      to={`/team/${team.abbreviation}`}
+                      className="favorite-team-link text-decoration-none"
+                    >
+                      {team.teamId && (
+                        <img
+                          src={getTeamLogoUrl(team.teamId)}
+                          alt=""
+                          className="favorite-team-logo"
+                          onError={(event) => {
+                            event.target.style.display = "none";
+                          }}
+                        />
+                      )}
+                      <div className="favorite-team-copy">
+                        <div className="favorite-team-name">{team.name || team.abbreviation}</div>
+                        <div className="favorite-team-meta">
+                          {team.abbreviation} · Quick team hub
+                        </div>
                       </div>
                     </Link>
                   ))}

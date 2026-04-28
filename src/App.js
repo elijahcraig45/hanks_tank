@@ -18,6 +18,12 @@ import AdvancedPlayerAnalysis from './components/AdvancedPlayerAnalysis';
 import Transactions from './components/Transactions';
 import TeamTransactions from './components/TeamTransactions';
 import PredictionsPage from './components/PredictionsPage';
+import PredictionDiagnosticsPage from './components/PredictionDiagnosticsPage';
+import SplitExplorerPage from './components/SplitExplorerPage';
+import StatcastLabPage from './components/StatcastLabPage';
+import ComparisonWorkbenchPage from './components/ComparisonWorkbenchPage';
+import ScenarioSimulatorPage from './components/ScenarioSimulatorPage';
+import ResearchWorkflowPage from './components/ResearchWorkflowPage';
 import NotFoundPage from './components/NotFoundPage';
 import RouteMetadata from './components/RouteMetadata';
 import RecentViewTracker from './components/RecentViewTracker';
@@ -46,6 +52,12 @@ function AppShell() {
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/transactions/:teamAbbr" element={<TeamTransactions />} />
         <Route path="/predictions" element={<PredictionsPage />} />
+        <Route path="/prediction-diagnostics" element={<PredictionDiagnosticsPage />} />
+        <Route path="/split-explorer" element={<SplitExplorerPage />} />
+        <Route path="/statcast-lab" element={<StatcastLabPage />} />
+        <Route path="/comparison-workbench" element={<ComparisonWorkbenchPage />} />
+        <Route path="/scenario-simulator" element={<ScenarioSimulatorPage />} />
+        <Route path="/research-workflow" element={<ResearchWorkflowPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </>

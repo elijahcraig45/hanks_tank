@@ -1,117 +1,156 @@
-/* Team Page Styles - Light theme with enhanced readability */
-
 .team-page {
-  background-color: #f8f9fa;
   min-height: 100vh;
-  color: #212529;
+  background: #f8f9fa;
 }
 
-.team-page .container {
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 2rem;
-  margin-top: 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e9ecef;
+.team-hero-card {
+  color: #fff;
+  overflow: hidden;
 }
 
-/* Team header styling */
-.team-header h1 {
-  color: #212529 !important;
-  font-weight: 700 !important;
-  font-size: 2.5rem !important;
-  margin-bottom: 0.5rem;
+.team-hero-logo-wrap {
+  width: 92px;
+  height: 92px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(12px);
 }
 
-.team-header .text-muted {
-  color: #6c757d !important;
-  font-size: 1.1rem !important;
-  font-weight: 500 !important;
+.team-hero-logo {
+  width: 68px;
+  height: 68px;
+  object-fit: contain;
 }
 
-/* Tab styling */
-.team-page .nav-tabs {
-  border-bottom: 2px solid #dee2e6;
+.team-hero-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
-.team-page .nav-tabs .nav-link {
-  color: #495057 !important;
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  font-weight: 600;
-  margin-right: 4px;
+.team-hero-subtitle {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.96rem;
 }
 
-.team-page .nav-tabs .nav-link:hover {
-  color: #212529 !important;
-  background-color: #e9ecef;
+.team-hero-badge {
+  background: rgba(15, 23, 42, 0.32) !important;
 }
 
-.team-page .nav-tabs .nav-link.active {
-  color: #ffffff !important;
-  background-color: #007bff !important;
-  border-color: #007bff !important;
+.team-hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 160px;
 }
 
-/* Card styling */
-.team-page .card {
-  background-color: #ffffff !important;
-  border: 1px solid #dee2e6 !important;
-  color: #212529 !important;
+.team-year-select {
+  min-width: 120px;
 }
 
-.team-page .card-header {
-  background-color: #f8f9fa !important;
-  border-bottom: 1px solid #dee2e6 !important;
-  color: #212529 !important;
+.team-tabs .nav-link {
+  font-weight: 700;
+  color: #495057;
 }
 
-.team-page .card-header h5 {
-  color: #212529 !important;
-  font-weight: 600 !important;
-  font-size: 1.3rem !important;
+.team-tabs .nav-link.active {
+  color: #0d6efd;
 }
 
-/* Table styling */
-.team-page .table {
-  color: #212529 !important;
-  margin-bottom: 0;
+.team-stat-card {
+  height: 100%;
 }
 
-.team-page .table td {
-  color: #212529 !important;
-  font-size: 1rem !important;
-  padding: 0.75rem !important;
-  border-color: #dee2e6 !important;
+.team-stat-label {
+  font-size: 0.74rem;
+  color: #64748b;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.team-page .table td strong {
-  color: #495057 !important;
-  font-weight: 600 !important;
+.team-stat-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-top: 0.35rem;
 }
 
-.team-page .table-striped tbody tr:nth-of-type(odd) td {
-  background-color: rgba(0, 123, 255, 0.05) !important;
+.team-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
 }
 
-/* Badge styling */
-.team-page .badge {
-  font-size: 1.2rem !important;
-  font-weight: 700 !important;
+.team-info-item {
+  min-width: 0;
 }
 
-/* Alert styling */
-.team-page .alert-danger {
-  background-color: #f8d7da !important;
-  border-color: #f5c6cb !important;
-  color: #721c24 !important;
+.team-info-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  font-weight: 700;
 }
 
-.team-page .spinner-border {
-  color: #007bff !important;
+.team-info-value {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-top: 0.15rem;
 }
 
-.team-page p {
-  color: #6c757d !important;
-  font-size: 1.1rem !important;
+.team-schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.team-schedule-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  color: #0f172a;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+
+.team-schedule-link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(13, 110, 253, 0.28);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  color: #0d6efd;
+}
+
+.team-schedule-matchup {
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.team-schedule-meta {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-top: 0.2rem;
+}
+
+.team-roster-table td {
+  padding: 0.65rem 0.9rem;
+}
+
+@media (max-width: 767px) {
+  .team-hero-actions {
+    min-width: 100%;
+  }
+
+  .team-info-grid {
+    grid-template-columns: 1fr;
+  }
 }

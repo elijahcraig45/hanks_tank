@@ -42,6 +42,65 @@
   font-size: 0.88rem;
 }
 
+.pred-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.pred-toolbar-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.85rem;
+  align-items: end;
+}
+
+.pred-toolbar-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.3rem;
+}
+
+.pred-toolbar-switch {
+  display: flex;
+  align-items: flex-end;
+  min-height: 100%;
+}
+
+.pred-toolbar-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.pred-favorites-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.pred-favorite-chip {
+  border: 1px solid #dee2e6;
+  background: #fff;
+  color: #495057;
+  border-radius: 999px;
+  padding: 0.24rem 0.7rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.pred-favorite-chip--active {
+  border-color: #ffc107;
+  background: #fff8db;
+  color: #8a6d00;
+}
+
 /* Summary chips */
 .pred-summary-chips {
   display: flex;
@@ -129,9 +188,31 @@
   text-overflow: ellipsis;
 }
 
+.pred-team-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.pred-team-link:hover .pred-team-name {
+  text-decoration: underline;
+}
+
 .pred-team-record {
   font-size: 0.72rem;
   color: #6c757d;
+}
+
+.pred-favorite-btn {
+  border: none;
+  background: transparent;
+  color: #adb5bd;
+  padding: 0;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.pred-favorite-btn--active {
+  color: #f59f00;
 }
 
 .pred-team-winner .pred-team-name { opacity: 1; }
@@ -235,4 +316,16 @@
 /* Empty state */
 .pred-empty-icon {
   font-size: 3rem;
+}
+
+@media (max-width: 991px) {
+  .pred-toolbar-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 575px) {
+  .pred-toolbar-grid {
+    grid-template-columns: 1fr;
+  }
 }

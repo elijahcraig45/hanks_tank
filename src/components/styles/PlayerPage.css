@@ -9,13 +9,17 @@
 .player-name {
   font-size: 1.9rem;
   font-weight: 700;
-  color: #212529;
+  color: #ffffff;
   margin-bottom: 0;
 }
 
 /* Header card */
 .player-header-card {
-  background: #ffffff;
+  color: #ffffff;
+}
+
+.player-header-card .text-muted {
+  color: rgba(255, 255, 255, 0.82) !important;
 }
 
 /* Photo / avatar */
@@ -32,8 +36,8 @@
   border-radius: 50%;
   object-fit: cover;
   object-position: top center;
-  border: 3px solid #dee2e6;
-  background: #e9ecef;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .player-initials-avatar {
@@ -46,6 +50,51 @@
   align-items: center;
   justify-content: center;
   border: 3px solid rgba(0,0,0,0.1);
+}
+
+.player-team-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.player-subtitle {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.player-header-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.6rem;
+}
+
+.player-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.player-info-item {
+  min-width: 0;
+}
+
+.player-info-label {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.player-info-value {
+  font-size: 0.95rem;
+  color: #0f172a;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-top: 0.18rem;
 }
 
 /* Tabs */
@@ -93,19 +142,19 @@
 }
 
 /* Card styling */
-.player-page .card {
+.player-page .card:not(.player-header-card) {
   background-color: #ffffff !important;
   border: 1px solid #dee2e6 !important;
   color: #212529 !important;
 }
 
-.player-page .card-header {
+.player-page .card:not(.player-header-card) .card-header {
   background-color: #f8f9fa !important;
   border-bottom: 1px solid #dee2e6 !important;
   color: #212529 !important;
 }
 
-.player-page .card-header h5 {
+.player-page .card:not(.player-header-card) .card-header h5 {
   color: #212529 !important;
   font-weight: 600 !important;
   font-size: 1.3rem !important;
@@ -113,7 +162,6 @@
 
 /* Badge styling */
 .player-page .badge {
-  font-size: 1.1rem !important;
   font-weight: 700 !important;
 }
 
@@ -132,11 +180,6 @@
 
 .player-page .spinner-border {
   color: #007bff !important;
-}
-
-.player-page p {
-  color: #6c757d !important;
-  font-size: 1.1rem !important;
 }
 
 /* Stats display styling */
@@ -194,4 +237,39 @@
   color: #ffffff !important;
   background-color: #6c757d !important;
   border-color: #6c757d !important;
+}
+
+.player-trend-highlight-label {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.player-trend-highlight-value {
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-top: 0.35rem;
+}
+
+.player-page .table th {
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.player-page .table td {
+  vertical-align: middle;
+ }
+
+@media (max-width: 767px) {
+  .player-header-actions {
+    align-items: flex-start;
+  }
+
+  .player-info-grid {
+    grid-template-columns: 1fr;
+  }
 }

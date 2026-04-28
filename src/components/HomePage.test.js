@@ -10,6 +10,7 @@ jest.mock('../services/api', () => ({
     getMLBNews: jest.fn(),
     getBravesNews: jest.fn(),
     getStandings: jest.fn(),
+    getGames: jest.fn(),
     refreshNews: jest.fn(),
   },
 }));
@@ -47,16 +48,12 @@ describe('HomePage', () => {
         },
       },
     });
-
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        dates: [
-          {
-            games: [],
-          },
-        ],
-      }),
+    apiService.getGames.mockResolvedValue({
+      dates: [
+        {
+          games: [],
+        },
+      ],
     });
   });
 
@@ -75,13 +72,11 @@ describe('HomePage', () => {
     await waitFor(() => {
       expect(apiService.getMLBNews).toHaveBeenCalledTimes(1);
       expect(apiService.getBravesNews).toHaveBeenCalledTimes(1);
+      expect(apiService.getGames).toHaveBeenCalledTimes(1);
     });
 
     expect(await screen.findByText('League headline')).toBeInTheDocument();
     expect(await screen.findByText('Braves headline')).toBeInTheDocument();
-    expect(global.fetch).toHaveBeenCalledWith(
-      'https://statsapi.mlb.com/api/v1/schedule/games/?sportId=1'
-    );
   });
 
   test('shows recent views shortcuts when present', async () => {
