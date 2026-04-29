@@ -108,6 +108,55 @@
   height: 320px;
 }
 
+.scenario-simulator-lineup-card {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 16px;
+  background: #fff;
+  padding: 1rem;
+}
+
+.scenario-simulator-lineup-metric {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.scenario-simulator-lineup-table select {
+  min-width: 210px;
+}
+
+.scenario-simulator-order-btn {
+  margin-right: 0.35rem;
+}
+
+.scenario-simulator-lineup-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.scenario-simulator-summary-pill {
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.05);
+  color: #0f172a;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.5rem 0.8rem;
+}
+
+.scenario-simulator-summary-pill--emphasis {
+  background: rgba(22, 163, 74, 0.12);
+  color: #166534;
+}
+
+.scenario-simulator-player-table td,
+.scenario-simulator-player-table th,
+.scenario-simulator-lineup-table td,
+.scenario-simulator-lineup-table th {
+  white-space: nowrap;
+}
+
 @media (max-width: 991.98px) {
   .scenario-simulator-toolbar {
     grid-template-columns: repeat(2, minmax(0, 1fr));

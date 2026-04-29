@@ -19,8 +19,10 @@ import SaveResearchViewButton from './analytics/SaveResearchViewButton';
 import apiService from '../services/api';
 import {
   downloadCsv,
+  extractIsoDate,
   formatDecimal,
   formatEdgePoints,
+  formatIsoDateLabel,
   formatPercent,
   mergeSearchParams,
   subtractDaysFromIso,
@@ -38,7 +40,7 @@ import './styles/PredictionDiagnosticsPage.css';
 const WINDOW_OPTIONS = [7, 14, 30, 60, 90];
 
 function formatDiagnosticsDate(value) {
-  return new Date(`${value}T12:00:00`).toLocaleDateString([], {
+  return formatIsoDateLabel(value, {
     month: 'short',
     day: 'numeric',
   });
@@ -61,7 +63,7 @@ function sortDiagnosticsRows(rows, sortMode) {
   }
 
   return next.sort((left, right) => {
-    const dateCompare = String(right.gameDate).localeCompare(String(left.gameDate));
+    const dateCompare = extractIsoDate(right.gameDate).localeCompare(extractIsoDate(left.gameDate));
     if (dateCompare !== 0) {
       return dateCompare;
     }
@@ -79,7 +81,7 @@ function PredictionDiagnosticsPage() {
   const [shareState, setShareState] = useState('');
 
   const windowDays = Math.max(7, Number(searchParams.get('window') || 30));
-  const endDate = searchParams.get('endDate') || today;
+  const endDate = extractIsoDate(searchParams.get('endDate')) || today;
   const confidence = searchParams.get('confidence') || 'all';
   const lineups = searchParams.get('lineups') || 'all';
   const sortMode = searchParams.get('sort') || 'recent';
@@ -92,7 +94,12 @@ function PredictionDiagnosticsPage() {
 
     try {
       const data = await apiService.getPredictionDiagnostics({ startDate, endDate });
-      setDiagnostics(data?.diagnostics || []);
+      setDiagnostics(
+        (data?.diagnostics || []).map((row) => ({
+          ...row,
+          gameDate: extractIsoDate(row.gameDate),
+        }))
+      );
     } catch (loadError) {
       setDiagnostics([]);
       setError('Could not load prediction diagnostics for the selected range.');
@@ -162,7 +169,7 @@ function PredictionDiagnosticsPage() {
     downloadCsv(
       `prediction-diagnostics-${startDate}-through-${endDate}.csv`,
       [
-        { label: 'Game Date', value: (row) => row.gameDate },
+        { label: 'Game Date', value: (row) => extractIsoDate(row.gameDate) },
         { label: 'Matchup', value: (row) => `${row.awayTeamName} @ ${row.homeTeamName}` },
         { label: 'Predicted Winner', value: (row) => row.predictedWinner },
         { label: 'Actual Winner', value: (row) => row.actualWinner },

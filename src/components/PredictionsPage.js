@@ -3,6 +3,7 @@ import { Container, Row, Col, Card, Badge, Spinner, Alert, Form } from "react-bo
 import { Link } from "react-router-dom";
 import apiService from "../services/api";
 import { loadFavoriteTeams, toggleFavoriteTeam } from "../utils/favorites";
+import { formatIsoDateLabel, shiftIsoDate } from "../utils/analytics";
 import {
   getTeamAbbreviationFromName,
   getTeamColor,
@@ -39,7 +40,7 @@ const confidenceRank = {
 };
 
 const formatDateLabel = (value) =>
-  new Date(`${value}T12:00:00`).toLocaleDateString([], {
+  formatIsoDateLabel(value, {
     weekday: "long",
     month: "long",
     day: "numeric",
@@ -723,9 +724,11 @@ const PredictionsPage = () => {
             <p className="text-muted mb-0" style={{ fontSize: "0.875rem" }}>
               {filteredPredictions.length > 0
                 ? `Daily game outcome forecasts · ${filteredPredictions[0].model_version ?? "—"}${
-                    filteredPredictions[0].model_version?.toLowerCase().includes("v8")
-                      ? " (Elo + Pythagorean ensemble, 57.7% overall · 65.4% high-confidence)"
-                      : " (pitcher-venue stacked ensemble)"
+                    filteredPredictions[0].model_version?.toLowerCase().includes("v10")
+                      ? " (lineup-aware matchup stack)"
+                      : filteredPredictions[0].model_version?.toLowerCase().includes("v8")
+                        ? " (Elo + Pythagorean ensemble)"
+                        : " (pitcher-venue stacked ensemble)"
                   }`
                 : "Daily game outcome forecasts"}
             </p>
@@ -750,9 +753,7 @@ const PredictionsPage = () => {
         <button
           className="pred-date-nav"
           onClick={() => {
-            const d = new Date(selectedDate);
-            d.setDate(d.getDate() - 1);
-            setSelectedDate(d.toISOString().split("T")[0]);
+            setSelectedDate(shiftIsoDate(selectedDate, -1));
           }}
         >
           ‹
@@ -768,9 +769,7 @@ const PredictionsPage = () => {
           className="pred-date-nav"
           disabled={selectedDate >= today}
           onClick={() => {
-            const d = new Date(selectedDate);
-            d.setDate(d.getDate() + 1);
-            setSelectedDate(d.toISOString().split("T")[0]);
+            setSelectedDate(shiftIsoDate(selectedDate, 1));
           }}
         >
           ›
