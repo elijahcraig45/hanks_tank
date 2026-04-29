@@ -31,7 +31,7 @@ const diagnosticsPayload = {
   diagnostics: [
     {
       gamePk: 824776,
-      gameDate: '2026-04-20',
+      gameDate: '2026-04-20T00:00:00.000Z',
       awayTeamName: 'Detroit Tigers',
       homeTeamName: 'Boston Red Sox',
       awayStarterName: 'Jack Flaherty',
@@ -51,7 +51,7 @@ const diagnosticsPayload = {
     },
     {
       gamePk: 824777,
-      gameDate: '2026-04-21',
+      gameDate: { value: '2026-04-21' },
       awayTeamName: 'Houston Astros',
       homeTeamName: 'Cleveland Guardians',
       awayStarterName: 'Framber Valdez',
@@ -96,6 +96,8 @@ describe('PredictionDiagnosticsPage', () => {
     expect(await screen.findByText(/prediction diagnostics/i)).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
     expect(screen.getAllByText('50.0%').length).toBeGreaterThan(0);
+    expect(screen.getByText('Apr 20')).toBeInTheDocument();
+    expect(screen.getByText('Apr 21')).toBeInTheDocument();
     expect(screen.getByText(/Detroit Tigers @ Boston Red Sox/i)).toBeInTheDocument();
     expect(screen.getByText(/Houston Astros @ Cleveland Guardians/i)).toBeInTheDocument();
   });

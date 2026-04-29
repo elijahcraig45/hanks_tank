@@ -22,10 +22,60 @@ export function formatEdgePoints(value, digits = 1) {
   return `${(Number(value) * 100).toFixed(digits)} pts`;
 }
 
-export function subtractDaysFromIso(isoDate, days) {
-  const date = new Date(`${isoDate}T12:00:00`);
-  date.setDate(date.getDate() - days);
+export function extractIsoDate(value) {
+  if (!value) {
+    return '';
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? '' : value.toISOString().split('T')[0];
+  }
+
+  if (typeof value === 'object') {
+    if ('value' in value) {
+      return extractIsoDate(value.value);
+    }
+
+    return '';
+  }
+
+  const normalized = String(value).trim();
+  const isoMatch = normalized.match(/\d{4}-\d{2}-\d{2}/);
+  if (isoMatch) {
+    return isoMatch[0];
+  }
+
+  const parsed = new Date(normalized);
+  return Number.isNaN(parsed.getTime()) ? '' : parsed.toISOString().split('T')[0];
+}
+
+export function formatIsoDateLabel(value, options = {}) {
+  const isoDate = extractIsoDate(value);
+  if (!isoDate) {
+    return '—';
+  }
+
+  const [year, month, day] = isoDate.split('-').map(Number);
+  if (!year || !month || !day) {
+    return '—';
+  }
+
+  return new Date(year, month - 1, day).toLocaleDateString([], options);
+}
+
+export function shiftIsoDate(value, days) {
+  const isoDate = extractIsoDate(value);
+  if (!isoDate) {
+    return '';
+  }
+
+  const date = new Date(`${isoDate}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + Number(days));
   return date.toISOString().split('T')[0];
+}
+
+export function subtractDaysFromIso(isoDate, days) {
+  return shiftIsoDate(isoDate, -days);
 }
 
 export function mergeSearchParams(searchParams, updates) {

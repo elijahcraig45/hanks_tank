@@ -5,6 +5,11 @@ import {
 } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import apiService from "../services/api";
+import { formatPercent, subtractDaysFromIso, extractIsoDate } from "../utils/analytics";
+import {
+  buildConfidenceBreakdown,
+  summarizePredictionDiagnostics,
+} from "../utils/predictionDiagnostics";
 import { loadFavoriteTeams } from "../utils/favorites";
 import {
   clearRecentViews,
@@ -162,9 +167,12 @@ function GamesCarousel({ games }) {
 // ── HomePage ─────────────────────────────────────────────────────────────────
 
 function HomePage() {
+  const diagnosticsWindowDays = 30;
   const [news, setNews] = useState({ mlb: [], braves: [] });
   const [standings, setStandings] = useState({});
   const [games, setGames] = useState([]);
+  const [diagnosticsSummary, setDiagnosticsSummary] = useState(null);
+  const [highConfidenceSummary, setHighConfidenceSummary] = useState(null);
   const [recentViews, setRecentViews] = useState([]);
   const [favoriteTeams, setFavoriteTeams] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -204,10 +212,16 @@ function HomePage() {
     setError(null);
     try {
       const year = new Date().getFullYear();
-      const [, standingsData, gamesData] = await Promise.all([
+      const today = new Date().toISOString().split("T")[0];
+      const diagnosticsStartDate = subtractDaysFromIso(today, diagnosticsWindowDays - 1);
+      const [, standingsData, gamesData, diagnosticsData] = await Promise.all([
         fetchNews(),
         apiService.getStandings(year).catch(() => null),
         apiService.getGames().catch(() => null),
+        apiService.getPredictionDiagnostics({
+          startDate: diagnosticsStartDate,
+          endDate: today,
+        }).catch(() => null),
       ]);
 
       const raw = standingsData?.data?.standings?.records;
@@ -217,6 +231,14 @@ function HomePage() {
 
       const todayGames = gamesData?.dates?.[0]?.games || [];
       setGames(todayGames);
+      const normalizedDiagnostics = (diagnosticsData?.diagnostics || []).map((row) => ({
+        ...row,
+        gameDate: extractIsoDate(row.gameDate),
+      }));
+      setDiagnosticsSummary(summarizePredictionDiagnostics(normalizedDiagnostics));
+      setHighConfidenceSummary(
+        buildConfidenceBreakdown(normalizedDiagnostics).find((entry) => entry.tier === "HIGH") || null
+      );
       setLastUpdated(new Date());
     } catch (e) {
       console.error(e);
@@ -297,7 +319,16 @@ function HomePage() {
           { icon: "⚾", val: games.length || "—", label: "Games Today" },
           { icon: "📊", val: "100K+", label: "Statcast PAs" },
           { icon: "🤖", val: "V10", label: "Model Version" },
-          { icon: "🎯", val: "54.7%", label: "2026 Live Acc." },
+          {
+            icon: "🎯",
+            val: formatPercent(diagnosticsSummary?.accuracy),
+            label: `${diagnosticsWindowDays}d Rolling Acc.`,
+          },
+          {
+            icon: "🔥",
+            val: formatPercent(highConfidenceSummary?.accuracy),
+            label: `${diagnosticsWindowDays}d High Conf.`,
+          },
           { icon: "🏟️", val: "30", label: "MLB Teams" },
         ].map(({ icon, val, label }) => (
           <div key={label} className="stat-pill fade-up">

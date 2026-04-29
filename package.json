@@ -36,7 +36,7 @@
     "eject": "react-scripts eject",
     "build:prod": "node scripts/build-prod.js",
     "deploy": "npm run build:prod && gcloud app deploy --quiet --project=hankstank",
-    "deploy:service": "npm run build:prod && gcloud app deploy --quiet --service=frontend --project=hankstank",
+    "deploy:service": "npm run build:prod && gcloud app deploy app.yaml --quiet --project=hankstank",
     "clean": "node -e \"const fs = require('fs'); ['build', 'node_modules/.cache'].forEach((path) => fs.rmSync(path, { recursive: true, force: true }));\"",
     "analyze": "source-map-explorer 'build/static/js/*.js'"
   },

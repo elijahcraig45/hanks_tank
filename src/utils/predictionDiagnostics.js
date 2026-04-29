@@ -1,3 +1,5 @@
+import { extractIsoDate, formatIsoDateLabel } from './analytics';
+
 const CONFIDENCE_ORDER = ['HIGH', 'MEDIUM', 'LOW'];
 
 export function normalizeConfidenceTier(value) {
@@ -125,7 +127,11 @@ export function buildCalibrationBins(rows) {
 
 export function buildDailyDiagnosticsTrend(rows) {
   const byDate = rows.reduce((accumulator, row) => {
-    const key = row.gameDate;
+    const key = extractIsoDate(row.gameDate);
+    if (!key) {
+      return accumulator;
+    }
+
     if (!accumulator[key]) {
       accumulator[key] = [];
     }
@@ -139,7 +145,7 @@ export function buildDailyDiagnosticsTrend(rows) {
       const summary = summarizePredictionDiagnostics(entries);
       return {
         date,
-        shortDate: new Date(`${date}T12:00:00`).toLocaleDateString([], {
+        shortDate: formatIsoDateLabel(date, {
           month: 'short',
           day: 'numeric',
         }),

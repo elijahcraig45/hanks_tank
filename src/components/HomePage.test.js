@@ -11,6 +11,7 @@ jest.mock('../services/api', () => ({
     getBravesNews: jest.fn(),
     getStandings: jest.fn(),
     getGames: jest.fn(),
+    getPredictionDiagnostics: jest.fn(),
     refreshNews: jest.fn(),
   },
 }));
@@ -55,6 +56,30 @@ describe('HomePage', () => {
         },
       ],
     });
+    apiService.getPredictionDiagnostics.mockResolvedValue({
+      diagnostics: [
+        {
+          gameDate: '2026-04-19',
+          confidenceTier: 'HIGH',
+          correct: true,
+          edge: 0.12,
+          predictedWinProbability: 0.68,
+          brierScore: 0.1024,
+          logLoss: 0.3857,
+          lineupConfirmed: true,
+        },
+        {
+          gameDate: '2026-04-20',
+          confidenceTier: 'LOW',
+          correct: false,
+          edge: -0.03,
+          predictedWinProbability: 0.52,
+          brierScore: 0.2704,
+          logLoss: 0.734,
+          lineupConfirmed: false,
+        },
+      ],
+    });
   });
 
   afterEach(() => {
@@ -73,10 +98,15 @@ describe('HomePage', () => {
       expect(apiService.getMLBNews).toHaveBeenCalledTimes(1);
       expect(apiService.getBravesNews).toHaveBeenCalledTimes(1);
       expect(apiService.getGames).toHaveBeenCalledTimes(1);
+      expect(apiService.getPredictionDiagnostics).toHaveBeenCalledTimes(1);
     });
 
     expect(await screen.findByText('League headline')).toBeInTheDocument();
     expect(await screen.findByText('Braves headline')).toBeInTheDocument();
+    expect(screen.getByText('50.0%')).toBeInTheDocument();
+    expect(screen.getByText('100.0%')).toBeInTheDocument();
+    expect(screen.getByText('30d Rolling Acc.')).toBeInTheDocument();
+    expect(screen.getByText('30d High Conf.')).toBeInTheDocument();
   });
 
   test('shows recent views shortcuts when present', async () => {
