@@ -50,6 +50,9 @@ function BasicExample() {
           <Link to="/predictions" className={`ht-link ht-link--highlight${isActive('/predictions') ? ' ht-link--active' : ''}`}>
             Predictions
           </Link>
+          <Link to="/football" className={`ht-link${isActive('/football') || isActive('/nfl') ? ' ht-link--active' : ''}`}>
+            Football
+          </Link>
 
           {/* Stats dropdown */}
           <div ref={statsRef} className="ht-dropdown">

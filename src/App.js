@@ -18,6 +18,7 @@ import AdvancedPlayerAnalysis from './components/AdvancedPlayerAnalysis';
 import Transactions from './components/Transactions';
 import TeamTransactions from './components/TeamTransactions';
 import PredictionsPage from './components/PredictionsPage';
+import FootballPredictionsPage from './components/FootballPredictionsPage';
 import PredictionDiagnosticsPage from './components/PredictionDiagnosticsPage';
 import SplitExplorerPage from './components/SplitExplorerPage';
 import StatcastLabPage from './components/StatcastLabPage';
@@ -52,6 +53,9 @@ function AppShell() {
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/transactions/:teamAbbr" element={<TeamTransactions />} />
         <Route path="/predictions" element={<PredictionsPage />} />
+        <Route path="/football" element={<FootballPredictionsPage />} />
+        <Route path="/football/:league" element={<FootballPredictionsPage />} />
+        <Route path="/nfl/predictions" element={<FootballPredictionsPage />} />
         <Route path="/prediction-diagnostics" element={<PredictionDiagnosticsPage />} />
         <Route path="/split-explorer" element={<SplitExplorerPage />} />
         <Route path="/statcast-lab" element={<StatcastLabPage />} />
