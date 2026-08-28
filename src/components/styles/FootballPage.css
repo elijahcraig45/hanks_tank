@@ -1,0 +1,374 @@
+/* ─── Football Page ──────────────────────────────────────────────────────────
+   Deliberately built on the same light palette as PredictionsPage.css so the
+   football pages read as part of the same site, not a separate app:
+     surface  #f8f9fa   card #fff      border #dee2e6 / rgba(0,0,0,.07)
+     text     #212529   muted #6c757d  accent #0d6efd
+   PredictionsPage.css supplies the card, chip, prob-bar and reason primitives;
+   only football-specific pieces live here.
+   ------------------------------------------------------------------------- */
+
+.ft-page {
+  min-height: 100vh;
+  background: #f8f9fa;
+  padding: 1.5rem 1rem 4rem;
+}
+
+.ft-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.ft-header h1 {
+  margin: 0 0 0.3rem;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: #212529;
+  letter-spacing: -0.02em;
+}
+
+.ft-sub {
+  margin: 0 0 1.25rem;
+  max-width: 68ch;
+  color: #6c757d;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+/* ─── Controls ───────────────────────────────────────────────────────────── */
+
+.ft-controls {
+  display: flex;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.ft-controls label,
+.ft-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6c757d;
+}
+
+.ft-controls select,
+.ft-filters select,
+.ft-filters input {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  color: #212529;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+  height: 36px;
+  min-width: 9rem;
+}
+
+/* ─── Panels ─────────────────────────────────────────────────────────────── */
+
+.ft-panel {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: 8px;
+  padding: 1.15rem 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.ft-panel h2 {
+  margin: 0 0 0.3rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+.ft-panel h3 {
+  margin: 1.15rem 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6c757d;
+}
+
+.ft-note {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  color: #6c757d;
+  line-height: 1.55;
+  max-width: 74ch;
+}
+
+/* ─── Baseline bars ──────────────────────────────────────────────────────── */
+
+.ft-bar-row {
+  display: grid;
+  grid-template-columns: 12rem 1fr 4rem;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.45rem;
+  font-size: 0.86rem;
+}
+
+.ft-bar-label { color: #495057; }
+
+.ft-bar-track {
+  background: #e9ecef;
+  border-radius: 4px;
+  height: 0.8rem;
+  overflow: hidden;
+}
+
+.ft-bar-fill { height: 100%; border-radius: 4px; }
+.ft-bar--model { background: #0d6efd; }
+.ft-bar--base  { background: #adb5bd; }
+.ft-bar--vegas { background: #fd7e14; }
+
+.ft-bar-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: #212529;
+}
+
+/* ─── Prediction cards ───────────────────────────────────────────────────── */
+
+.ft-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.ft-card {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.ft-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.09);
+}
+
+.ft-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.ft-result {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+}
+.ft-result--hit  { background: #d1e7dd; color: #0f5132; }
+.ft-result--miss { background: #f8d7da; color: #842029; }
+
+.ft-matchup {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.ft-team {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #212529;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ft-team--away { text-align: left; }
+.ft-team--home { text-align: right; }
+.ft-team--fade { color: #adb5bd; font-weight: 600; }
+
+.ft-at { font-size: 0.75rem; color: #adb5bd; }
+
+.ft-prob-bar {
+  display: flex;
+  height: 20px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: #e9ecef;
+}
+.ft-seg-away { background: #6c757d; }
+.ft-seg-home { background: #0d6efd; }
+
+.ft-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-top: 0.3rem;
+}
+
+.ft-final {
+  margin-top: 0.55rem;
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.ft-why-toggle {
+  margin-top: 0.7rem;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  color: #0d6efd;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ft-why-toggle:hover { background: #f8f9fa; }
+
+.ft-why { margin-top: 0.65rem; }
+
+/* ─── Rankings ───────────────────────────────────────────────────────────── */
+
+/* Tier headers are the honest unit of ordering: teams inside a tier are not
+   separable, teams across tiers are. */
+.ft-tier-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 1.1rem 0 0.4rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid #dee2e6;
+}
+.ft-tier-head:first-of-type { margin-top: 0.25rem; }
+
+.ft-tier-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+.ft-tier-desc {
+  font-size: 0.78rem;
+  color: #6c757d;
+}
+
+.ft-rank-row {
+  display: grid;
+  grid-template-columns: 2.2rem 1fr 4rem 5.5rem 5rem;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.2rem;
+  border-bottom: 1px solid #f1f3f5;
+  font-size: 0.87rem;
+}
+.ft-rank-row:hover { background: #f8f9fa; }
+
+.ft-rank-num {
+  font-weight: 700;
+  color: #6c757d;
+  font-variant-numeric: tabular-nums;
+}
+
+.ft-rank-team { font-weight: 600; color: #212529; }
+
+.ft-rank-strength {
+  height: 0.3rem;
+  background: #e9ecef;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 0.25rem;
+  max-width: 16rem;
+}
+.ft-rank-strength-fill { height: 100%; background: #0d6efd; border-radius: 2px; }
+
+.ft-rank-rec,
+.ft-rank-rating {
+  color: #495057;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.ft-rank-range {
+  color: #6c757d;
+  font-size: 0.8rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ft-expand {
+  margin-top: 0.9rem;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  color: #0d6efd;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+}
+.ft-expand:hover { background: #f8f9fa; }
+
+/* ─── Tables ─────────────────────────────────────────────────────────────── */
+
+.ft-table-wrap { overflow-x: auto; }
+
+.ft-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.ft-table th {
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6c757d;
+  border-bottom: 1px solid #dee2e6;
+  padding: 0.45rem 0.6rem;
+  white-space: nowrap;
+}
+
+.ft-table td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid #f1f3f5;
+  white-space: nowrap;
+  color: #212529;
+}
+
+.ft-table tbody tr:hover { background: #f8f9fa; }
+
+.ft-filters {
+  display: flex;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.85rem;
+}
+
+.ft-meta {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+}
+
+.ft-state {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #6c757d;
+}
+.ft-state--error { color: #842029; }
+
+@media (max-width: 700px) {
+  .ft-bar-row  { grid-template-columns: 8rem 1fr 3.5rem; font-size: 0.8rem; }
+  .ft-rank-row { grid-template-columns: 1.8rem 1fr 3.5rem 4.5rem; }
+  .ft-rank-range { display: none; }
+}

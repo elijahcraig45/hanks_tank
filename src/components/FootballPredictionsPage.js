@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ApiService from '../services/api';
 import './styles/PredictionsPage.css';
-import './styles/NflPredictionsPage.css';
+import './styles/FootballPage.css';
 
 const TIER_ORDER = { high: 0, medium: 1, low: 2 };
 
@@ -18,10 +18,10 @@ function pct(v, digits = 1) {
 }
 
 /**
- * "Why" cards. Ported from generateWhyV8 on the MLB predictions page — the Elo,
- * Pythagorean, form and streak logic transfers directly to football; only the wording
- * changes ("runs" -> "points"). Signals absent for a given league are simply skipped,
- * which is how CFB (no EPA, no betting lines) shares this code with NFL.
+ * "Why" cards, ported from generateWhyV8 on the MLB predictions page — the Elo,
+ * Pythagorean, form and streak logic transfers straight to football; only the wording
+ * changes ("runs" -> "points"). Signals a league doesn't have are skipped, which is how
+ * CFB (no EPA, no betting lines) shares this with NFL.
  */
 function generateWhy(p) {
   const reasons = [];
@@ -31,11 +31,11 @@ function generateWhy(p) {
     const d = p.elo_differential;
     reasons.push({
       tone: Math.abs(d) > 100 ? 'positive' : 'neutral',
-      title: 'Team rating (Elo)',
+      title: 'Team rating',
       detail:
         Math.abs(d) < 15
           ? 'Both teams rate almost identically — close to a coin flip on strength alone.'
-          : `${d > 0 ? p.home_team_name : p.away_team_name} rates ${Math.abs(d).toFixed(0)} Elo points higher, including home-field.`,
+          : `${d > 0 ? p.home_team_name : p.away_team_name} rates ${Math.abs(d).toFixed(0)} points higher, including home field.`,
     });
   }
 
@@ -69,7 +69,7 @@ function generateWhy(p) {
     reasons.push({
       tone: 'neutral',
       title: 'Cross-division matchup',
-      detail: 'FBS vs FCS games are usually lopsided — treat a confident pick here as cheap.',
+      detail: 'FBS vs FCS games are usually lopsided — a confident pick here is cheap.',
     });
   } else if (p.is_divisional) {
     reasons.push({
@@ -83,7 +83,7 @@ function generateWhy(p) {
     reasons.push({
       tone: 'neutral',
       title: 'Neutral site',
-      detail: 'No home-field advantage applied for either team.',
+      detail: 'No home-field advantage applied to either team.',
     });
   }
 
@@ -110,49 +110,46 @@ function PredictionCard({ p }) {
   const homeFav = p.home_win_probability > 0.5;
   const homePct = Math.round(p.home_win_probability * 100);
   const settled = p.prediction_correct !== null && p.prediction_correct !== undefined;
+  const tierClass = p.confidence_tier === 'medium' ? 'med' : p.confidence_tier;
 
   return (
-    <div className="pred-card nfl-card">
-      <div className="nfl-card-head">
-        <span className={`pred-conf-badge pred-chip--${p.confidence_tier === 'medium' ? 'med' : p.confidence_tier}`}>
-          {p.confidence_tier}
-        </span>
+    <div className="ft-card">
+      <div className="ft-card-head">
+        <span className={`pred-chip pred-chip--${tierClass}`}>{p.confidence_tier}</span>
         {settled && (
-          <span className={`nfl-result nfl-result--${p.prediction_correct ? 'hit' : 'miss'}`}>
+          <span className={`ft-result ft-result--${p.prediction_correct ? 'hit' : 'miss'}`}>
             {p.prediction_correct ? '✓ correct' : '✗ missed'}
           </span>
         )}
       </div>
 
-      <div className="pred-matchup-row">
-        <div className={`pred-team-cell ${!homeFav ? 'pred-team-winner' : 'pred-team-loser'}`}>
-          <span className="pred-team-name">{p.away_team_name}</span>
-        </div>
-        <span className="pred-at">@</span>
-        <div className={`pred-team-cell pred-team-cell--home ${homeFav ? 'pred-team-winner' : 'pred-team-loser'}`}>
-          <span className="pred-team-name">{p.home_team_name}</span>
-        </div>
+      <div className="ft-matchup">
+        <span className={`ft-team ft-team--away${homeFav ? ' ft-team--fade' : ''}`}>
+          {p.away_team_name}
+        </span>
+        <span className="ft-at">@</span>
+        <span className={`ft-team ft-team--home${homeFav ? '' : ' ft-team--fade'}`}>
+          {p.home_team_name}
+        </span>
       </div>
 
-      <div className="pred-prob-bar">
-        <div className="pred-prob-segment nfl-seg-away" style={{ width: `${100 - homePct}%` }} />
-        <div className="pred-prob-segment nfl-seg-home" style={{ width: `${homePct}%` }} />
+      <div className="ft-prob-bar">
+        <div className="ft-seg-away" style={{ width: `${100 - homePct}%` }} />
+        <div className="ft-seg-home" style={{ width: `${homePct}%` }} />
       </div>
-      <div className="pred-bar-labels">
+      <div className="ft-bar-labels">
         <span>{100 - homePct}% {p.away_team_name}</span>
         <span>{homePct}% {p.home_team_name}</span>
       </div>
 
-      {settled && (
-        <div className="nfl-final">Actual winner: <strong>{p.actual_winner}</strong></div>
-      )}
+      {settled && <div className="ft-final">Winner: <strong>{p.actual_winner}</strong></div>}
 
-      <button className="nfl-why-toggle" onClick={() => setOpen((o) => !o)}>
+      <button className="ft-why-toggle" onClick={() => setOpen((o) => !o)}>
         {open ? 'Hide reasoning' : 'Why this pick?'}
       </button>
 
       {open && (
-        <div className="nfl-why">
+        <div className="ft-why">
           {generateWhy(p).map((r, i) => (
             <div key={i} className={`pred-reason pred-reason--${r.tone}`}>
               <div className="pred-reason-title">{r.title}</div>
@@ -166,79 +163,145 @@ function PredictionCard({ p }) {
 }
 
 function AccuracyPanel({ accuracy, league }) {
-  if (!accuracy?.overall || !accuracy.overall.games) return null;
+  if (!accuracy?.overall?.games) return null;
   const o = accuracy.overall;
 
-  // The baselines are the point of this panel. Football is far more predictable than
-  // baseball, so a raw accuracy number flatters any model; the gap to always-home and
-  // to Elo-alone is what actually says whether the features are doing work.
   const bars = [
-    { label: 'This model', value: o.model_accuracy, cls: 'nfl-bar--model' },
-    { label: 'Always pick home', value: o.always_home_accuracy, cls: 'nfl-bar--base' },
-    { label: 'Elo rating alone', value: o.elo_accuracy, cls: 'nfl-bar--base' },
-    { label: 'Vegas closing favorite', value: o.vegas_accuracy, cls: 'nfl-bar--vegas' },
+    { label: 'This model', value: o.model_accuracy, cls: 'ft-bar--model' },
+    { label: 'Always pick home', value: o.always_home_accuracy, cls: 'ft-bar--base' },
+    { label: 'Team rating alone', value: o.elo_accuracy, cls: 'ft-bar--base' },
+    { label: 'Vegas closing favorite', value: o.vegas_accuracy, cls: 'ft-bar--vegas' },
   ].filter((b) => b.value != null);
 
   return (
-    <div className="nfl-accuracy">
-      <h3>Model vs. baselines — {league.label} {accuracy.season}</h3>
-      <p className="nfl-accuracy-note">
-        {o.games} games scored. Football has strong base rates, so raw accuracy is not
-        the story — the honest test is whether the model clears <em>Elo alone</em>, and
-        how close it lands to the closing line.
+    <div className="ft-panel">
+      <h2>How the model is doing — {league.label} {accuracy.season}</h2>
+      <p className="ft-note">
+        {o.games} games scored. Football is far more predictable than baseball, so the
+        raw number matters less than the gap to these baselines.
       </p>
       {bars.map((b) => (
-        <div key={b.label} className="nfl-bar-row">
-          <span className="nfl-bar-label">{b.label}</span>
-          <div className="nfl-bar-track">
-            <div className={`nfl-bar-fill ${b.cls}`} style={{ width: `${(b.value || 0) * 100}%` }} />
+        <div key={b.label} className="ft-bar-row">
+          <span className="ft-bar-label">{b.label}</span>
+          <div className="ft-bar-track">
+            <div className={`ft-bar-fill ${b.cls}`} style={{ width: `${(b.value || 0) * 100}%` }} />
           </div>
-          <span className="nfl-bar-value">{pct(b.value)}</span>
+          <span className="ft-bar-value">{pct(b.value)}</span>
         </div>
       ))}
 
       {accuracy.by_tier?.length > 0 && (
-        <div className="nfl-tiers">
-          <h4>By confidence tier</h4>
-          <table className="nfl-table">
-            <thead><tr><th>Tier</th><th>Games</th><th>Accuracy</th></tr></thead>
-            <tbody>
-              {[...accuracy.by_tier]
-                .sort((a, b) => (TIER_ORDER[a.confidence_tier] ?? 9) - (TIER_ORDER[b.confidence_tier] ?? 9))
-                .map((t) => (
-                  <tr key={t.confidence_tier}>
-                    <td><span className={`pred-chip pred-chip--${t.confidence_tier === 'medium' ? 'med' : t.confidence_tier}`}>{t.confidence_tier}</span></td>
-                    <td>{t.games}</td>
-                    <td>{pct(t.accuracy)}</td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <h3>By confidence</h3>
+          <div className="ft-table-wrap">
+            <table className="ft-table">
+              <thead><tr><th>Tier</th><th>Games</th><th>Accuracy</th></tr></thead>
+              <tbody>
+                {[...accuracy.by_tier]
+                  .sort((a, b) => (TIER_ORDER[a.confidence_tier] ?? 9) - (TIER_ORDER[b.confidence_tier] ?? 9))
+                  .map((t) => (
+                    <tr key={t.confidence_tier}>
+                      <td>
+                        <span className={`pred-chip pred-chip--${t.confidence_tier === 'medium' ? 'med' : t.confidence_tier}`}>
+                          {t.confidence_tier}
+                        </span>
+                      </td>
+                      <td>{t.games}</td>
+                      <td>{pct(t.accuracy)}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );
 }
 
 /**
- * Bradley-Terry power rankings.
+ * Group the board into tiers.
  *
- * Presented with the uncertainty attached rather than as a clean ladder, because the
- * ladder is the misleading part: outside the top couple of spots the bootstrap rank
- * ranges overlap almost completely, so a team "ranked 5th" is genuinely anywhere from
- * 2nd to 20th. The bar and the range column are doing the honest work here.
+ * A flat 1..N list implies a precision the data doesn't have — #4 and #5 are separated
+ * by less than a point. Tiers are the honest unit: a break starts wherever the gap to
+ * the next team is large relative to the spread of gaps, so teams inside a tier are
+ * genuinely interchangeable and teams across tiers are genuinely separated.
  */
+function buildTiers(rows) {
+  if (!rows.length) return [];
+  const gaps = rows.map((r) => r.gap_to_next).filter((g) => g != null && !Number.isNaN(g));
+  if (!gaps.length) return [{ label: 'All teams', desc: '', rows }];
+
+  const sorted = [...gaps].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)] || 1;
+  const breakAt = Math.max(median * 3, 25);
+
+  const tiers = [];
+  let current = [];
+  rows.forEach((r, i) => {
+    current.push(r);
+    const gap = r.gap_to_next;
+    const isLast = i === rows.length - 1;
+    if (!isLast && gap != null && gap >= breakAt && current.length >= 1) {
+      tiers.push(current);
+      current = [];
+    }
+  });
+  if (current.length) tiers.push(current);
+
+  const NAMES = [
+    ['In a class alone', 'clear separation from everyone below'],
+    ['Real contenders', 'separated from the pack, not from each other'],
+    ['The pack', 'interchangeable on this season’s results'],
+    ['Solid', 'good teams without a distinguishing result'],
+    ['The rest', 'ordering here is close to arbitrary'],
+  ];
+
+  return tiers.map((group, i) => {
+    const [label, desc] = NAMES[Math.min(i, NAMES.length - 1)];
+    return {
+      label: tiers.length > NAMES.length && i >= NAMES.length - 1
+        ? `${label} (${group[0].rank}–${group[group.length - 1].rank})`
+        : label,
+      desc,
+      rows: group,
+    };
+  });
+}
+
+function RankRow({ r, floor, top }) {
+  const width = Math.max(3, ((r.rating - floor) / (top - floor)) * 100);
+  return (
+    <div className="ft-rank-row">
+      <span className="ft-rank-num">{r.rank}</span>
+      <span>
+        <span className="ft-rank-team">{r.team}</span>
+        <span className="ft-rank-strength">
+          <span className="ft-rank-strength-fill" style={{ width: `${width}%` }} />
+        </span>
+      </span>
+      <span className="ft-rank-rec">{r.record}</span>
+      <span className="ft-rank-rating">{Math.round(r.rating)}</span>
+      <span className="ft-rank-range">
+        {r.rank_p05 != null ? `${r.rank_p05}–${r.rank_p95}` : '—'}
+      </span>
+    </div>
+  );
+}
+
 function PowerRankings({ league, season }) {
   const [rows, setRows] = useState([]);
   const [meta, setMeta] = useState(null);
+  const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
+      setExpanded(false);
       try {
-        const res = await ApiService.getFootballRankings(league.sport, season, 25);
+        const res = await ApiService.getFootballRankings(league.sport, season, 400);
         if (cancelled) return;
         setRows(res.data || []);
         setMeta(res.meta || null);
@@ -251,60 +314,54 @@ function PowerRankings({ league, season }) {
     return () => { cancelled = true; };
   }, [league.sport, season]);
 
-  if (loading) return null;
-  if (meta?.note || !rows.length) return null;
+  const top25 = useMemo(() => rows.slice(0, 25), [rows]);
+  const tiers = useMemo(() => buildTiers(top25), [top25]);
+  const rest = useMemo(() => rows.slice(25), [rows]);
+
+  if (loading || meta?.note || !rows.length) return null;
 
   const top = rows[0]?.rating || 1;
-  const floor = Math.min(...rows.map((r) => r.rating)) * 0.9;
+  const floor = (rows[Math.min(rows.length, 25) - 1]?.rating || 0) * 0.85;
 
   return (
-    <div className="nfl-accuracy ft-rankings">
-      <h3>Power rankings — {season}</h3>
-      <p className="nfl-accuracy-note">
-        A single global fit over every game, not a week-by-week rating walk, so the
-        result does not depend on the order games were played. Home field is fit as an
-        explicit term ({meta?.home_field_points?.toFixed(0)} points), and last season is
-        carried in as a decaying prior
-        {meta?.prior_weight != null && ` (now down to ${(meta.prior_weight * 100).toFixed(0)}% weight)`}
-        so early-season ranks are not built on three games.{' '}
-        <strong>The ordering below is mostly not meaningful.</strong> The “range” column
-        is where each team lands across 300 bootstrap resamples — anywhere those ranges
-        overlap, the teams are indistinguishable.
+    <div className="ft-panel">
+      <h2>Power rankings — {season}</h2>
+      <p className="ft-note">
+        One global fit over every game rather than a week-by-week rating walk, so the
+        result doesn’t depend on the order games were played. Home field is fit
+        explicitly ({meta?.home_field_points?.toFixed(0)} points) and last season carries
+        in as a decaying prior
+        {meta?.prior_weight != null && ` (down to ${(meta.prior_weight * 100).toFixed(0)}% weight by now)`}.
+        Teams are grouped into tiers because that’s the level the results actually
+        support — within a tier the teams are effectively even.
       </p>
 
-      <div className="nfl-table-wrap">
-        <table className="nfl-table ft-rank-table">
-          <thead>
-            <tr>
-              <th>#</th><th>Team</th><th>Rec</th><th>Rating</th>
-              <th>Beats next</th><th>Range (5–95%)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => {
-              const width = Math.max(2, ((r.rating - floor) / (top - floor)) * 100);
-              const tossup = r.p_beat_next != null && r.p_beat_next < 0.55;
-              return (
-                <tr key={r.team}>
-                  <td>{r.rank}</td>
-                  <td className="nfl-team-cell">
-                    {r.team}
-                    <div className="ft-rank-bar">
-                      <div className="ft-rank-bar-fill" style={{ width: `${width}%` }} />
-                    </div>
-                  </td>
-                  <td>{r.record}</td>
-                  <td>{Math.round(r.rating)}</td>
-                  <td className={tossup ? 'ft-tossup' : undefined}>
-                    {r.p_beat_next != null ? `${(r.p_beat_next * 100).toFixed(1)}%` : '—'}
-                  </td>
-                  <td className="ft-range">{r.rank_p05}–{r.rank_p95}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      {tiers.map((tier) => (
+        <div key={tier.label}>
+          <div className="ft-tier-head">
+            <span className="ft-tier-name">{tier.label}</span>
+            <span className="ft-tier-desc">{tier.desc}</span>
+          </div>
+          {tier.rows.map((r) => <RankRow key={r.team} r={r} floor={floor} top={top} />)}
+        </div>
+      ))}
+
+      {rest.length > 0 && (
+        <>
+          {expanded && (
+            <div>
+              <div className="ft-tier-head">
+                <span className="ft-tier-name">26–{rows.length}</span>
+                <span className="ft-tier-desc">everyone else, same model</span>
+              </div>
+              {rest.map((r) => <RankRow key={r.team} r={r} floor={floor} top={top} />)}
+            </div>
+          )}
+          <button className="ft-expand" onClick={() => setExpanded((e) => !e)}>
+            {expanded ? 'Show top 25 only' : `Show all ${rows.length} teams`}
+          </button>
+        </>
+      )}
     </div>
   );
 }
@@ -328,8 +385,7 @@ function StatExplorer({ league, season }) {
       setRows(res.data || []);
       setMeta(res.meta || null);
     } catch {
-      setRows([]);
-      setMeta(null);
+      setRows([]); setMeta(null);
     } finally {
       setLoading(false);
     }
@@ -337,21 +393,15 @@ function StatExplorer({ league, season }) {
 
   useEffect(() => { load(); }, [load]);
 
-  const fields = meta?.sortable_fields?.length ? meta.sortable_fields : [];
-
-  if (meta?.note) {
-    return (
-      <div className="nfl-explorer">
-        <h3>Team stat explorer</h3>
-        <p className="nfl-accuracy-note">{meta.note}</p>
-      </div>
-    );
-  }
+  if (meta?.note) return null;
+  const fields = (meta?.sortable_fields || []).filter(
+    (f) => !['season', 'week', 'team'].includes(f)
+  );
 
   return (
-    <div className="nfl-explorer">
-      <h3>Team stat explorer</h3>
-      <div className="nfl-filters">
+    <div className="ft-panel">
+      <h2>Team stat explorer</h2>
+      <div className="ft-filters">
         <label>
           Team
           <input value={team} onChange={(e) => setTeam(e.target.value)} placeholder="e.g. PHI" />
@@ -363,8 +413,7 @@ function StatExplorer({ league, season }) {
         <label>
           Sort by
           <select value={sort} onChange={(e) => setSort(e.target.value)}>
-            {fields.filter((f) => !['season', 'week', 'team'].includes(f))
-              .map((f) => <option key={f} value={f}>{f}</option>)}
+            {fields.map((f) => <option key={f} value={f}>{f}</option>)}
           </select>
         </label>
         <label>
@@ -376,17 +425,14 @@ function StatExplorer({ league, season }) {
         </label>
       </div>
 
-      <div className="nfl-explorer-meta">
-        {loading ? 'Loading…' : `${rows.length} of ${meta?.total ?? 0} rows`}
-      </div>
+      <div className="ft-meta">{loading ? 'Loading…' : `${rows.length} of ${meta?.total ?? 0} rows`}</div>
 
-      <div className="nfl-table-wrap">
-        <table className="nfl-table">
+      <div className="ft-table-wrap">
+        <table className="ft-table">
           <thead>
             <tr>
-              <th>Season</th><th>Wk</th><th>Team</th>
-              <th>Off EPA</th><th>Def EPA</th><th>Off SR</th>
-              <th>Def SR</th><th>Explosive</th>
+              <th>Season</th><th>Wk</th><th>Team</th><th>Off EPA</th>
+              <th>Def EPA</th><th>Off SR</th><th>Def SR</th><th>Explosive</th>
             </tr>
           </thead>
           <tbody>
@@ -394,7 +440,7 @@ function StatExplorer({ league, season }) {
               <tr key={`${r.season}-${r.week}-${r.team}`}>
                 <td>{r.season}</td>
                 <td>{r.week}</td>
-                <td className="nfl-team-cell">{r.team}</td>
+                <td><strong>{r.team}</strong></td>
                 <td>{r.off_epa_play?.toFixed(3) ?? '—'}</td>
                 <td>{r.def_epa_play?.toFixed(3) ?? '—'}</td>
                 <td>{pct(r.off_success_rate)}</td>
@@ -418,7 +464,7 @@ export default function FootballPredictionsPage() {
     [leagueParam]
   );
 
-  const [season, setSeason] = useState(2025);
+  const [season, setSeason] = useState(2026);
   const [week, setWeek] = useState(1);
   const [predictions, setPredictions] = useState([]);
   const [accuracy, setAccuracy] = useState(null);
@@ -458,59 +504,58 @@ export default function FootballPredictionsPage() {
   );
 
   return (
-    <div className="nfl-page">
-      <header className="nfl-header">
-        <h1>Football Predictions</h1>
-        <p className="nfl-sub">
-          Win probabilities for the NFL and college football, generated before each week
-          and scored against the result. Ratings are Elo-based, with EPA-per-play added
-          where play-by-play exists.
-        </p>
-      </header>
+    <div className="ft-page">
+      <div className="ft-inner">
+        <header className="ft-header">
+          <h1>{league.label}</h1>
+          <p className="ft-sub">
+            Win probabilities generated before each week and scored against the result,
+            built on team ratings fit over every game since 1999 (NFL) or 2016 (college).
+          </p>
+        </header>
 
-      <div className="nfl-controls">
-        <label>
-          League
-          <select
-            value={league.key}
-            onChange={(e) => navigate(`/football/${e.target.value}`)}
-          >
-            {LEAGUES.map((l) => <option key={l.key} value={l.key}>{l.label}</option>)}
-          </select>
-        </label>
-        <label>
-          Season
-          <select value={season} onChange={(e) => setSeason(Number(e.target.value))}>
-            {[2025, 2024, 2023].map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </label>
-        <label>
-          Week
-          <select value={week} onChange={(e) => setWeek(Number(e.target.value))}>
-            {Array.from({ length: 21 }, (_, i) => i + 1).map((w) => (
-              <option key={w} value={w}>Week {w}</option>
-            ))}
-          </select>
-        </label>
-      </div>
-
-      <AccuracyPanel accuracy={accuracy} league={league} />
-
-      <PowerRankings league={league} season={season} />
-
-      {loading && <div className="nfl-loading">Loading predictions…</div>}
-      {error && <div className="nfl-error">{error}</div>}
-      {!loading && !error && ordered.length === 0 && (
-        <div className="nfl-empty">
-          No predictions stored for {league.label} {season}, week {week}.
+        <div className="ft-controls">
+          <label>
+            League
+            <select value={league.key} onChange={(e) => navigate(`/football/${e.target.value}`)}>
+              {LEAGUES.map((l) => <option key={l.key} value={l.key}>{l.label}</option>)}
+            </select>
+          </label>
+          <label>
+            Season
+            <select value={season} onChange={(e) => setSeason(Number(e.target.value))}>
+              {[2026, 2025, 2024].map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </label>
+          <label>
+            Week
+            <select value={week} onChange={(e) => setWeek(Number(e.target.value))}>
+              {Array.from({ length: 21 }, (_, i) => i + 1).map((w) => (
+                <option key={w} value={w}>Week {w}</option>
+              ))}
+            </select>
+          </label>
         </div>
-      )}
 
-      <div className="nfl-grid">
-        {ordered.map((p) => <PredictionCard key={p.game_id} p={p} />)}
+        <AccuracyPanel accuracy={accuracy} league={league} />
+        <PowerRankings league={league} season={season} />
+
+        {loading && <div className="ft-state">Loading predictions…</div>}
+        {error && <div className="ft-state ft-state--error">{error}</div>}
+        {!loading && !error && ordered.length === 0 && (
+          <div className="ft-state">
+            No predictions stored for {league.label} {season}, week {week}.
+          </div>
+        )}
+
+        {ordered.length > 0 && (
+          <div className="ft-grid">
+            {ordered.map((p) => <PredictionCard key={p.game_id} p={p} />)}
+          </div>
+        )}
+
+        <StatExplorer league={league} season={season} />
       </div>
-
-      <StatExplorer league={league} season={season} />
     </div>
   );
 }
