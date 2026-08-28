@@ -174,6 +174,54 @@ class ApiService {
     });
   }
 
+  // ============ Football Endpoints (NFL + CFB) ============
+  // Served by /api/football/:sport/*. The older /api/nfl/* paths still work but the
+  // generic ones are preferred so CFB comes along for free.
+
+  async getFootballPredictions(sport, { season, week, team, tier, division } = {}) {
+    const qs = new URLSearchParams();
+    if (season) qs.set('season', season);
+    if (week) qs.set('week', week);
+    if (team) qs.set('team', team);
+    if (tier) qs.set('tier', tier);
+    if (division) qs.set('division', division);
+    return this.get(`/football/${sport}/predictions?${qs.toString()}`, { cacheTTL: 15 });
+  }
+
+  async getFootballAccuracy(sport, season, division) {
+    const qs = new URLSearchParams({ season });
+    if (division) qs.set('division', division);
+    return this.get(`/football/${sport}/predictions/accuracy?${qs.toString()}`, { cacheTTL: 60 });
+  }
+
+  async getFootballTeamStats(sport, { season, week, team, search, sort, direction, limit, offset } = {}) {
+    const qs = new URLSearchParams();
+    if (season) qs.set('season', season);
+    if (week) qs.set('week', week);
+    if (team) qs.set('team', team);
+    if (search) qs.set('search', search);
+    if (sort) qs.set('sort', sort);
+    if (direction) qs.set('direction', direction);
+    if (limit) qs.set('limit', limit);
+    if (offset) qs.set('offset', offset);
+    return this.get(`/football/${sport}/stats/teams?${qs.toString()}`, { cacheTTL: 30 });
+  }
+
+  async getFootballRankings(sport, season, limit = 25) {
+    return this.get(`/football/${sport}/rankings?season=${season}&limit=${limit}`, { cacheTTL: 60 });
+  }
+
+  async getFootballGames(sport, { season, week, team, division, limit, offset } = {}) {
+    const qs = new URLSearchParams();
+    if (season) qs.set('season', season);
+    if (week) qs.set('week', week);
+    if (team) qs.set('team', team);
+    if (division) qs.set('division', division);
+    if (limit) qs.set('limit', limit);
+    if (offset) qs.set('offset', offset);
+    return this.get(`/football/${sport}/stats/games?${qs.toString()}`, { cacheTTL: 30 });
+  }
+
   // ============ MLB Data Endpoints ============
 
   /**
