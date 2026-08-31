@@ -18,6 +18,18 @@
   --ht-shadow:     0 4px 16px rgba(0,0,0,.09);
   --ht-shadow-lg:  0 10px 30px rgba(0,0,0,.12);
   --ht-font-mono:  'SF Mono', 'Fira Code', 'Cascadia Code', Menlo, monospace;
+
+  /* ── Sport accents ────────────────────────────────────────────────
+     One token per sport so the shell, the homepage rails and each sport's
+     pages can key off the same colour without hardcoding it in ten files.
+     Baseball keeps the original brand blue; football gets the warm amber so
+     the two rails are separable at a glance on a mixed scoreboard. */
+  --sport-mlb:       #1a56db;
+  --sport-mlb-soft:  rgba(26, 86, 219, .12);
+  --sport-mlb-on:    #7cb9ff;
+  --sport-ftbl:      #c2410c;
+  --sport-ftbl-soft: rgba(194, 65, 12, .12);
+  --sport-ftbl-on:   #fb9a4b;
 }
 
 body {

@@ -1,4 +1,6 @@
-/* ─── Hank's Tank Navigation ─────────────────────────────────────────────── */
+/* ─── Hank's Tank navigation ──────────────────────────────────────────────
+   Two sports sit at the top level. Baseball's depth is folded into a mega
+   menu so the bar reads as a sports site rather than an MLB tool. */
 
 .ht-nav {
   background: var(--ht-navy);
@@ -13,7 +15,7 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 1.25rem;
-  height: 54px;
+  height: 56px;
   display: flex;
   align-items: center;
   gap: 1.5rem;
@@ -23,14 +25,22 @@
 .ht-brand {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
   text-decoration: none;
   flex-shrink: 0;
   user-select: none;
 }
-.ht-brand-icon {
-  font-size: 1.15rem;
-  line-height: 1;
+.ht-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, var(--sport-mlb), var(--sport-ftbl));
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
 }
 .ht-brand-name {
   font-weight: 800;
@@ -41,89 +51,121 @@
 .ht-brand-year {
   font-family: var(--ht-font-mono);
   font-size: 0.68rem;
-  color: var(--ht-blue);
-  background: rgba(26,86,219,.18);
+  color: rgba(255,255,255,.55);
+  background: rgba(255,255,255,.07);
   padding: 1px 6px;
   border-radius: 4px;
   letter-spacing: 0.04em;
   font-weight: 600;
 }
 
-/* ── Desktop link row ── */
+/* ── Link row ── */
 .ht-links {
   display: flex;
   align-items: center;
-  gap: 0.15rem;
+  gap: 0.35rem;
   margin-left: auto;
+  height: 100%;
 }
-@media (max-width: 767px) { .ht-links { display: none; } }
+@media (max-width: 900px) { .ht-links { display: none; } }
 
 .ht-link {
-  font-size: 0.84rem;
+  font-size: 0.85rem;
   font-weight: 500;
   color: rgba(255,255,255,.68);
   text-decoration: none;
-  padding: 5px 12px;
+  padding: 6px 12px;
   border-radius: 6px;
-  transition: color 0.13s, background 0.13s;
+  transition: color .13s, background .13s;
   white-space: nowrap;
 }
-.ht-link:hover       { color: #fff; background: rgba(255,255,255,.07); }
-.ht-link--active     { color: #fff !important; background: rgba(255,255,255,.1) !important; }
-.ht-link--btn        { background: transparent; border: 0; cursor: pointer; display: flex; align-items: center; gap: 4px; }
-.ht-link--highlight  { color: #7cb9ff; font-weight: 600; }
-.ht-link--highlight:hover { color: #a8d6ff; background: rgba(124,185,255,.1); }
+.ht-link:hover   { color: #fff; background: rgba(255,255,255,.07); }
+.ht-link--active { color: #fff; background: rgba(255,255,255,.1); }
 
-.ht-caret { font-size: 0.6rem; opacity: 0.7; }
+/* ── Sport tabs ──
+   Full-height so the accent underline reads as a tab, not a button. */
+.ht-sport-wrap { position: relative; height: 100%; display: flex; align-items: center; }
 
-/* ── Dropdown ── */
-.ht-dropdown { position: relative; }
+.ht-sport {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 100%;
+  padding: 0 14px;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(255,255,255,.8);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color .13s, background .13s, border-color .13s;
+}
+.ht-sport:hover { color: #fff; background: rgba(255,255,255,.05); }
 
-.ht-dropdown-menu {
+.ht-sport-icon { font-size: 0.95rem; line-height: 1; }
+
+.ht-sport--mlb.ht-sport--active {
+  color: #fff;
+  border-bottom-color: var(--sport-mlb-on);
+  background: linear-gradient(to top, rgba(124,185,255,.12), transparent 70%);
+}
+.ht-sport--ftbl.ht-sport--active {
+  color: #fff;
+  border-bottom-color: var(--sport-ftbl-on);
+  background: linear-gradient(to top, rgba(251,154,75,.14), transparent 70%);
+}
+
+.ht-caret { font-size: 0.6rem; opacity: .65; }
+
+/* ── Baseball mega menu ── */
+.ht-mega {
   position: absolute;
-  top: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: #1e293b;
+  top: 100%;
+  right: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 1.25rem;
+  background: var(--ht-navy-mid);
   border: 1px solid rgba(255,255,255,.1);
-  border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(0,0,0,.4);
-  min-width: 180px;
-  padding: 6px;
-  animation: dropIn 0.13s ease;
+  border-top: 2px solid var(--sport-mlb-on);
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 16px 40px rgba(0,0,0,.45);
+  padding: 1rem 1.15rem 1.15rem;
+  animation: htDropIn .13s ease;
 }
-@keyframes dropIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(-4px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+@keyframes htDropIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.ht-dropdown-section {
+.ht-mega-heading {
   font-size: 0.62rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
-  color: #475569;
-  padding: 4px 10px 2px;
+  color: var(--ht-gray-400);
+  padding: 0 8px 6px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  margin-bottom: 5px;
 }
 
-.ht-dropdown-item {
+.ht-mega-item {
   display: block;
-  padding: 7px 12px;
+  padding: 6px 8px;
   font-size: 0.82rem;
-  color: rgba(255,255,255,.78);
+  color: rgba(255,255,255,.76);
   text-decoration: none;
   border-radius: 5px;
-  transition: background 0.1s, color 0.1s;
+  white-space: nowrap;
+  transition: background .1s, color .1s;
 }
-.ht-dropdown-item:hover { background: rgba(255,255,255,.09); color: #fff; }
+.ht-mega-item:hover { background: rgba(255,255,255,.09); color: #fff; }
+.ht-mega-item--active { color: var(--sport-mlb-on); font-weight: 600; }
 
-.ht-dropdown-divider {
-  height: 1px;
-  background: rgba(255,255,255,.08);
-  margin: 5px 0;
-}
-
-/* ── Mobile toggle ── */
+/* ── Mobile ── */
 .ht-mobile-toggle {
   display: none;
   flex-direction: column;
@@ -143,13 +185,14 @@
   background: rgba(255,255,255,.8);
   border-radius: 2px;
 }
-@media (max-width: 767px) { .ht-mobile-toggle { display: flex; } }
+@media (max-width: 900px) { .ht-mobile-toggle { display: flex; } }
 
-/* ── Mobile menu ── */
 .ht-mobile-menu {
-  background: #1e293b;
+  background: var(--ht-navy-mid);
   border-top: 1px solid rgba(255,255,255,.07);
-  padding: 8px 0 12px;
+  padding: 8px 0 14px;
+  max-height: calc(100vh - 56px);
+  overflow-y: auto;
 }
 .ht-mobile-link {
   display: block;
@@ -157,16 +200,30 @@
   font-size: 0.88rem;
   color: rgba(255,255,255,.75);
   text-decoration: none;
-  transition: background 0.1s, color 0.1s;
+  transition: background .1s, color .1s;
 }
-.ht-mobile-link:hover       { background: rgba(255,255,255,.06); color: #fff; }
-.ht-mobile-link--hl         { color: #7cb9ff; font-weight: 600; }
+.ht-mobile-link:hover { background: rgba(255,255,255,.06); color: #fff; }
+
+.ht-mobile-sport {
+  margin: 10px 0 2px;
+  padding: 8px 1.5rem;
+  border-left: 3px solid transparent;
+}
+.ht-mobile-sport--mlb  { border-left-color: var(--sport-mlb-on);  background: rgba(124,185,255,.08); }
+.ht-mobile-sport--ftbl { border-left-color: var(--sport-ftbl-on); background: rgba(251,154,75,.09); }
+.ht-mobile-sport-link {
+  display: block;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+}
+
 .ht-mobile-section {
   font-size: 0.61rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #475569;
+  color: var(--ht-gray-400);
   padding: 10px 1.5rem 3px;
 }
-

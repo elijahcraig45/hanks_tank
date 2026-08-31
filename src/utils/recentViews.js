@@ -20,6 +20,8 @@ const STATIC_VIEWS = {
   "/player-comparison": { label: "Player Comparison", hint: "Player vs player", icon: "🆚" },
   "/transactions": { label: "Transactions", hint: "League moves", icon: "🔄" },
   "/AssistedAnalysis": { label: "Assisted Analysis", hint: "Guided insights", icon: "🤖" },
+  "/football": { label: "Football", hint: "NFL and college board", icon: "🏈" },
+  "/rankings": { label: "MLB Power Rankings", hint: "Bradley-Terry board", icon: "📋" },
 };
 
 function canUseStorage() {
@@ -59,6 +61,18 @@ function buildDynamicView(pathname) {
       label: `Player ${playerMatch[1]}`,
       hint: "Player dashboard",
       icon: "🧢",
+    };
+  }
+
+  const footballMatch = pathname.match(/^\/football\/([^/]+)(?:\/([^/]+))?$/);
+  if (footballMatch) {
+    const LEAGUES = { nfl: "NFL", fbs: "College FBS", fcs: "College FCS" };
+    const SECTIONS = { picks: "picks", rankings: "power rankings", stats: "team stats" };
+    const league = LEAGUES[footballMatch[1]] || "Football";
+    return {
+      label: league,
+      hint: SECTIONS[footballMatch[2]] || "Weekly board",
+      icon: "🏈",
     };
   }
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './components/HomePage';
 import TeamBatting from './components/TeamBatting';
 import PlayerBatting from './components/PlayerBatting';
@@ -18,7 +18,8 @@ import AdvancedPlayerAnalysis from './components/AdvancedPlayerAnalysis';
 import Transactions from './components/Transactions';
 import TeamTransactions from './components/TeamTransactions';
 import PredictionsPage from './components/PredictionsPage';
-import FootballPredictionsPage from './components/FootballPredictionsPage';
+import FootballPage from './components/FootballPage';
+import BaseballRankingsPage from './components/BaseballRankingsPage';
 import PredictionDiagnosticsPage from './components/PredictionDiagnosticsPage';
 import SplitExplorerPage from './components/SplitExplorerPage';
 import StatcastLabPage from './components/StatcastLabPage';
@@ -53,9 +54,12 @@ function AppShell() {
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/transactions/:teamAbbr" element={<TeamTransactions />} />
         <Route path="/predictions" element={<PredictionsPage />} />
-        <Route path="/football" element={<FootballPredictionsPage />} />
-        <Route path="/football/:league" element={<FootballPredictionsPage />} />
-        <Route path="/nfl/predictions" element={<FootballPredictionsPage />} />
+        <Route path="/rankings" element={<BaseballRankingsPage />} />
+        <Route path="/football" element={<FootballPage />} />
+        <Route path="/football/:league" element={<FootballPage />} />
+        <Route path="/football/:league/:section" element={<FootballPage />} />
+        {/* Legacy NFL paths predate the shared football tab. */}
+        <Route path="/nfl/predictions" element={<Navigate to="/football/nfl/picks" replace />} />
         <Route path="/prediction-diagnostics" element={<PredictionDiagnosticsPage />} />
         <Route path="/split-explorer" element={<SplitExplorerPage />} />
         <Route path="/statcast-lab" element={<StatcastLabPage />} />

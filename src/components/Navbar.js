@@ -3,139 +3,184 @@ import { Link, useLocation } from 'react-router-dom';
 import { SEASONS } from '../config/constants';
 import './styles/Navbar.css';
 
-function BasicExample() {
-  const [statsOpen, setStatsOpen]     = useState(false);
-  const [analysisOpen, setAnalysisOpen] = useState(false);
-  const [mobileOpen, setMobileOpen]   = useState(false);
-  const statsRef    = useRef(null);
-  const analysisRef = useRef(null);
-  const location    = useLocation();
+/**
+ * Sport-first navigation.
+ *
+ * The site covers two sports, so the top level is the two sports — not baseball's
+ * feature list. Every MLB page lives inside the Baseball mega menu; football is a
+ * single tab whose leagues (NFL / FBS / FCS) are sub-navigation on the page itself.
+ */
+const BASEBALL_MENU = [
+  {
+    heading: 'Today',
+    items: [
+      { to: '/games', label: 'Scoreboard' },
+      { to: '/predictions', label: 'Predictions' },
+      { to: '/rankings', label: 'Power Rankings' },
+      { to: '/transactions', label: 'Transactions' },
+    ],
+  },
+  {
+    heading: 'Leaderboards',
+    items: [
+      { to: '/TeamBatting', label: 'Team Batting' },
+      { to: '/TeamPitching', label: 'Team Pitching' },
+      { to: '/PlayerBatting', label: 'Player Batting' },
+      { to: '/PlayerPitching', label: 'Player Pitching' },
+    ],
+  },
+  {
+    heading: 'Analysis',
+    items: [
+      { to: '/prediction-diagnostics', label: 'Prediction Diagnostics' },
+      { to: '/split-explorer', label: 'Split Explorer' },
+      { to: '/statcast-lab', label: 'Statcast Lab' },
+      { to: '/scenario-simulator', label: 'Scenario Simulator' },
+      { to: '/advanced-analysis', label: 'Advanced Analysis' },
+    ],
+  },
+  {
+    heading: 'Compare',
+    items: [
+      { to: '/comparison-workbench', label: 'Comparison Workbench' },
+      { to: '/team-comparison', label: 'Team Comparison' },
+      { to: '/player-comparison', label: 'Player Comparison' },
+      { to: '/season-comparison', label: 'Season Comparison' },
+      { to: '/research-workflow', label: 'Research Workflow' },
+    ],
+  },
+];
+
+const BASEBALL_PATHS = BASEBALL_MENU.flatMap((group) => group.items.map((i) => i.to))
+  .concat(['/game/', '/team/', '/player/', '/AssistedAnalysis']);
+
+function Navbar() {
+  const [baseballOpen, setBaseballOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const baseballRef = useRef(null);
+  const location = useLocation();
 
   useEffect(() => {
     setMobileOpen(false);
-    setStatsOpen(false);
-    setAnalysisOpen(false);
+    setBaseballOpen(false);
   }, [location]);
 
   useEffect(() => {
     const handler = (e) => {
-      if (statsRef.current    && !statsRef.current.contains(e.target))    setStatsOpen(false);
-      if (analysisRef.current && !analysisRef.current.contains(e.target)) setAnalysisOpen(false);
+      if (baseballRef.current && !baseballRef.current.contains(e.target)) setBaseballOpen(false);
     };
+    const onEsc = (e) => { if (e.key === 'Escape') setBaseballOpen(false); };
     document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener('keydown', onEsc);
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      document.removeEventListener('keydown', onEsc);
+    };
   }, []);
 
-  const closeAll = () => { setStatsOpen(false); setAnalysisOpen(false); setMobileOpen(false); };
+  const closeAll = () => { setBaseballOpen(false); setMobileOpen(false); };
 
-  const isActive = (paths) =>
-    Array.isArray(paths)
-      ? paths.some(p => location.pathname.startsWith(p))
-      : location.pathname === paths;
+  const startsWithAny = (paths) => paths.some((p) => location.pathname.startsWith(p));
+  const onBaseball = startsWithAny(BASEBALL_PATHS);
+  const onFootball = startsWithAny(['/football', '/nfl']);
 
   return (
     <nav className="ht-nav">
       <div className="ht-nav-inner">
-        {/* Brand */}
         <Link to="/" className="ht-brand" onClick={closeAll}>
-          <span className="ht-brand-icon">⚾</span>
+          <span className="ht-brand-mark" aria-hidden="true">HT</span>
           <span className="ht-brand-name">Hank's Tank</span>
           <span className="ht-brand-year">{SEASONS.DEFAULT}</span>
         </Link>
 
-        {/* Desktop links */}
         <div className="ht-links">
-          <Link to="/" className={`ht-link${location.pathname === '/' ? ' ht-link--active' : ''}`}>Home</Link>
-          <Link to="/games" className={`ht-link${isActive('/games') ? ' ht-link--active' : ''}`}>Games</Link>
-          <Link to="/predictions" className={`ht-link ht-link--highlight${isActive('/predictions') ? ' ht-link--active' : ''}`}>
-            Predictions
+          <Link
+            to="/"
+            className={`ht-link${location.pathname === '/' ? ' ht-link--active' : ''}`}
+          >
+            Home
           </Link>
-          <Link to="/football" className={`ht-link${isActive('/football') || isActive('/nfl') ? ' ht-link--active' : ''}`}>
+
+          {/* Baseball — everything MLB, one menu */}
+          <div ref={baseballRef} className="ht-sport-wrap">
+            <button
+              className={`ht-sport ht-sport--mlb${onBaseball ? ' ht-sport--active' : ''}`}
+              onClick={() => setBaseballOpen((o) => !o)}
+              aria-expanded={baseballOpen}
+            >
+              <span className="ht-sport-icon" aria-hidden="true">⚾</span>
+              Baseball
+              <span className="ht-caret">{baseballOpen ? '▴' : '▾'}</span>
+            </button>
+
+            {baseballOpen && (
+              <div className="ht-mega">
+                {BASEBALL_MENU.map((group) => (
+                  <div className="ht-mega-col" key={group.heading}>
+                    <div className="ht-mega-heading">{group.heading}</div>
+                    {group.items.map((item) => (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        className={`ht-mega-item${location.pathname === item.to ? ' ht-mega-item--active' : ''}`}
+                        onClick={closeAll}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Football — one tab; leagues are sub-nav inside the page */}
+          <Link
+            to="/football"
+            className={`ht-sport ht-sport--ftbl${onFootball ? ' ht-sport--active' : ''}`}
+          >
+            <span className="ht-sport-icon" aria-hidden="true">🏈</span>
             Football
           </Link>
-
-          {/* Stats dropdown */}
-          <div ref={statsRef} className="ht-dropdown">
-            <button
-              className={`ht-link ht-link--btn${isActive(['/TeamBatting','/TeamPitching','/PlayerBatting','/PlayerPitching']) ? ' ht-link--active' : ''}`}
-              onClick={() => { setStatsOpen(o => !o); setAnalysisOpen(false); }}
-            >
-              Stats <span className="ht-caret">{statsOpen ? '▴' : '▾'}</span>
-            </button>
-            {statsOpen && (
-              <div className="ht-dropdown-menu">
-                <div className="ht-dropdown-section">Team</div>
-                <Link className="ht-dropdown-item" to="/TeamBatting"    onClick={closeAll}>Team Batting</Link>
-                <Link className="ht-dropdown-item" to="/TeamPitching"   onClick={closeAll}>Team Pitching</Link>
-                <div className="ht-dropdown-section" style={{marginTop:6}}>Player</div>
-                <Link className="ht-dropdown-item" to="/PlayerBatting"  onClick={closeAll}>Player Batting</Link>
-                <Link className="ht-dropdown-item" to="/PlayerPitching" onClick={closeAll}>Player Pitching</Link>
-              </div>
-            )}
-          </div>
-
-          {/* Analysis dropdown */}
-          <div ref={analysisRef} className="ht-dropdown">
-            <button
-              className={`ht-link ht-link--btn${isActive(['/season-comparison','/team-comparison','/player-comparison','/advanced-analysis','/prediction-diagnostics','/split-explorer','/statcast-lab','/comparison-workbench','/scenario-simulator','/research-workflow']) ? ' ht-link--active' : ''}`}
-              onClick={() => { setAnalysisOpen(o => !o); setStatsOpen(false); }}
-            >
-              Analysis <span className="ht-caret">{analysisOpen ? '▴' : '▾'}</span>
-            </button>
-            {analysisOpen && (
-              <div className="ht-dropdown-menu">
-                <Link className="ht-dropdown-item" to="/prediction-diagnostics" onClick={closeAll}>Prediction Diagnostics</Link>
-                <Link className="ht-dropdown-item" to="/split-explorer" onClick={closeAll}>Split Explorer</Link>
-                <Link className="ht-dropdown-item" to="/statcast-lab" onClick={closeAll}>Statcast Lab</Link>
-                <Link className="ht-dropdown-item" to="/comparison-workbench" onClick={closeAll}>Comparison Workbench</Link>
-                <Link className="ht-dropdown-item" to="/scenario-simulator" onClick={closeAll}>Scenario Simulator</Link>
-                <Link className="ht-dropdown-item" to="/research-workflow" onClick={closeAll}>Research Workflow</Link>
-                <div className="ht-dropdown-divider" />
-                <Link className="ht-dropdown-item" to="/season-comparison"  onClick={closeAll}>Season Comparison</Link>
-                <Link className="ht-dropdown-item" to="/team-comparison"    onClick={closeAll}>Team Comparison</Link>
-                <Link className="ht-dropdown-item" to="/player-comparison"  onClick={closeAll}>Player Comparison</Link>
-                <div className="ht-dropdown-divider" />
-                <Link className="ht-dropdown-item" to="/advanced-analysis"  onClick={closeAll}>Advanced Analysis</Link>
-              </div>
-            )}
-          </div>
-
-          <Link to="/transactions" className={`ht-link${isActive('/transactions') ? ' ht-link--active' : ''}`}>Transactions</Link>
         </div>
 
-        {/* Mobile toggle */}
-        <button className="ht-mobile-toggle" onClick={() => setMobileOpen(o => !o)} aria-label="Menu">
+        <button
+          className="ht-mobile-toggle"
+          onClick={() => setMobileOpen((o) => !o)}
+          aria-label="Menu"
+          aria-expanded={mobileOpen}
+        >
           <span /><span /><span />
         </button>
       </div>
 
-      {/* Mobile drawer */}
       {mobileOpen && (
         <div className="ht-mobile-menu">
-          <Link className="ht-mobile-link" to="/"              onClick={closeAll}>Home</Link>
-          <Link className="ht-mobile-link" to="/games"         onClick={closeAll}>Games</Link>
-          <Link className="ht-mobile-link ht-mobile-link--hl" to="/predictions" onClick={closeAll}>Predictions</Link>
-          <div className="ht-mobile-section">Stats</div>
-          <Link className="ht-mobile-link" to="/TeamBatting"   onClick={closeAll}>Team Batting</Link>
-          <Link className="ht-mobile-link" to="/TeamPitching"  onClick={closeAll}>Team Pitching</Link>
-          <Link className="ht-mobile-link" to="/PlayerBatting" onClick={closeAll}>Player Batting</Link>
-          <Link className="ht-mobile-link" to="/PlayerPitching" onClick={closeAll}>Player Pitching</Link>
-          <div className="ht-mobile-section">Analysis</div>
-          <Link className="ht-mobile-link" to="/prediction-diagnostics" onClick={closeAll}>Prediction Diagnostics</Link>
-          <Link className="ht-mobile-link" to="/split-explorer" onClick={closeAll}>Split Explorer</Link>
-          <Link className="ht-mobile-link" to="/statcast-lab" onClick={closeAll}>Statcast Lab</Link>
-          <Link className="ht-mobile-link" to="/comparison-workbench" onClick={closeAll}>Comparison Workbench</Link>
-          <Link className="ht-mobile-link" to="/scenario-simulator" onClick={closeAll}>Scenario Simulator</Link>
-          <Link className="ht-mobile-link" to="/research-workflow" onClick={closeAll}>Research Workflow</Link>
-          <Link className="ht-mobile-link" to="/season-comparison"  onClick={closeAll}>Season Comparison</Link>
-          <Link className="ht-mobile-link" to="/team-comparison"    onClick={closeAll}>Team Comparison</Link>
-          <Link className="ht-mobile-link" to="/player-comparison"  onClick={closeAll}>Player Comparison</Link>
-          <Link className="ht-mobile-link" to="/advanced-analysis"  onClick={closeAll}>Advanced Analysis</Link>
-          <Link className="ht-mobile-link" to="/transactions"       onClick={closeAll}>Transactions</Link>
+          <Link className="ht-mobile-link" to="/" onClick={closeAll}>Home</Link>
+
+          <div className="ht-mobile-sport ht-mobile-sport--ftbl">
+            <Link className="ht-mobile-sport-link" to="/football" onClick={closeAll}>
+              🏈 Football
+            </Link>
+          </div>
+
+          <div className="ht-mobile-sport ht-mobile-sport--mlb">
+            <span className="ht-mobile-sport-link">⚾ Baseball</span>
+          </div>
+          {BASEBALL_MENU.map((group) => (
+            <div key={group.heading}>
+              <div className="ht-mobile-section">{group.heading}</div>
+              {group.items.map((item) => (
+                <Link key={item.to} className="ht-mobile-link" to={item.to} onClick={closeAll}>
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          ))}
         </div>
       )}
     </nav>
   );
 }
 
-export default BasicExample;
+export default Navbar;

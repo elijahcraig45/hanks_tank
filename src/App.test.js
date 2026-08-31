@@ -26,6 +26,7 @@ jest.mock('./components/StatcastLabPage', () => () => <div>StatcastLabPage</div>
 jest.mock('./components/ComparisonWorkbenchPage', () => () => <div>ComparisonWorkbenchPage</div>);
 jest.mock('./components/ScenarioSimulatorPage', () => () => <div>ScenarioSimulatorPage</div>);
 jest.mock('./components/ResearchWorkflowPage', () => () => <div>ResearchWorkflowPage</div>);
+jest.mock('./components/FootballPage', () => () => <div>FootballPage</div>);
 jest.mock('./components/NotFoundPage', () => () => <div>NotFoundPage</div>);
 
 beforeEach(() => {
@@ -40,8 +41,27 @@ test('renders the app shell and default route', () => {
   expect(screen.getByText('HomePage')).toBeInTheDocument();
   expect(document.title).toBe("Hank's Tank");
   expect(document.head.querySelector('meta[name="description"]')?.getAttribute('content')).toContain(
-    'MLB analytics app'
+    'baseball and football analytics'
   );
+});
+
+test('serves the football tab at every depth of its path', () => {
+  ['/football', '/football/fbs', '/football/fbs/rankings'].forEach((path) => {
+    window.history.pushState({}, '', path);
+    const { unmount } = render(<App />);
+    expect(screen.getByText('FootballPage')).toBeInTheDocument();
+    expect(document.title).toBe("Football | Hank's Tank");
+    unmount();
+  });
+});
+
+test('redirects the legacy NFL predictions path onto the football tab', () => {
+  window.history.pushState({}, '', '/nfl/predictions');
+
+  render(<App />);
+
+  expect(screen.getByText('FootballPage')).toBeInTheDocument();
+  expect(window.location.pathname).toBe('/football/nfl/picks');
 });
 
 test('renders the not found page for unknown routes', () => {

@@ -208,7 +208,40 @@ class ApiService {
   }
 
   async getFootballRankings(sport, season, limit = 25) {
-    return this.get(`/football/${sport}/rankings?season=${season}&limit=${limit}`, { cacheTTL: 60 });
+    return this.getRankings(sport, { season, limit });
+  }
+
+  /**
+   * Bradley-Terry power rankings for any sport (nfl | cfb | mlb).
+   *
+   * One endpoint because the boards share a schema; `division` splits the college
+   * board into FBS and FCS server-side rather than over-fetching and filtering here.
+   */
+  async getRankings(sport, { season, division, limit = 50 } = {}) {
+    const qs = new URLSearchParams({ season: String(season), limit: String(limit) });
+    if (division) qs.set('division', division);
+    return this.get(`/rankings/${sport}?${qs.toString()}`, { cacheTTL: 60 });
+  }
+
+  /** League leaders, long-form: one row per (category, rank). */
+  async getFootballLeaders(sport, { season, category, limit } = {}) {
+    const qs = new URLSearchParams({ season: String(season) });
+    if (category) qs.set('category', category);
+    if (limit) qs.set('limit', String(limit));
+    return this.get(`/football/${sport}/stats/leaders?${qs.toString()}`, { cacheTTL: 60 });
+  }
+
+  /** Per-player season stats. Only sports with a full player table return rows. */
+  async getFootballPlayers(sport, { season, search, position, team, sort, direction, limit, offset } = {}) {
+    const qs = new URLSearchParams({ season: String(season) });
+    if (search) qs.set('search', search);
+    if (position) qs.set('position', position);
+    if (team) qs.set('team', team);
+    if (sort) qs.set('sort', sort);
+    if (direction) qs.set('direction', direction);
+    if (limit) qs.set('limit', String(limit));
+    if (offset) qs.set('offset', String(offset));
+    return this.get(`/football/${sport}/stats/players?${qs.toString()}`, { cacheTTL: 30 });
   }
 
   async getFootballGames(sport, { season, week, team, division, limit, offset } = {}) {
