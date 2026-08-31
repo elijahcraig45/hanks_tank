@@ -223,6 +223,23 @@ class ApiService {
     return this.get(`/rankings/${sport}?${qs.toString()}`, { cacheTTL: 60 });
   }
 
+  /**
+   * Scored football predictions joined with results, one row per game.
+   *
+   * `seasons` is a list so the page can compare years in a single request rather than
+   * fanning out and stitching the results together.
+   */
+  async getFootballDiagnostics(sport, { seasons, division, fromWeek, toWeek } = {}) {
+    const qs = new URLSearchParams();
+    if (seasons?.length) qs.set('seasons', seasons.join(','));
+    if (division) qs.set('division', division);
+    if (fromWeek) qs.set('fromWeek', String(fromWeek));
+    if (toWeek) qs.set('toWeek', String(toWeek));
+    return this.get(`/football/${sport}/predictions/diagnostics?${qs.toString()}`, {
+      cacheTTL: 30,
+    });
+  }
+
   /** League leaders, long-form: one row per (category, rank). */
   async getFootballLeaders(sport, { season, category, limit } = {}) {
     const qs = new URLSearchParams({ season: String(season) });

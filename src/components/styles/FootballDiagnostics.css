@@ -1,0 +1,268 @@
+/* ─── Football model diagnostics ─────────────────────────────────────────── */
+
+.fd { display: block; }
+
+.fd-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.fd-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.fd-note {
+  margin: 0.4rem 0 0;
+  font-size: 0.79rem;
+  line-height: 1.55;
+  color: var(--ht-gray-600);
+  max-width: 76ch;
+}
+.fd-sub {
+  margin: 0.25rem 0 0.7rem;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--ht-gray-400);
+  max-width: 70ch;
+}
+
+.fd-export {
+  background: #fff;
+  border: 1px solid var(--ht-gray-200);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--ht-gray-600);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.fd-export:hover { border-color: var(--sport-ftbl); color: var(--sport-ftbl); }
+
+/* ── Filters ── */
+.fd-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  margin: 1rem 0 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--ht-gray-200);
+}
+.fd-filter, .fd-field { display: flex; flex-direction: column; gap: 4px; }
+.fd-filter-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ht-gray-400);
+}
+.fd-chips { display: flex; gap: 3px; flex-wrap: wrap; }
+.fd-chip {
+  background: #fff;
+  border: 1px solid var(--ht-gray-200);
+  border-radius: 6px;
+  padding: 5px 11px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--ht-gray-600);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.fd-chip:hover { border-color: var(--sport-ftbl); color: var(--sport-ftbl); }
+.fd-chip--on {
+  background: var(--sport-ftbl);
+  border-color: var(--sport-ftbl);
+  color: #fff;
+}
+.fd-field select, .fd-field input {
+  border: 1px solid var(--ht-gray-200);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 0.79rem;
+  background: #fff;
+  color: #0f172a;
+  min-width: 140px;
+}
+.fd-field select:focus, .fd-field input:focus {
+  outline: none;
+  border-color: var(--sport-ftbl);
+  box-shadow: 0 0 0 3px var(--sport-ftbl-soft);
+}
+.fd-count {
+  margin-left: auto;
+  font-family: var(--ht-font-mono);
+  font-size: 0.73rem;
+  color: var(--ht-gray-400);
+  white-space: nowrap;
+}
+
+/* ── Headline tiles ── */
+.fd-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.7rem;
+  margin-bottom: 1.25rem;
+}
+.fd-tile {
+  background: #fff;
+  border: 1px solid var(--ht-gray-200);
+  border-top: 2px solid var(--ht-gray-200);
+  border-radius: var(--ht-radius);
+  padding: 0.8rem 0.9rem;
+}
+.fd-tile--key { border-top-color: var(--sport-ftbl); }
+.fd-tile-value {
+  font-family: var(--ht-font-mono);
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.fd-tile-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ht-gray-600);
+  margin-top: 4px;
+}
+.fd-tile-hint { font-size: 0.68rem; color: var(--ht-gray-400); margin-top: 2px; }
+
+/* ── Panels ── */
+.fd-panel {
+  background: #fff;
+  border: 1px solid var(--ht-gray-200);
+  border-radius: var(--ht-radius);
+  box-shadow: var(--ht-shadow-sm);
+  padding: 1rem 1.15rem;
+  margin-bottom: 1.1rem;
+}
+.fd-panel h3 {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+.fd-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  gap: 1.1rem;
+}
+.fd-grid .fd-panel { margin-bottom: 0; }
+
+/* ── Bars ── */
+.fd-bar-row {
+  display: grid;
+  grid-template-columns: 150px 1fr 52px 44px;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 6px;
+}
+.fd-bar-label {
+  font-size: 0.78rem;
+  color: var(--ht-gray-600);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fd-bar-track {
+  height: 8px;
+  background: var(--ht-gray-100);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.fd-bar-fill { height: 100%; border-radius: 4px; background: var(--ht-gray-400); }
+.fd-bar-fill--model { background: var(--sport-ftbl); }
+.fd-bar-fill--vegas { background: var(--ht-gray-800); }
+.fd-bar-value {
+  font-family: var(--ht-font-mono);
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-align: right;
+}
+.fd-bar-games {
+  font-family: var(--ht-font-mono);
+  font-size: 0.68rem;
+  color: var(--ht-gray-400);
+  text-align: right;
+}
+
+/* ── Table ── */
+.fd-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--ht-gray-100);
+  border-radius: 6px;
+}
+.fd-table { width: 100%; border-collapse: collapse; font-size: 0.79rem; }
+.fd-table th {
+  text-align: left;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ht-gray-400);
+  padding: 7px 10px;
+  background: var(--ht-gray-50);
+  border-bottom: 1px solid var(--ht-gray-200);
+}
+.fd-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--ht-gray-100);
+  font-family: var(--ht-font-mono);
+  font-size: 0.75rem;
+}
+.fd-table td:first-child { font-family: inherit; }
+.fd-pos { color: #0a7d56; }
+.fd-neg { color: #b91c1c; }
+
+/* ── Weekly sparkline ── */
+.fd-spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 110px;
+  padding-top: 0.5rem;
+}
+.fd-spark-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100%;
+  min-width: 14px;
+}
+.fd-spark-bar {
+  width: 100%;
+  background: var(--sport-ftbl);
+  border-radius: 2px 2px 0 0;
+  min-height: 2px;
+}
+.fd-spark-label {
+  font-family: var(--ht-font-mono);
+  font-size: 0.6rem;
+  color: var(--ht-gray-400);
+  margin-top: 3px;
+}
+
+/* ── States ── */
+.fd-state { padding: 2rem 1rem; text-align: center; font-size: 0.86rem; color: var(--ht-gray-600); }
+.fd-empty {
+  background: #fff;
+  border: 1px dashed var(--ht-gray-200);
+  border-radius: var(--ht-radius);
+  padding: 2.25rem 1.5rem;
+  text-align: center;
+}
+.fd-empty-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; }
+.fd-empty p { margin: 0; font-size: 0.82rem; color: var(--ht-gray-600); }
+
+@media (max-width: 640px) {
+  .fd-bar-row { grid-template-columns: 110px 1fr 48px 36px; }
+  .fd-count { margin-left: 0; width: 100%; }
+}
+
+.fd-spark-note { margin-top: 0.5rem; margin-bottom: 0; }

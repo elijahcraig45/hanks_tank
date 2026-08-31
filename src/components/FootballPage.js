@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import ApiService from '../services/api';
 import RankingsBoard from './RankingsBoard';
+import FootballDiagnostics from './FootballDiagnostics';
 import './styles/FootballPage.css';
 
 /**
@@ -27,6 +28,7 @@ export const LEAGUES = [
 const SECTIONS = [
   { key: 'picks', label: 'Picks' },
   { key: 'rankings', label: 'Power Rankings' },
+  { key: 'diagnostics', label: 'Diagnostics' },
   { key: 'leaders', label: 'Leaders' },
   { key: 'players', label: 'Players' },
   { key: 'stats', label: 'Team Stats' },
@@ -639,44 +641,13 @@ const TIERS = [
   { key: 'low', label: 'Low' },
 ];
 
-function PicksSection({ league, season, week, setWeek, weeks, predictions, loading, error }) {
+function PicksSection({ league, season, week, setWeek, weeks, predictions,
+                       loading, error, ranks, conferences }) {
   const [search, setSearch] = useState('');
   const [tier, setTier] = useState('all');
   const [rankedOnly, setRankedOnly] = useState(false);
   const [hideMismatch, setHideMismatch] = useState(false);
   const [conference, setConference] = useState('all');
-  const [ranks, setRanks] = useState(null);
-  const [conferences, setConferences] = useState(null);
-
-  // The ranked-only filter needs the board. Names match across the two tables
-  // because both come from the same pipeline — abbreviations for the NFL, full
-  // display names for college.
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        // 25 would be enough for the ranked filter, but conference membership needs
-        // the whole board, so fetch it once and derive both.
-        const res = await ApiService.getRankings(league.sport, {
-          season, division: league.division, limit: 400,
-        });
-        if (cancelled) return;
-        const rows = res.data || [];
-        const map = new Map(
-          rows.filter((r) => r.rank <= 25).map((r) => [r.team, r.rank])
-        );
-        setRanks(map.size ? map : null);
-        // The board doubles as the team -> conference lookup, so no extra request.
-        const confs = new Map(
-          rows.filter((r) => r.conference).map((r) => [r.team, r.conference])
-        );
-        setConferences(confs.size ? confs : null);
-      } catch {
-        if (!cancelled) { setRanks(null); setConferences(null); }
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [league.sport, league.division, season]);
 
   // Only offer to hide mismatches where the league actually has them.
   const hasMismatches = useMemo(
@@ -857,6 +828,10 @@ export default function FootballPage() {
   const section = SECTIONS.find((s) => s.key === sectionParam)?.key || 'picks';
 
   const [season, setSeason] = useState(SEASONS[0]);
+  // Fetched once for the whole page: the picks filters, the diagnostics conference
+  // breakdown and the rank badges all read from the same board.
+  const [ranks, setRanks] = useState(null);
+  const [conferences, setConferences] = useState(null);
   const [week, setWeek] = useState(null);
   const [seasonPreds, setSeasonPreds] = useState([]);
   const [accuracy, setAccuracy] = useState(null);
@@ -892,6 +867,40 @@ export default function FootballPage() {
     })();
     return () => { cancelled = true; };
   }, [league, season]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await ApiService.getRankings(league.sport, {
+          season, division: league.division, limit: 400,
+        });
+        if (cancelled) return;
+        const rows = res.data || [];
+        // Null rather than an empty Map: an empty Map is truthy, so the controls that
+        // depend on a board existing would render with nothing behind them.
+        const ranked = new Map(
+          rows.filter((r) => r.rank <= 25).map((r) => [r.team, r.rank])
+        );
+        const confs = new Map(
+          rows.filter((r) => r.conference).map((r) => [r.team, r.conference])
+        );
+        setRanks(ranked.size ? ranked : null);
+        setConferences(confs.size ? confs : null);
+      } catch {
+        if (!cancelled) { setRanks(null); setConferences(null); }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [league.sport, league.division, season]);
+
+  const confOf = useCallback(
+    (name) => (conferences ? conferences.get(name) : undefined), [conferences]
+  );
+  const allConferences = useMemo(
+    () => (conferences ? [...new Set(conferences.values())].sort((a, b) => a.localeCompare(b)) : []),
+    [conferences]
+  );
 
   const weeks = useMemo(
     () => [...new Set(seasonPreds.map((r) => r.week))].sort((a, b) => a - b),
@@ -955,8 +964,16 @@ export default function FootballPage() {
             <PicksSection
               league={league} season={season} week={week} setWeek={setWeek}
               weeks={weeks} predictions={weekPreds} loading={loading} error={error}
+              ranks={ranks} conferences={conferences}
             />
           </>
+        )}
+        {section === 'diagnostics' && (
+          <FootballDiagnostics
+            league={league}
+            conferenceOf={confOf}
+            conferences={allConferences}
+          />
         )}
         {section === 'rankings' && (
           <RankingsBoard
