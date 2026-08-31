@@ -241,3 +241,39 @@
 @media (max-width: 640px) {
   .rank-hero h1 { font-size: 1.4rem; }
 }
+
+/* ── Board conference filter ── */
+.rb-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.9rem;
+}
+.rb-filter label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ht-gray-400);
+}
+.rb-filter select {
+  border: 1px solid var(--ht-gray-200);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  font-family: inherit;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #0f172a;
+  background: #fff;
+  cursor: pointer;
+}
+.rb-filter select:focus { outline: none; border-color: var(--ht-gray-400); }
+.rb--ftbl .rb-filter select:focus { border-color: var(--sport-ftbl); }
+.rb--mlb  .rb-filter select:focus { border-color: var(--sport-mlb); }
+.rb-filter-note { font-size: 0.74rem; color: var(--ht-gray-400); }
