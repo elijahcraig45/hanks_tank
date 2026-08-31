@@ -12,6 +12,9 @@ jest.mock('../services/api', () => ({
     getStandings: jest.fn(),
     getGames: jest.fn(),
     getPredictionDiagnostics: jest.fn(),
+    getPredictions: jest.fn(),
+    getFootballPredictions: jest.fn(),
+    getFootballRankings: jest.fn(),
     refreshNews: jest.fn(),
   },
 }));
@@ -56,6 +59,9 @@ describe('HomePage', () => {
         },
       ],
     });
+    apiService.getPredictions.mockResolvedValue({ predictions: [] });
+    apiService.getFootballPredictions.mockResolvedValue({ data: [] });
+    apiService.getFootballRankings.mockResolvedValue({ data: [] });
     apiService.getPredictionDiagnostics.mockResolvedValue({
       diagnostics: [
         {
@@ -105,8 +111,56 @@ describe('HomePage', () => {
     expect(await screen.findByText('Braves headline')).toBeInTheDocument();
     expect(screen.getByText('50.0%')).toBeInTheDocument();
     expect(screen.getByText('100.0%')).toBeInTheDocument();
-    expect(screen.getByText('30d Rolling Acc.')).toBeInTheDocument();
-    expect(screen.getByText('30d High Conf.')).toBeInTheDocument();
+    expect(screen.getByText('MLB model · 30d')).toBeInTheDocument();
+    expect(screen.getByText('High conf · 30d')).toBeInTheDocument();
+  });
+
+  test('ranks football and baseball picks on one board', async () => {
+    apiService.getPredictions.mockResolvedValue({
+      predictions: [
+        {
+          game_pk: 1,
+          home_team_name: 'Atlanta Braves',
+          away_team_name: 'New York Mets',
+          home_win_probability: 0.55,
+          confidence_tier: 'low',
+          predicted_winner: 'Atlanta Braves',
+          game_date: '2026-08-31',
+        },
+      ],
+    });
+    // Only NFL has a game, so the board has exactly one pick per sport.
+    apiService.getFootballPredictions.mockImplementation((sport) =>
+      Promise.resolve({
+        data:
+          sport === 'nfl'
+            ? [
+                {
+                  game_id: 'g1',
+                  week: 1,
+                  home_team_name: 'SEA',
+                  away_team_name: 'NE',
+                  home_win_probability: 0.84,
+                  confidence_tier: 'high',
+                  predicted_winner: 'SEA',
+                  game_date: new Date(Date.now() + 86400000).toISOString(),
+                },
+              ]
+            : [],
+      })
+    );
+
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText("Model's best picks")).toBeInTheDocument();
+    const picks = document.querySelectorAll('.pick');
+    // High-confidence football outranks a low-confidence baseball pick.
+    expect(picks[0]).toHaveClass('pick--football');
+    expect(picks[1]).toHaveClass('pick--mlb');
   });
 
   test('shows recent views shortcuts when present', async () => {

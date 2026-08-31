@@ -4,7 +4,7 @@ import { matchPath, useLocation } from 'react-router-dom';
 const SITE_NAME = "Hank's Tank";
 const SITE_URL = 'https://hankstank.com';
 const DEFAULT_DESCRIPTION =
-  "Hank's Tank is an MLB analytics app with daily predictions, live game detail, scouting reports, standings, player pages, and comparison tools.";
+  "Hank's Tank is a baseball and football analytics site with daily model predictions, power rankings, live game detail, scouting reports, standings, and comparison tools.";
 
 const ROUTE_METADATA = [
   {
@@ -120,6 +120,31 @@ const ROUTE_METADATA = [
     path: '/player/:playerId',
     title: 'Player Page',
     description: 'Open a player dashboard with trends, splits, profile details, and stat-driven context.',
+  },
+  {
+    path: '/rankings',
+    title: 'MLB Power Rankings',
+    description:
+      'Bradley-Terry power rankings for every MLB team, fitted over the whole season at '
+      + 'once, with bootstrap rank ranges showing how little separates them.',
+  },
+  {
+    path: '/football',
+    title: 'Football',
+    description:
+      'Weekly NFL and college football model picks, Bradley-Terry power rankings, and per-team advanced stats.',
+  },
+  {
+    path: '/football/:league',
+    title: 'Football',
+    description:
+      'Weekly NFL and college football model picks, Bradley-Terry power rankings, and per-team advanced stats.',
+  },
+  {
+    path: '/football/:league/:section',
+    title: 'Football',
+    description:
+      'Weekly NFL and college football model picks, Bradley-Terry power rankings, and per-team advanced stats.',
   },
   {
     path: '/transactions',
