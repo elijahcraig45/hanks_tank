@@ -602,3 +602,102 @@
   cursor: pointer;
 }
 .ft-empty-action:hover { filter: brightness(1.1); }
+
+/* ── Picks filter bar ── */
+.ft-pickbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--ht-gray-200);
+}
+
+.ft-search {
+  border: 1px solid var(--ht-gray-200);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  min-width: 170px;
+  background: #fff;
+  color: #0f172a;
+}
+.ft-search:focus {
+  outline: none;
+  border-color: var(--sport-ftbl);
+  box-shadow: 0 0 0 3px var(--sport-ftbl-soft);
+}
+
+.ft-toggles { display: flex; gap: 2px; }
+
+.ft-toggle {
+  background: #fff;
+  border: 1px solid var(--ht-gray-200);
+  border-radius: 6px;
+  padding: 5px 11px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--ht-gray-600);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.ft-toggle:hover { border-color: var(--sport-ftbl); color: var(--sport-ftbl); }
+.ft-toggle--on {
+  background: var(--sport-ftbl);
+  border-color: var(--sport-ftbl);
+  color: #fff;
+}
+
+.ft-count {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--ht-font-mono);
+  font-size: 0.73rem;
+  color: var(--ht-gray-400);
+  white-space: nowrap;
+}
+.ft-clear {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--sport-ftbl);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Rank badge on a prediction card */
+.ft-rank {
+  display: inline-block;
+  margin-right: 4px;
+  font-family: var(--ht-font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--sport-ftbl);
+}
+
+@media (max-width: 640px) {
+  .ft-count { margin-left: 0; width: 100%; }
+}
+
+.ft-conf {
+  border: 1px solid var(--ht-gray-200);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #0f172a;
+  background: #fff;
+  cursor: pointer;
+  max-width: 190px;
+}
+.ft-conf:focus {
+  outline: none;
+  border-color: var(--sport-ftbl);
+  box-shadow: 0 0 0 3px var(--sport-ftbl-soft);
+}

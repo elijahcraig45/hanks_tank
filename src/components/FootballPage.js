@@ -156,7 +156,7 @@ function kickoff(iso) {
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
-function PredictionCard({ p }) {
+function PredictionCard({ p, homeRank, awayRank }) {
   const [open, setOpen] = useState(false);
   const homeFav = p.home_win_probability > 0.5;
   const homePct = Math.round(p.home_win_probability * 100);
@@ -176,12 +176,17 @@ function PredictionCard({ p }) {
 
       <div className="ft-matchup">
         <div className={`ft-side${homeFav ? ' ft-side--fade' : ''}`}>
-          <span className="ft-side-team">{p.away_team_name}</span>
+          <span className="ft-side-team">
+            {awayRank && <span className="ft-rank">#{awayRank}</span>}
+            {p.away_team_name}
+          </span>
           <span className="ft-side-pct">{100 - homePct}%</span>
         </div>
         <div className={`ft-side${homeFav ? '' : ' ft-side--fade'}`}>
           <span className="ft-side-team">
-            <span className="ft-at">@</span> {p.home_team_name}
+            <span className="ft-at">@</span>
+            {homeRank && <span className="ft-rank">#{homeRank}</span>}
+            {p.home_team_name}
           </span>
           <span className="ft-side-pct">{homePct}%</span>
         </div>
@@ -625,14 +630,100 @@ function StatsSection({ league, season }) {
 }
 
 /* ── Picks ──────────────────────────────────────────────────────────────── */
+
+/** Filters that only make sense for some leagues are hidden, not disabled. */
+const TIERS = [
+  { key: 'all', label: 'All' },
+  { key: 'high', label: 'High' },
+  { key: 'medium', label: 'Medium' },
+  { key: 'low', label: 'Low' },
+];
+
 function PicksSection({ league, season, week, setWeek, weeks, predictions, loading, error }) {
-  const ordered = useMemo(
-    () => [...predictions].sort(
-      (a, b) => (TIER_ORDER[a.confidence_tier] ?? 9) - (TIER_ORDER[b.confidence_tier] ?? 9)
-        || b.home_win_probability - a.home_win_probability
-    ),
+  const [search, setSearch] = useState('');
+  const [tier, setTier] = useState('all');
+  const [rankedOnly, setRankedOnly] = useState(false);
+  const [hideMismatch, setHideMismatch] = useState(false);
+  const [conference, setConference] = useState('all');
+  const [ranks, setRanks] = useState(null);
+  const [conferences, setConferences] = useState(null);
+
+  // The ranked-only filter needs the board. Names match across the two tables
+  // because both come from the same pipeline — abbreviations for the NFL, full
+  // display names for college.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        // 25 would be enough for the ranked filter, but conference membership needs
+        // the whole board, so fetch it once and derive both.
+        const res = await ApiService.getRankings(league.sport, {
+          season, division: league.division, limit: 400,
+        });
+        if (cancelled) return;
+        const rows = res.data || [];
+        const map = new Map(
+          rows.filter((r) => r.rank <= 25).map((r) => [r.team, r.rank])
+        );
+        setRanks(map.size ? map : null);
+        // The board doubles as the team -> conference lookup, so no extra request.
+        const confs = new Map(
+          rows.filter((r) => r.conference).map((r) => [r.team, r.conference])
+        );
+        setConferences(confs.size ? confs : null);
+      } catch {
+        if (!cancelled) { setRanks(null); setConferences(null); }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [league.sport, league.division, season]);
+
+  // Only offer to hide mismatches where the league actually has them.
+  const hasMismatches = useMemo(
+    () => predictions.some((p) => p.cross_division),
     [predictions]
   );
+
+  // Memoized so the filter and conference-list memos can depend on them honestly
+  // rather than silencing the exhaustive-deps rule.
+  const rankOf = useCallback(
+    (name) => (ranks ? ranks.get(name) : undefined), [ranks]
+  );
+  const confOf = useCallback(
+    (name) => (conferences ? conferences.get(name) : undefined), [conferences]
+  );
+
+  // Only conferences with a game this week, so the picker never offers an empty option.
+  const weekConferences = useMemo(() => {
+    if (!conferences) return [];
+    const found = new Set();
+    predictions.forEach((p) => {
+      [confOf(p.home_team_name), confOf(p.away_team_name)].forEach((c) => c && found.add(c));
+    });
+    return [...found].sort((a, b) => a.localeCompare(b));
+  }, [predictions, conferences, confOf]);
+
+  const shown = useMemo(() => {
+    const needle = search.trim().toLowerCase();
+    return predictions
+      .filter((p) => {
+        if (tier !== 'all' && (p.confidence_tier || '').toLowerCase() !== tier) return false;
+        if (hideMismatch && p.cross_division) return false;
+        if (rankedOnly && !(rankOf(p.home_team_name) || rankOf(p.away_team_name))) return false;
+        if (conference !== 'all'
+            && confOf(p.home_team_name) !== conference
+            && confOf(p.away_team_name) !== conference) return false;
+        if (needle) {
+          const haystack = `${p.home_team_name} ${p.away_team_name}`.toLowerCase();
+          if (!haystack.includes(needle)) return false;
+        }
+        return true;
+      })
+      .sort(
+        (a, b) => (TIER_ORDER[a.confidence_tier] ?? 9) - (TIER_ORDER[b.confidence_tier] ?? 9)
+          || b.home_win_probability - a.home_win_probability
+      );
+  }, [predictions, search, tier, rankedOnly, hideMismatch, conference, rankOf, confOf]);
 
   if (loading) return <div className="ft-state">Loading picks…</div>;
   if (error) return <div className="ft-state ft-state--error">{error}</div>;
@@ -645,6 +736,12 @@ function PicksSection({ league, season, week, setWeek, weeks, predictions, loadi
       />
     );
   }
+
+  const filtered = shown.length !== predictions.length;
+  const clearAll = () => {
+    setSearch(''); setTier('all'); setRankedOnly(false);
+    setHideMismatch(false); setConference('all');
+  };
 
   return (
     <>
@@ -662,11 +759,86 @@ function PicksSection({ league, season, week, setWeek, weeks, predictions, loadi
         ))}
       </div>
 
-      {ordered.length === 0 ? (
-        <EmptyState title={`No picks stored for week ${week}`} />
+      <div className="ft-pickbar">
+        <input
+          className="ft-search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search teams…"
+          aria-label="Search teams"
+        />
+
+        <div className="ft-toggles" role="group" aria-label="Confidence">
+          {TIERS.map((t) => (
+            <button
+              key={t.key}
+              className={`ft-toggle${tier === t.key ? ' ft-toggle--on' : ''}`}
+              aria-pressed={tier === t.key}
+              onClick={() => setTier(t.key)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {weekConferences.length > 1 && (
+          <select
+            className="ft-conf"
+            value={conference}
+            onChange={(e) => setConference(e.target.value)}
+            aria-label="Conference"
+          >
+            <option value="all">All conferences</option>
+            {weekConferences.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        )}
+
+        {ranks && (
+          <button
+            className={`ft-toggle${rankedOnly ? ' ft-toggle--on' : ''}`}
+            aria-pressed={rankedOnly}
+            onClick={() => setRankedOnly((v) => !v)}
+            title="Only games involving a top-25 team"
+          >
+            Top 25 only
+          </button>
+        )}
+
+        {hasMismatches && (
+          <button
+            className={`ft-toggle${hideMismatch ? ' ft-toggle--on' : ''}`}
+            aria-pressed={hideMismatch}
+            onClick={() => setHideMismatch((v) => !v)}
+            title="FBS-vs-FCS games are lopsided, so a confident pick there is cheap"
+          >
+            Hide mismatches
+          </button>
+        )}
+
+        <span className="ft-count">
+          {shown.length} of {predictions.length}
+          {filtered && (
+            <button className="ft-clear" onClick={clearAll}>clear</button>
+          )}
+        </span>
+      </div>
+
+      {shown.length === 0 ? (
+        <EmptyState
+          title="No games match these filters"
+          detail={`Week ${week} has ${predictions.length} games; none of them match.`}
+          action={{ label: 'Clear filters', onClick: clearAll }}
+        />
       ) : (
         <div className="ft-grid">
-          {ordered.map((p) => <PredictionCard key={p.game_id} p={p} />)}
+          {shown.map((p) => (
+            <PredictionCard
+              key={p.game_id}
+              p={p}
+              homeRank={rankOf(p.home_team_name)}
+              awayRank={rankOf(p.away_team_name)}
+            />
+          ))}
         </div>
       )}
     </>

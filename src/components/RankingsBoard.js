@@ -76,6 +76,10 @@ const dec = (v, d = 1) => (v == null || Number.isNaN(v) ? '—' : Number(v).toFi
 
 /** Optional columns, rendered only where the sport actually supplies the data. */
 const OPTIONAL_COLUMNS = [
+  { key: 'conference', label: 'Conf', title: 'Conference or division', render: (r) => r.conference || '—' },
+  { key: 'ap_rank', label: 'AP', title: 'Associated Press poll', render: (r) => ord(r.ap_rank) },
+  { key: 'coaches_rank', label: 'Coaches', title: 'AFCA Coaches poll', render: (r) => ord(r.coaches_rank) },
+  { key: 'fcs_coaches_rank', label: 'Coaches', title: 'FCS Coaches poll', render: (r) => ord(r.fcs_coaches_rank) },
   { key: 'sor_rank', label: 'SOR', title: 'Strength of record rank (ESPN FPI)', render: (r) => ord(r.sor_rank) },
   { key: 'sos_rank', label: 'SOS', title: 'Strength of schedule rank (ESPN FPI)', render: (r) => ord(r.sos_rank) },
   { key: 'fpi', label: 'FPI', title: "ESPN's Football Power Index", render: (r) => dec(r.fpi, 1) },
@@ -100,6 +104,7 @@ export default function RankingsBoard({
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [conference, setConference] = useState('all');
 
   useEffect(() => {
     let cancelled = false;
@@ -127,10 +132,26 @@ export default function RankingsBoard({
     [rows]
   );
 
-  const shown = expanded ? rows : rows.slice(0, 25);
+  // Conferences present on this board, so the picker never offers an empty option.
+  const conferences = useMemo(() => {
+    const found = [...new Set(rows.map((r) => r.conference).filter(Boolean))];
+    return found.sort((a, b) => a.localeCompare(b));
+  }, [rows]);
+
+  const inConference = useMemo(
+    () => (conference === 'all' ? rows : rows.filter((r) => r.conference === conference)),
+    [rows, conference]
+  );
+
+  // Filtering to one conference makes tiers meaningless — they describe breaks in the
+  // whole field, not within a subset — so the filtered view is a plain ranked list.
+  const filtering = conference !== 'all';
+  const shown = filtering
+    ? inConference
+    : (expanded ? rows : rows.slice(0, 25));
   const tiers = useMemo(
-    () => (showTiers ? buildTiers(rows.slice(0, 25)) : []),
-    [rows, showTiers]
+    () => (showTiers && !filtering ? buildTiers(rows.slice(0, 25)) : []),
+    [rows, showTiers, filtering]
   );
 
   const scale = useMemo(() => {
@@ -210,6 +231,25 @@ export default function RankingsBoard({
 
       {meta?.note && <p className="rb-caveat">{meta.note}</p>}
 
+      {conferences.length > 1 && (
+        <div className="rb-filter">
+          <label>
+            Conference
+            <select value={conference} onChange={(e) => setConference(e.target.value)}>
+              <option value="all">All ({rows.length})</option>
+              {conferences.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </label>
+          {filtering && (
+            <span className="rb-filter-note">
+              {shown.length} teams · ranks are their position on the full board
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="rb-table-wrap">
         <table className="rb-table">
           <thead>
@@ -240,7 +280,7 @@ export default function RankingsBoard({
         </table>
       </div>
 
-      {rows.length > 25 && (
+      {!filtering && rows.length > 25 && (
         <button className="rb-expand" onClick={() => setExpanded((e) => !e)}>
           {expanded ? 'Show top 25 by tier' : `Show all ${rows.length} teams`}
         </button>
