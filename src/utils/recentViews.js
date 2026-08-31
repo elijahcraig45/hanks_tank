@@ -67,7 +67,14 @@ function buildDynamicView(pathname) {
   const footballMatch = pathname.match(/^\/football\/([^/]+)(?:\/([^/]+))?$/);
   if (footballMatch) {
     const LEAGUES = { nfl: "NFL", fbs: "College FBS", fcs: "College FCS" };
-    const SECTIONS = { picks: "picks", rankings: "power rankings", stats: "team stats" };
+    const SECTIONS = {
+      picks: "picks",
+      rankings: "power rankings",
+      diagnostics: "model diagnostics",
+      leaders: "league leaders",
+      players: "player stats",
+      stats: "team stats",
+    };
     const league = LEAGUES[footballMatch[1]] || "Football";
     return {
       label: league,

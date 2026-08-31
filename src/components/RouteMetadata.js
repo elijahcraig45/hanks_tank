@@ -144,7 +144,7 @@ const ROUTE_METADATA = [
     path: '/football/:league/:section',
     title: 'Football',
     description:
-      'Weekly NFL and college football model picks, Bradley-Terry power rankings, and per-team advanced stats.',
+      'Weekly NFL and college football model picks, Bradley-Terry power rankings, out-of-sample model diagnostics, league leaders, and per-team advanced stats.',
   },
   {
     path: '/transactions',
