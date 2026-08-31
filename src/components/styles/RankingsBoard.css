@@ -1,0 +1,243 @@
+/* ─── Power rankings board (shared by every sport) ───────────────────────── */
+
+.rb {
+  background: #fff;
+  border: 1px solid var(--ht-gray-200);
+  border-radius: var(--ht-radius);
+  box-shadow: var(--ht-shadow-sm);
+  padding: 1.15rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.rb-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.rb-head h2 {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.rb-meta {
+  font-family: var(--ht-font-mono);
+  font-size: 0.72rem;
+  color: var(--ht-gray-400);
+}
+
+.rb-banner {
+  margin-top: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.79rem;
+  line-height: 1.5;
+  background: var(--ht-gray-100);
+  border-left: 3px solid var(--ht-gray-400);
+}
+.rb--ftbl .rb-banner { background: var(--sport-ftbl-soft); border-left-color: var(--sport-ftbl); }
+.rb--mlb  .rb-banner { background: var(--sport-mlb-soft);  border-left-color: var(--sport-mlb); }
+
+.rb-note,
+.rb-caveat {
+  margin: 0.55rem 0 0;
+  font-size: 0.79rem;
+  line-height: 1.55;
+  color: var(--ht-gray-600);
+  max-width: 74ch;
+}
+.rb-caveat {
+  color: var(--ht-gray-800);
+  font-style: italic;
+}
+
+.rb-table-wrap {
+  overflow-x: auto;
+  margin-top: 0.9rem;
+  border: 1px solid var(--ht-gray-100);
+  border-radius: 6px;
+}
+.rb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.rb-table th {
+  text-align: left;
+  font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ht-gray-400);
+  padding: 8px 10px;
+  background: var(--ht-gray-50);
+  border-bottom: 1px solid var(--ht-gray-200);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+}
+.rb-table th[title] { cursor: help; }
+.rb-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--ht-gray-100);
+  white-space: nowrap;
+}
+.rb-table tbody tr:hover { background: var(--ht-gray-50); }
+
+.rb-mono { font-family: var(--ht-font-mono); font-size: 0.76rem; }
+.rb-num {
+  font-family: var(--ht-font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ht-gray-400);
+  width: 34px;
+}
+.rb-team { min-width: 210px; }
+.rb-name { font-weight: 600; }
+.rb-rating { font-weight: 700; }
+.rb-range { color: var(--ht-gray-400); }
+
+.rb-strength {
+  display: block;
+  height: 3px;
+  margin-top: 4px;
+  background: var(--ht-gray-100);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.rb-strength-fill { display: block; height: 100%; border-radius: 2px; }
+.rb-strength-fill--mlb  { background: var(--sport-mlb); }
+.rb-strength-fill--ftbl { background: var(--sport-ftbl); }
+
+.rb-tier td {
+  background: var(--ht-gray-50);
+  padding: 7px 10px;
+  border-top: 1px solid var(--ht-gray-200);
+}
+.rb-tier-name {
+  font-size: 0.69rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.rb-tier-desc {
+  font-size: 0.72rem;
+  color: var(--ht-gray-400);
+  margin-left: 8px;
+}
+
+.rb-expand {
+  margin-top: 0.8rem;
+  background: transparent;
+  border: 1px solid var(--ht-gray-200);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--ht-gray-600);
+  cursor: pointer;
+}
+.rb--ftbl .rb-expand:hover { border-color: var(--sport-ftbl); color: var(--sport-ftbl); }
+.rb--mlb  .rb-expand:hover { border-color: var(--sport-mlb);  color: var(--sport-mlb); }
+
+.rb-state {
+  padding: 2rem 1rem;
+  text-align: center;
+  font-size: 0.86rem;
+  color: var(--ht-gray-600);
+}
+.rb-state--error { color: var(--ht-red); }
+
+.rb-empty {
+  background: #fff;
+  border: 1px dashed var(--ht-gray-200);
+  border-radius: var(--ht-radius);
+  padding: 2.25rem 1.5rem;
+  text-align: center;
+}
+.rb-empty-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; }
+.rb-empty-detail {
+  margin: 0 auto;
+  max-width: 60ch;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--ht-gray-600);
+}
+
+@media (max-width: 640px) {
+  .rb { padding: 1rem; }
+  .rb-team { min-width: 150px; }
+}
+
+/* ─── Standalone rankings page shell ─────────────────────────────────────── */
+.rank-page { background: var(--ht-gray-50); min-height: 100vh; }
+
+.rank-hero {
+  background: var(--ht-navy);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.rank-hero-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.rank-hero h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #fff;
+}
+.rank-hero h1::after {
+  content: '';
+  display: block;
+  width: 42px;
+  height: 3px;
+  margin-top: 8px;
+  border-radius: 2px;
+  background: var(--ht-gray-400);
+}
+.rank-hero--mlb  h1::after { background: var(--sport-mlb-on); }
+.rank-hero--ftbl h1::after { background: var(--sport-ftbl-on); }
+
+.rank-sub {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,.6);
+  max-width: 62ch;
+}
+
+.rank-season {
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: var(--ht-font-mono);
+  cursor: pointer;
+}
+.rank-season option { color: #0f172a; }
+
+.rank-body {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+.rank-foot {
+  font-size: 0.78rem;
+  color: var(--ht-gray-400);
+}
+.rank-foot a { color: var(--sport-mlb); font-weight: 600; }
+
+@media (max-width: 640px) {
+  .rank-hero h1 { font-size: 1.4rem; }
+}
