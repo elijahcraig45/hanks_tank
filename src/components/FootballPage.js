@@ -521,47 +521,201 @@ function PlayersSection({ league, season, setSeason }) {
 }
 
 /* ── Team stats ─────────────────────────────────────────────────────────── */
+/**
+ * Format a value according to the column spec the API sent.
+ *
+ * The spec comes from the response, not from this file. That is the whole point: NFL's
+ * per-week EPA table and college's 154-column season table share no column names, and
+ * hardcoding either set here is what kept the college table off the site.
+ */
+function formatCell(value, format) {
+  if (value === null || value === undefined || value === '') return '—';
+  switch (format) {
+    case 'text': return value;
+    case 'integer': return Number(value).toLocaleString();
+    case 'decimal1': return Number(value).toFixed(1);
+    case 'decimal2': return Number(value).toFixed(2);
+    case 'decimal3': return num(value, 3);
+    case 'percent': return `${Number(value).toFixed(1)}%`;
+    case 'rate': return pct(value);
+    default: return String(value);
+  }
+}
+
+/**
+ * Good/bad colouring, where the column says which direction is good.
+ *
+ * `higher_is_better` is null for identity and volume columns — a play count is neither
+ * good nor bad — and those stay unstyled rather than being forced into a colour.
+ */
+function cellTone(value, col) {
+  if (col.higher_is_better === null || col.higher_is_better === undefined) return '';
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return '';
+  const n = Number(value);
+  if (n === 0) return '';
+  const good = col.higher_is_better ? n > 0 : n < 0;
+  return good ? 'ft-pos' : 'ft-neg';
+}
+
+/**
+ * One table, driven entirely by `meta.columns`.
+ *
+ * Adding a sport or widening a feed needs a catalog entry on the server and nothing
+ * here. RankingsBoard already worked this way; this brings the stats tables in line.
+ */
+function ColumnDrivenTable({ columns, rows: dataRows, rowKey }) {
+  return (
+    <div className="ft-table-wrap">
+      <table className="ft-table">
+        <thead>
+          <tr>
+            {columns.map((c) => (
+              <th key={c.key} title={c.key}>{c.label}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {dataRows.map((r, i) => (
+            <tr key={rowKey(r, i)}>
+              {columns.map((c, ci) => (
+                <td
+                  key={c.key}
+                  className={ci === 0 ? undefined : cellTone(r[c.key], c)}
+                >
+                  {ci === 0 ? <strong>{formatCell(r[c.key], c.format)}</strong>
+                            : formatCell(r[c.key], c.format)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/** Scopes a league can offer, decided by what the API says exists. */
+const STAT_SCOPES = [
+  { key: 'season', label: 'Season totals' },
+  { key: 'week', label: 'By week' },
+];
+
+/**
+ * Team stats, at whichever grain the league actually has.
+ *
+ * Two endpoints sit behind this: `/stats/teams` is a per-team-per-week game log and
+ * `/stats/teams/season` is per-team season totals. They are separate resources with
+ * different filters — the season table has no week column at all — so the section picks
+ * one and renders whatever columns come back.
+ *
+ * Which scopes appear is discovered, not assumed: each response advertises the other's
+ * path when it exists, so college showing season-only and the NFL showing week-only is
+ * data, not a hardcoded per-sport branch.
+ */
 function StatsSection({ league, season }) {
+  const [scope, setScope] = useState(null);
   const [rows, setRows] = useState([]);
   const [meta, setMeta] = useState(null);
+  const [group, setGroup] = useState('core');
   const [team, setTeam] = useState('');
   const [week, setWeek] = useState('');
-  const [sort, setSort] = useState('off_epa_play');
+  const [sort, setSort] = useState('');
   const [direction, setDirection] = useState('desc');
   const [loading, setLoading] = useState(true);
+  const [available, setAvailable] = useState({ week: false, season: false });
+
+  // Reset per-scope choices when the league or scope changes: a sort field from the
+  // college season table is not a valid sort on the NFL week table.
+  useEffect(() => { setSort(''); setGroup('core'); setWeek(''); }, [league.sport, scope]);
+  useEffect(() => { setScope(null); }, [league.sport]);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await ApiService.getFootballTeamStats(league.sport, {
-        season, team: team || undefined, week: week || undefined,
-        sort, direction, limit: 50,
-      });
+      // First load probes the week endpoint, which reports whether a season table
+      // exists via meta.season_endpoint, so one request settles what this league has.
+      const effective = scope
+        || (league.sport === 'cfb' ? 'season' : 'week');
+
+      const res = effective === 'season'
+        ? await ApiService.getFootballTeamSeasonStats(league.sport, {
+          season,
+          team: team || undefined,
+          group: group === 'core' ? undefined : group,
+          sort: sort || undefined,
+          direction,
+          limit: 50,
+        })
+        : await ApiService.getFootballTeamStats(league.sport, {
+          season,
+          team: team || undefined,
+          week: week || undefined,
+          sort: sort || undefined,
+          direction,
+          limit: 50,
+        });
+
+      const m = res.meta || null;
       setRows(res.data || []);
-      setMeta(res.meta || null);
+      setMeta(m);
+      if (!scope) setScope(effective);
+      setAvailable({
+        week: effective === 'week'
+          ? !m?.note
+          : Boolean(m?.week_endpoint),
+        season: effective === 'season'
+          ? !m?.note
+          : Boolean(m?.season_endpoint),
+      });
     } catch {
       setRows([]); setMeta(null);
     } finally {
       setLoading(false);
     }
-  }, [league.sport, season, team, week, sort, direction]);
+  }, [league.sport, season, scope, team, week, group, sort, direction]);
 
   useEffect(() => { load(); }, [load]);
 
   if (loading && !meta) return <div className="ft-state">Loading team stats…</div>;
 
-  if (meta?.note) {
+  const columns = meta?.columns || [];
+  const scopes = STAT_SCOPES.filter((sc) => available[sc.key]);
+  const activeScope = meta?.scope || scope;
+
+  const scopeSwitch = scopes.length > 1 && (
+    <div className="ft-scope-switch">
+      {scopes.map((sc) => (
+        <button
+          key={sc.key}
+          className={`ft-scope${activeScope === sc.key ? ' ft-scope--on' : ''}`}
+          onClick={() => setScope(sc.key)}
+        >
+          {sc.label}
+        </button>
+      ))}
+    </div>
+  );
+
+  // A note means this scope has nothing to show. The reason comes from the API rather
+  // than from a sentence written here, because a sentence here goes stale silently the
+  // moment the feed lands.
+  if (meta?.note && !rows.length) {
     return (
-      <EmptyState
-        title={`No advanced team stats for ${league.label}`}
-        detail={`${meta.note} College play-by-play is not in the free ESPN feed the college pipeline uses, so there is no EPA to show yet.`}
-      />
+      <>
+        {scopeSwitch}
+        <EmptyState
+          title={`No ${activeScope === 'season' ? 'season' : 'per-week'} team stats for ${league.label}`}
+          detail={meta.note}
+        />
+      </>
     );
   }
 
-  const fields = (meta?.sortable_fields || []).filter(
-    (f) => !['season', 'week', 'team'].includes(f)
-  );
+  const sortable = meta?.sortable_fields || [];
+  const labelFor = (key) => {
+    const col = columns.find((c) => c.key === key);
+    return col ? col.label : key;
+  };
 
   return (
     <section className="ft-panel">
@@ -571,26 +725,56 @@ function StatsSection({ league, season }) {
           {loading ? 'Loading…' : `${rows.length} of ${meta?.total ?? 0} rows`}
         </span>
       </div>
+
+      {scopeSwitch}
+
       <p className="ft-note">
-        Per-team, per-week EPA. One row is one team's one game, not a season average —
-        filter to a team to read it as a game log.
+        {activeScope === 'season'
+          ? 'One row is one team\u2019s whole season. Opponent columns are what teams did against them \u2014 the only defensive view this feed carries.'
+          : 'One row is one team\u2019s one game, not a season average \u2014 filter to a team to read it as a game log.'}
       </p>
+
+      {meta?.coverage && <p className="ft-note ft-note--warn">{meta.coverage}</p>}
 
       <div className="ft-filters">
         <label>
           Team
-          <input value={team} onChange={(e) => setTeam(e.target.value)} placeholder="e.g. PHI" />
+          <input
+            value={team}
+            onChange={(e) => setTeam(e.target.value)}
+            placeholder={activeScope === 'season' ? 'e.g. Ohio State' : 'e.g. PHI'}
+          />
         </label>
-        <label>
-          Week
-          <input value={week} onChange={(e) => setWeek(e.target.value)} placeholder="all" />
-        </label>
+
+        {activeScope === 'week' && (
+          <label>
+            Week
+            <input value={week} onChange={(e) => setWeek(e.target.value)} placeholder="all" />
+          </label>
+        )}
+
+        {activeScope === 'season' && (meta?.groups || []).length > 1 && (
+          <label>
+            Columns
+            <select value={group} onChange={(e) => setGroup(e.target.value)}>
+              {(meta.groups || []).map((g) => (
+                <option key={g.key} value={g.key}>{g.label} ({g.count})</option>
+              ))}
+              <option value="all">Everything</option>
+            </select>
+          </label>
+        )}
+
         <label>
           Sort by
           <select value={sort} onChange={(e) => setSort(e.target.value)}>
-            {fields.map((f) => <option key={f} value={f}>{f}</option>)}
+            <option value="">Default</option>
+            {sortable.map((f) => (
+              <option key={f} value={f}>{labelFor(f)}</option>
+            ))}
           </select>
         </label>
+
         <label>
           Order
           <select value={direction} onChange={(e) => setDirection(e.target.value)}>
@@ -600,30 +784,12 @@ function StatsSection({ league, season }) {
         </label>
       </div>
 
-      <div className="ft-table-wrap">
-        <table className="ft-table">
-          <thead>
-            <tr>
-              <th>Wk</th><th>Team</th><th>Off EPA</th><th>Def EPA</th>
-              <th>Off SR</th><th>Def SR</th><th>Explosive</th><th>Plays</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={`${r.season}-${r.week}-${r.team}`}>
-                <td>{r.week}</td>
-                <td><strong>{r.team}</strong></td>
-                <td className={r.off_epa_play > 0 ? 'ft-pos' : 'ft-neg'}>{num(r.off_epa_play)}</td>
-                <td className={r.def_epa_play < 0 ? 'ft-pos' : 'ft-neg'}>{num(r.def_epa_play)}</td>
-                <td>{pct(r.off_success_rate)}</td>
-                <td>{pct(r.def_success_rate)}</td>
-                <td>{pct(r.off_explosive_rate)}</td>
-                <td>{r.off_plays ?? '—'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <ColumnDrivenTable
+        columns={columns}
+        rows={rows}
+        rowKey={(r, i) => `${r.season}-${r.week ?? 's'}-${r.team ?? i}`}
+      />
+
       {!loading && rows.length === 0 && (
         <div className="ft-state">No rows match those filters.</div>
       )}
@@ -631,7 +797,7 @@ function StatsSection({ league, season }) {
   );
 }
 
-/* ── Picks ──────────────────────────────────────────────────────────────── */
+/* ── Picks ─────────────────────────────────────────────── */
 
 /** Filters that only make sense for some leagues are hidden, not disabled. */
 const TIERS = [
