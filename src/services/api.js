@@ -207,6 +207,50 @@ class ApiService {
     return this.get(`/football/${sport}/stats/teams?${qs.toString()}`, { cacheTTL: 30 });
   }
 
+  /**
+   * Per-team SEASON totals — a different resource from getFootballTeamStats, which is a
+   * per-week game log. Separate endpoints because the tables differ in grain: the season
+   * table has no `week` column, so sending one is meaningless rather than a filter.
+   *
+   * `group` names a column group from meta.groups ('core' by default, 'all' for
+   * everything); `fields` overrides it with an explicit list. Both are allow-listed
+   * server-side — the default keeps a 154-column table from arriving in full.
+   */
+  async getFootballTeamSeasonStats(
+    sport,
+    { season, team, search, group, fields, sort, direction, limit, offset } = {},
+  ) {
+    const qs = new URLSearchParams();
+    if (season) qs.set('season', String(season));
+    if (team) qs.set('team', team);
+    if (search) qs.set('search', search);
+    if (group) qs.set('group', group);
+    if (fields) qs.set('fields', fields);
+    if (sort) qs.set('sort', sort);
+    if (direction) qs.set('direction', direction);
+    if (limit) qs.set('limit', String(limit));
+    if (offset) qs.set('offset', String(offset));
+    return this.get(`/football/${sport}/stats/teams/season?${qs.toString()}`, {
+      cacheTTL: 30,
+    });
+  }
+
+  /**
+   * Team metadata: abbreviation, names, conference, colours, logos, and the aliases the
+   * other football tables use for the same team.
+   *
+   * Long TTL on purpose — this is reference data that changes once a year, and it is
+   * fetched to paint logos on cards that render in the homepage's first frame.
+   */
+  async getFootballTeams(sport, { search, conference, active, limit } = {}) {
+    const qs = new URLSearchParams();
+    if (search) qs.set('search', search);
+    if (conference) qs.set('conference', conference);
+    if (active === false) qs.set('active', 'false');
+    if (limit) qs.set('limit', String(limit));
+    return this.get(`/football/${sport}/teams?${qs.toString()}`, { cacheTTL: 1440 });
+  }
+
   async getFootballRankings(sport, season, limit = 25) {
     return this.getRankings(sport, { season, limit });
   }
