@@ -26,6 +26,19 @@ export function spreadFor(side, spreadLine) {
   return value > 0 ? `+${value}` : `${value}`;
 }
 
+/**
+ * Just the clock, for a row that already sits under a day heading.
+ *
+ * Repeating the date on every one of sixty games under a "Saturday 12 Sep" header is
+ * noise that crowds out the thing the row is for.
+ */
+export function timeLabel(iso) {
+  if (!iso) return 'TBD';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return 'TBD';
+  return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
 export function pct(v, digits = 1) {
   if (v === null || v === undefined || Number.isNaN(Number(v))) return '—';
   return `${(Number(v) * 100).toFixed(digits)}%`;
