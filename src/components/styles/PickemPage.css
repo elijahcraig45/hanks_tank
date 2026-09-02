@@ -221,3 +221,48 @@
   .pk-ctx { gap: .2rem; }
   .pk-chip { font-size: .64rem; }
 }
+
+/* ── Season record strip on the sheet ───────────────────────────────────── */
+
+.pk-record {
+  display: flex; align-items: baseline; gap: .5rem;
+  margin: .6rem 0 0; padding: .45rem .7rem;
+  background: var(--sport-ftbl-soft);
+  border-left: 3px solid var(--sport-ftbl);
+  border-radius: var(--ht-radius);
+}
+.pk-record-main {
+  font-size: 1.05rem; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+.pk-record-meta { font-size: .78rem; color: var(--ht-gray-600); }
+
+.pk-beat-tag {
+  margin-left: .3rem; font-size: .6rem; text-transform: uppercase;
+  letter-spacing: .04em; color: var(--ht-green); font-weight: 700;
+}
+
+/* ── Standings ──────────────────────────────────────────────────────────── */
+
+.pk-board-rec { white-space: nowrap; }
+
+/* Wins relative to the leader, so the shape of the table reads without comparing
+   numbers across rows. */
+.pk-winbar {
+  display: block; height: 3px; margin-top: .2rem;
+  background: var(--ht-gray-200); border-radius: 2px; overflow: hidden;
+}
+.pk-winbar-fill { display: block; height: 100%; background: var(--sport-ftbl); }
+
+.pk-board-picks-total { color: var(--ht-gray-400); }
+
+/* Week-by-week form. CSS cells rather than a chart: one strip per entrant across a
+   dozen rows would otherwise be a dozen SVG trees for a row of numbers. */
+.pk-form { display: inline-flex; gap: 2px; }
+.pk-form-week {
+  min-width: 1.15rem; padding: .05rem .15rem; border-radius: 2px;
+  font-size: .68rem; font-variant-numeric: tabular-nums; text-align: center;
+  background: var(--ht-gray-100); color: var(--ht-gray-800);
+}
+.pk-form-week--good { background: rgba(0, 131, 0, .16); color: #056b05; }
+.pk-form-week--mid  { background: var(--sport-ftbl-soft); color: var(--sport-ftbl); }
+.pk-form-week--bad  { background: rgba(227, 73, 72, .14); color: #a3201f; }
