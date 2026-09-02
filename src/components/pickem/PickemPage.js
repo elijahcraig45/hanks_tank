@@ -90,9 +90,9 @@ export default function PickemPage() {
           </div>
 
           <p className="pk-tagline">
-            Pick winners straight up or against the spread. Picks stay editable until
-            each game kicks off, and every record is set against the closing line on the
-            same games.
+            Pick the winner of every game. Picks stay editable until each game kicks
+            off, and every record is measured against the closing favourite on the same
+            games.
           </p>
 
           <nav className="ft-leagues" aria-label="Sport">

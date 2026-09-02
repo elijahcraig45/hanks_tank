@@ -5,41 +5,15 @@ import { pct, record } from './format';
 /**
  * The public standings.
  *
- * A column of win percentages is a poor leaderboard: it says who is ahead and nothing
- * about how, or whether being ahead means anything. So each row also carries
+ * Deliberately few columns. An earlier version added form, best week and underdog
+ * counts, and with one graded week they read as a green "5" and two zeroes — numbers
+ * that need explaining are worse than numbers left out. What survives is what a reader
+ * can act on: the record, how often it wins, and whether it is beating the market.
  *
- *   the gap to the market as one signed number, not two percentages to subtract —
- *     and it is computed on that entrant's own games, since somebody who picked six is
- *     not comparable to the closing line across sixty;
- *   week-by-week form, so a record built on one hot week reads differently from a
- *     steady one;
- *   how many picks are still unscored, so a short record reads as "not scored yet"
- *     rather than as a thin week.
+ * The market column is one signed number rather than two percentages to subtract, and
+ * it is computed on each entrant's own games — somebody who picked six is not
+ * comparable to the closing line across sixty.
  */
-
-/** A compact per-week strip. CSS bars, not a chart: one row each of a dozen entrants. */
-function FormStrip({ weeks }) {
-  if (!weeks?.length) return null;
-  return (
-    <span className="pk-form">
-      {weeks.map((w) => {
-        const p = w.win_pct;
-        const tone = p === null || p === undefined ? ''
-          : p >= 0.6 ? 'good' : p >= 0.4 ? 'mid' : 'bad';
-        return (
-          <span
-            key={w.week}
-            className={`pk-form-week${tone ? ` pk-form-week--${tone}` : ''}`}
-            title={`Week ${w.week}: ${w.wins}-${w.losses}${w.pushes ? `-${w.pushes}` : ''}`}
-          >
-            {w.wins}
-          </span>
-        );
-      })}
-    </span>
-  );
-}
-
 export default function Leaderboard({ sport, season, pickType, week, you }) {
   const [rows, setRows] = useState([]);
   const [meta, setMeta] = useState(null);
@@ -74,8 +48,8 @@ export default function Leaderboard({ sport, season, pickType, week, you }) {
     );
   }
 
-  const seasonView = meta?.scope === 'season';
   const leaderWins = Math.max(...rows.map((r) => Number(r.wins) || 0), 1);
+  const anyPending = rows.some((r) => Number(r.pending) > 0);
 
   return (
     <>
@@ -83,29 +57,27 @@ export default function Leaderboard({ sport, season, pickType, week, you }) {
         <table className="ft-table pk-board">
           <thead>
             <tr>
-              <th>#</th>
+              <th className="pk-col-rank">#</th>
               <th>Entrant</th>
               <th>Record</th>
-              <th>Win %</th>
-              <th title="This entrant's win rate minus the closing favourite's, on the same games">
-                vs Vegas
+              <th>Win&nbsp;%</th>
+              <th title="How this entrant's win rate compares with the closing favourite's, on the same games">
+                vs&nbsp;Vegas
               </th>
-              {seasonView && <th title="Wins in each graded week, oldest first">Form</th>}
-              {seasonView && <th title="Most wins in a single week">Best</th>}
-              <th title="Correct picks where the entrant took the underdog">Dogs</th>
-              <th title="Picks made, and how many are still to be scored">Picks</th>
+              <th title="Picks that have been scored, out of picks made">Scored</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => {
               const gap = r.vs_vegas;
               const wins = Number(r.wins) || 0;
+              const hasGap = gap !== null && gap !== undefined;
               return (
                 <tr
                   key={r.user_id}
                   className={r.user_id === you ? 'pk-board-you' : undefined}
                 >
-                  <td>{r.rank}</td>
+                  <td className="pk-col-rank">{r.rank}</td>
                   <td className="pk-board-name">
                     {r.picture_url && (
                       <img className="pk-avatar pk-avatar--sm" src={r.picture_url} alt="" />
@@ -115,8 +87,8 @@ export default function Leaderboard({ sport, season, pickType, week, you }) {
                   </td>
                   <td className="pk-board-rec">
                     {record(r.wins, r.losses, r.pushes)}
-                    {/* Relative to the leader, so the shape of the table is readable
-                        without comparing numbers across rows. */}
+                    {/* Length relative to the leader, so the order is readable without
+                        comparing numbers across rows. */}
                     <span className="pk-winbar" aria-hidden="true">
                       <span
                         className="pk-winbar-fill"
@@ -124,23 +96,13 @@ export default function Leaderboard({ sport, season, pickType, week, you }) {
                       />
                     </span>
                   </td>
-                  <td>{pct(r.win_pct)}</td>
-                  <td
-                    className={
-                      gap === null || gap === undefined ? undefined
-                        : gap > 0 ? 'ft-pos' : gap < 0 ? 'ft-neg' : undefined
-                    }
-                  >
-                    {gap === null || gap === undefined
-                      ? '—'
-                      : `${gap > 0 ? '+' : ''}${(gap * 100).toFixed(1)}%`}
+                  <td className="pk-board-pct">{pct(r.win_pct)}</td>
+                  <td className={hasGap ? (gap > 0 ? 'ft-pos' : gap < 0 ? 'ft-neg' : undefined) : undefined}>
+                    {hasGap ? `${gap > 0 ? '+' : ''}${(gap * 100).toFixed(1)}%` : '—'}
                   </td>
-                  {seasonView && <td><FormStrip weeks={r.by_week} /></td>}
-                  {seasonView && <td>{r.best_week_wins ?? '—'}</td>}
-                  <td>{r.underdog_hits ?? 0}</td>
                   <td className="pk-board-picks">
                     {r.picks_graded ?? 0}
-                    <span className="pk-board-picks-total">/{r.picks_made ?? 0}</span>
+                    <span className="pk-board-picks-total"> of {r.picks_made ?? 0}</span>
                   </td>
                 </tr>
               );
@@ -150,10 +112,10 @@ export default function Leaderboard({ sport, season, pickType, week, you }) {
       </div>
 
       <p className="ft-note">
-        <strong>vs Vegas</strong> compares each entrant against the closing favourite on
-        the games they actually picked — a positive number means they beat the market.
-        Pushes and ties count as neither a win nor a loss, and a pick on an unfinished
-        game is not counted until it is scored.
+        <strong>vs&nbsp;Vegas</strong> is each entrant&rsquo;s win rate minus the closing
+        favourite&rsquo;s, on the games they actually picked — a positive number means
+        they beat the market.
+        {anyPending && ' Most picks are not scored yet, so these records will move a lot.'}
       </p>
     </>
   );
