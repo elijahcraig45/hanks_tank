@@ -20,6 +20,7 @@ import TeamTransactions from './components/TeamTransactions';
 import PredictionsPage from './components/PredictionsPage';
 import FootballPage from './components/FootballPage';
 import FootballGamePage from './components/football/FootballGamePage';
+import PickemPage from './components/pickem/PickemPage';
 import BaseballRankingsPage from './components/BaseballRankingsPage';
 import PredictionDiagnosticsPage from './components/PredictionDiagnosticsPage';
 import SplitExplorerPage from './components/SplitExplorerPage';
@@ -62,6 +63,9 @@ function AppShell() {
             section name. React Router ranks static segments above dynamic ones,
             but the intent should not depend on knowing that. */}
         <Route path="/football/:league/game/:gameId" element={<FootballGamePage />} />
+        <Route path="/pickem" element={<PickemPage />} />
+        <Route path="/pickem/:sport" element={<PickemPage />} />
+        <Route path="/pickem/:sport/:section" element={<PickemPage />} />
         <Route path="/football/:league/:section" element={<FootballPage />} />
         {/* Legacy NFL paths predate the shared football tab. */}
         <Route path="/nfl/predictions" element={<Navigate to="/football/nfl/picks" replace />} />

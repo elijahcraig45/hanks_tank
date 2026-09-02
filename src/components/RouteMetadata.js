@@ -141,6 +141,24 @@ const ROUTE_METADATA = [
       'Weekly NFL and college football model picks, Bradley-Terry power rankings, and per-team advanced stats.',
   },
   {
+    path: '/pickem/:sport/:section',
+    title: 'Pick\u2019em',
+    description:
+      'Weekly NFL and college football pick\u2019em: pick winners straight up or against the spread, with a public leaderboard and every record set against the closing line.',
+  },
+  {
+    path: '/pickem/:sport',
+    title: 'Pick\u2019em',
+    description:
+      'Weekly NFL and college football pick\u2019em with a public leaderboard, scored against the closing line.',
+  },
+  {
+    path: '/pickem',
+    title: 'Pick\u2019em',
+    description:
+      'Weekly NFL and college football pick\u2019em with a public leaderboard, scored against the closing line.',
+  },
+  {
     path: '/football/:league/game/:gameId',
     title: 'Football Game',
     description:
