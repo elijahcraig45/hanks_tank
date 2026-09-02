@@ -104,7 +104,32 @@ function SideContext({ game, side, showDetail }) {
   );
 }
 
-function GameRow({ game, pickType, selected, onSelect, showDetail }) {
+/**
+ * How a pick turned out, shown on the card that made it.
+ *
+ * The whole reason the separate "my picks" screen could go: a finished game is more
+ * useful with the result attached to the pick than in a table somewhere else. Beating
+ * the closing favourite is called out, because that is the pick worth pointing at.
+ */
+function PickOutcome({ pick, game }) {
+  if (!pick || !game.completed) return null;
+  const beatMarket = pick.is_correct === true && pick.vegas_correct === false;
+  const label = pick.is_push ? 'Push'
+    : pick.is_correct === true ? 'Won'
+      : pick.is_correct === false ? 'Lost' : 'Not scored';
+  const tone = pick.is_correct === true ? 'good'
+    : pick.is_correct === false ? 'bad' : '';
+
+  return (
+    <span className={`pk-chip${tone ? ` pk-chip--${tone}` : ''}`}>
+      <span className="pk-chip-label">Your pick</span>
+      <span className="pk-chip-value">{label}</span>
+      {beatMarket && <span className="pk-beat-tag" title="The closing favourite lost this one">beat the line</span>}
+    </span>
+  );
+}
+
+function GameRow({ game, pickType, selected, onSelect, showDetail, pick }) {
   const locked = game.locked;
   const noLine = pickType === 'ats' && game.spread_line === null;
   const disabled = locked || noLine;
@@ -158,9 +183,11 @@ function GameRow({ game, pickType, selected, onSelect, showDetail }) {
         </div>
       </div>
 
-      {/* The market and the model, once per game rather than per side. */}
-      {(game.total_line !== null || game.model_pick) && (
+      {/* Your result, the market and the model, once per game rather than per side. */}
+      {(game.total_line !== null || game.model_pick
+        || (pick && game.completed)) && (
         <div className="pk-game-foot">
+          <PickOutcome pick={pick} game={game} />
           {game.total_line !== null && game.total_line !== undefined && (
             <span className="pk-chip" title="Closing over/under">
               <span className="pk-chip-label">O/U</span>
@@ -199,6 +226,9 @@ export default function PickSheet({ sport, season, authConfigured }) {
   // Selections made since the last successful save. Held in a ref so a reload can
   // re-apply them without the load callback depending on them and re-running.
   const unsavedRef = useRef({});
+  // The saved picks as the server graded them, keyed by game, so a card can show how
+  // its pick turned out.
+  const [picks, setPicks] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState(null);
@@ -227,9 +257,13 @@ export default function PickSheet({ sport, season, authConfigured }) {
       // mid-visit, or the refresh after a save — and silently dropping their unsaved
       // selections is the worst thing a pick sheet can do.
       const existing = {};
+      const graded = {};
       for (const p of res.meta?.picks || []) {
-        if (p.pick_type === pickType) existing[p.game_id] = p.selected;
+        if (p.pick_type !== pickType) continue;
+        existing[p.game_id] = p.selected;
+        graded[p.game_id] = p;
       }
+      setPicks(graded);
       setDraft((local) => ({ ...existing, ...(keepStatus ? {} : local), ...unsavedRef.current }));
     } catch (e) {
       setGames([]); setMeta(null);
@@ -358,6 +392,22 @@ export default function PickSheet({ sport, season, authConfigured }) {
         </span>
       </div>
 
+      {/* The season standing, so the sheet is also where you check how you are doing
+          rather than a second screen for one number. */}
+      {meta?.record && Number(meta.record.total) > 0 && (
+        <div className="pk-record">
+          <span className="pk-record-main">
+            {meta.record.wins ?? 0}&ndash;{meta.record.losses ?? 0}
+            {Number(meta.record.pushes) > 0 && `\u2013${meta.record.pushes}`}
+          </span>
+          <span className="pk-record-meta">
+            this season
+            {Number(meta.record.pending) > 0
+              && ` \u00b7 ${meta.record.pending} still to be scored`}
+          </span>
+        </div>
+      )}
+
       {PICK_TYPES.length > 1 && (
         <div className="ft-scope-switch">
           {PICK_TYPES.map((t) => (
@@ -424,6 +474,7 @@ export default function PickSheet({ sport, season, authConfigured }) {
                 pickType={pickType}
                 selected={draft[g.game_id] || null}
                 showDetail={showDetail}
+                pick={picks[g.game_id]}
                 onSelect={(side) => {
                   if (side) unsavedRef.current[g.game_id] = side;
                   else delete unsavedRef.current[g.game_id];

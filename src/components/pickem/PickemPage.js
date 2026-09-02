@@ -5,7 +5,6 @@ import { getSession, onAuthChange } from '../../services/googleAuth';
 import SignInPanel from './SignInPanel';
 import PickSheet from './PickSheet';
 import Leaderboard from './Leaderboard';
-import MyPicks from './MyPicks';
 import '../styles/PickemPage.css';
 
 /**
@@ -23,10 +22,17 @@ const SPORTS = [
   { key: 'cfb', label: 'College FBS' },
 ];
 
+/**
+ * Two sections, not three.
+ *
+ * "Make picks" and "My picks" were the same screen a day apart — the sheet already
+ * showed your selections, and the separate view only added how they turned out. Results
+ * now appear on the sheet itself, so there is one place to both make and review picks.
+ * `mine` still resolves here so any link to it keeps working.
+ */
 const SECTIONS = [
-  { key: 'sheet', label: 'Make picks' },
+  { key: 'sheet', label: 'My picks' },
   { key: 'leaderboard', label: 'Leaderboard' },
-  { key: 'mine', label: 'My picks' },
 ];
 
 /**
@@ -44,7 +50,11 @@ export default function PickemPage() {
   const navigate = useNavigate();
 
   const sport = SPORTS.find((s) => s.key === sportParam)?.key || 'cfb';
-  const section = SECTIONS.find((s) => s.key === sectionParam)?.key || 'sheet';
+  // 'mine' was a section of its own before the two were merged; it maps to the sheet
+  // so an existing link or bookmark still lands somewhere sensible.
+  const section = sectionParam === 'mine'
+    ? 'sheet'
+    : (SECTIONS.find((s) => s.key === sectionParam)?.key || 'sheet');
 
   const [config, setConfig] = useState(null);
   const [session, setSession] = useState(getSession());
@@ -165,9 +175,6 @@ export default function PickemPage() {
           </section>
         )}
 
-        {section === 'mine' && (
-          <MyPicks sport={sport} season={season} signedIn={Boolean(session)} />
-        )}
       </div>
     </div>
   );

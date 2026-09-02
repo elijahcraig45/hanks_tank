@@ -291,6 +291,37 @@ describe('pick sheet', () => {
       .toHaveAttribute('aria-pressed', 'true');
   });
 
+  it('shows how a pick turned out on the card that made it', async () => {
+    // The reason the separate "my picks" screen could go: a finished game is more
+    // useful with its result attached to the pick than in a table elsewhere.
+    ApiService.getPickemGames.mockResolvedValue(sheet([
+      game({ completed: true, locked: true, home_score: 31, away_score: 17 }),
+    ], {
+      open: 0,
+      picks: [{
+        game_id: 'g1', pick_type: 'su', selected: 'home',
+        is_correct: true, is_push: false, vegas_correct: false,
+      }],
+    }));
+    renderSheet();
+
+    expect(await screen.findByLabelText(/Hide games that have started/)).toBeInTheDocument();
+    await userEvent.click(screen.getByLabelText(/Hide games that have started/));
+
+    expect(await screen.findByText('Won')).toBeInTheDocument();
+    // The market got it wrong and the entrant did not — worth calling out.
+    expect(screen.getByText('beat the line')).toBeInTheDocument();
+  });
+
+  it('shows the season record on the sheet, so there is no second screen for it', async () => {
+    ApiService.getPickemGames.mockResolvedValue(sheet([game()], {
+      record: { wins: 9, losses: 3, pushes: 1, pending: 4, total: 17 },
+    }));
+    renderSheet();
+    expect(await screen.findByText(/9–3–1/)).toBeInTheDocument();
+    expect(screen.getByText(/4 still to be scored/)).toBeInTheDocument();
+  });
+
   it('cannot save while signed out, and says why', async () => {
     googleAuth.getSession.mockReturnValue(null);
     ApiService.getPickemGames.mockResolvedValue(sheet([game()], { signed_in: false }));
