@@ -701,3 +701,58 @@
   border-color: var(--sport-ftbl);
   box-shadow: 0 0 0 3px var(--sport-ftbl-soft);
 }
+
+/* ── Stat scope switch ─────────────────────────────────────────────────────
+   Team stats come at two grains — season totals and a per-week game log — and a
+   league may have either, both, or (for now) only one. The switch is rendered only
+   when the API reports more than one available, so it never offers a dead tab. */
+
+.ft-scope-switch {
+  display: flex;
+  gap: 0.25rem;
+  margin: 0.75rem 0 0;
+  padding: 0.2rem;
+  background: var(--ht-gray-100);
+  border-radius: var(--ht-radius);
+  width: fit-content;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+
+.ft-scope {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--ht-gray-600);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: calc(var(--ht-radius) - 2px);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.ft-scope:hover:not(.ft-scope--on) {
+  color: var(--ht-gray-800);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.ft-scope--on {
+  background: #fff;
+  color: var(--sport-ftbl);
+  box-shadow: var(--ht-shadow-sm);
+}
+
+.ft-scope:focus-visible {
+  outline: 2px solid var(--sport-ftbl);
+  outline-offset: 1px;
+}
+
+/* Coverage caveats — "FBS only", and the like. A short table with no explanation
+   reads as a bug, so the reason is stated where the table is. */
+.ft-note--warn {
+  color: var(--ht-gray-800);
+  border-left: 3px solid var(--sport-ftbl);
+  padding-left: 0.6rem;
+}

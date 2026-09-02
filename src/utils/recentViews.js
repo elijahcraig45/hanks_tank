@@ -21,6 +21,7 @@ const STATIC_VIEWS = {
   "/transactions": { label: "Transactions", hint: "League moves", icon: "🔄" },
   "/AssistedAnalysis": { label: "Assisted Analysis", hint: "Guided insights", icon: "🤖" },
   "/football": { label: "Football", hint: "NFL and college board", icon: "🏈" },
+  "/pickem": { label: "Pick'em", hint: "Weekly picks and standings", icon: "🎯" },
   "/rankings": { label: "MLB Power Rankings", hint: "Bradley-Terry board", icon: "📋" },
 };
 
@@ -64,11 +65,37 @@ function buildDynamicView(pathname) {
     };
   }
 
+  const pickemMatch = pathname.match(/^\/pickem\/([^/]+)(?:\/([^/]+))?$/);
+  if (pickemMatch) {
+    const SPORTS = { nfl: "NFL", cfb: "College FBS" };
+    const SECTIONS = {
+      sheet: "make picks",
+      leaderboard: "standings",
+      mine: "your picks",
+    };
+    return {
+      label: `${SPORTS[pickemMatch[1]] || "Pick'em"} pick'em`,
+      hint: SECTIONS[pickemMatch[2]] || "weekly picks",
+      icon: "🎯",
+    };
+  }
+
+  const footballGameMatch = pathname.match(/^\/football\/([^/]+)\/game\/([^/]+)$/);
+  if (footballGameMatch) {
+    const LEAGUES = { nfl: "NFL", fbs: "College FBS", fcs: "College FCS" };
+    return {
+      label: `${LEAGUES[footballGameMatch[1]] || "Football"} game`,
+      hint: "Score, win probability and drives",
+      icon: "🏈",
+    };
+  }
+
   const footballMatch = pathname.match(/^\/football\/([^/]+)(?:\/([^/]+))?$/);
   if (footballMatch) {
     const LEAGUES = { nfl: "NFL", fbs: "College FBS", fcs: "College FCS" };
     const SECTIONS = {
       picks: "picks",
+      scoreboard: "scores and schedule",
       rankings: "power rankings",
       diagnostics: "model diagnostics",
       leaders: "league leaders",
