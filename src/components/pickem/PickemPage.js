@@ -29,9 +29,14 @@ const SECTIONS = [
   { key: 'mine', label: 'My picks' },
 ];
 
+/**
+ * Leaderboard scopes. Against-the-spread is absent for the same reason it is absent from
+ * the sheet: college lines only appear near kickoff, so there is nothing to score. See
+ * PickSheet for the numbers. The view still computes ATS, so restoring the entry brings
+ * the board back with its history intact.
+ */
 const PICK_TYPES = [
   { key: 'su', label: 'Straight up' },
-  { key: 'ats', label: 'Against the spread' },
 ];
 
 export default function PickemPage() {
@@ -121,17 +126,19 @@ export default function PickemPage() {
               <h2>Standings — {SPORTS.find((s) => s.key === sport)?.label} {season}</h2>
             </div>
 
-            <div className="ft-scope-switch">
-              {PICK_TYPES.map((t) => (
-                <button
-                  key={t.key}
-                  className={`ft-scope${boardType === t.key ? ' ft-scope--on' : ''}`}
-                  onClick={() => setBoardType(t.key)}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
+            {PICK_TYPES.length > 1 && (
+              <div className="ft-scope-switch">
+                {PICK_TYPES.map((t) => (
+                  <button
+                    key={t.key}
+                    className={`ft-scope${boardType === t.key ? ' ft-scope--on' : ''}`}
+                    onClick={() => setBoardType(t.key)}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="ft-filters">
               <label>

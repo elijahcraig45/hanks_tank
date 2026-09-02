@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ApiService from '../../services/api';
 import { getSession, onAuthChange } from '../../services/googleAuth';
 import { timeLabel, spreadFor } from './format';
@@ -16,9 +16,21 @@ import { timeLabel, spreadFor } from './format';
  * explanation rather than a silent no-op.
  */
 
+/**
+ * Pick types offered in the UI.
+ *
+ * Against-the-spread is deliberately absent for now. The contest is mostly college, and
+ * CollegeFootballData only posts a line close to kickoff: week 2 of 2026 had a spread on
+ * 7 of 86 games, so switching to ATS greyed out 92% of the sheet. Week 1 looks fine only
+ * because those games have been played.
+ *
+ * Nothing else was removed — picks still carry a pick_type, the grading view still
+ * scores 'ats', and the imported history is untouched — so restoring it is adding the
+ * entry back. It is worth revisiting for the NFL alone, where nflverse ships the whole
+ * season's lines with the schedule and coverage is 100%.
+ */
 const PICK_TYPES = [
   { key: 'su', label: 'Straight up', hint: 'Pick the winner' },
-  { key: 'ats', label: 'Against the spread', hint: 'Pick who covers' },
 ];
 
 /**
@@ -184,6 +196,9 @@ export default function PickSheet({ sport, season, authConfigured }) {
   const [games, setGames] = useState([]);
   const [meta, setMeta] = useState(null);
   const [draft, setDraft] = useState({});      // game_id -> side
+  // Selections made since the last successful save. Held in a ref so a reload can
+  // re-apply them without the load callback depending on them and re-running.
+  const unsavedRef = useRef({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState(null);
@@ -207,13 +222,15 @@ export default function PickSheet({ sport, season, authConfigured }) {
       setMeta(res.meta || null);
       if (!week && res.meta?.week) setWeek(String(res.meta.week));
 
-      // Seed the draft from what the server already has for this pick type, so the
-      // sheet opens showing existing picks rather than blank.
+      // Seed from what the server has, then re-apply anything picked locally and not
+      // yet saved. A reload happens for reasons the reader did not ask for — signing in
+      // mid-visit, or the refresh after a save — and silently dropping their unsaved
+      // selections is the worst thing a pick sheet can do.
       const existing = {};
       for (const p of res.meta?.picks || []) {
         if (p.pick_type === pickType) existing[p.game_id] = p.selected;
       }
-      setDraft(existing);
+      setDraft((local) => ({ ...existing, ...(keepStatus ? {} : local), ...unsavedRef.current }));
     } catch (e) {
       setGames([]); setMeta(null);
       setStatus({ kind: 'error', text: 'Could not load the week.' });
@@ -234,6 +251,9 @@ export default function PickSheet({ sport, season, authConfigured }) {
 
   // Switching sport resets the week, since week numbers do not line up across sports.
   useEffect(() => { setWeek(''); }, [sport]);
+
+  // A different week is a different set of games, so nothing carries over.
+  useEffect(() => { unsavedRef.current = {}; }, [week, sport, pickType]);
 
   const shown = useMemo(() => (
     onlyOpen ? games.filter((g) => !g.locked) : games
@@ -301,6 +321,8 @@ export default function PickSheet({ sport, season, authConfigured }) {
             }).join('; ')}`
           : `Saved ${res.data.accepted} pick${res.data.accepted === 1 ? '' : 's'}.`,
       });
+      // Saved, so nothing is outstanding any more.
+      unsavedRef.current = {};
       // Reload so anything that locked while the sheet was open shows as locked,
       // keeping the confirmation the reader just earned.
       await load({ keepStatus: true });
@@ -336,24 +358,19 @@ export default function PickSheet({ sport, season, authConfigured }) {
         </span>
       </div>
 
-      <div className="ft-scope-switch">
-        {PICK_TYPES.map((t) => (
-          <button
-            key={t.key}
-            className={`ft-scope${pickType === t.key ? ' ft-scope--on' : ''}`}
-            onClick={() => setPickType(t.key)}
-            title={t.hint}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {pickType === 'ats' && meta && meta.with_spread < meta.count && (
-        <p className="ft-note ft-note--warn">
-          {meta.count - meta.with_spread} of these games have no posted line, so they
-          can only be picked straight up.
-        </p>
+      {PICK_TYPES.length > 1 && (
+        <div className="ft-scope-switch">
+          {PICK_TYPES.map((t) => (
+            <button
+              key={t.key}
+              className={`ft-scope${pickType === t.key ? ' ft-scope--on' : ''}`}
+              onClick={() => setPickType(t.key)}
+              title={t.hint}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
       )}
 
       <div className="ft-filters">
@@ -407,11 +424,15 @@ export default function PickSheet({ sport, season, authConfigured }) {
                 pickType={pickType}
                 selected={draft[g.game_id] || null}
                 showDetail={showDetail}
-                onSelect={(side) => setDraft((d) => {
-                  const next = { ...d };
-                  if (side) next[g.game_id] = side; else delete next[g.game_id];
-                  return next;
-                })}
+                onSelect={(side) => {
+                  if (side) unsavedRef.current[g.game_id] = side;
+                  else delete unsavedRef.current[g.game_id];
+                  setDraft((d) => {
+                    const next = { ...d };
+                    if (side) next[g.game_id] = side; else delete next[g.game_id];
+                    return next;
+                  });
+                }}
               />
             ))}
           </ul>

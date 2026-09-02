@@ -94,25 +94,29 @@ describe('pick sheet', () => {
     for (const b of buttons) expect(b).toBeDisabled();
   });
 
-  it('shows the spread from each side, not the stored convention', async () => {
-    // Stored positive-means-home-favoured; a reader wants "Oklahoma +2" / "Michigan -2".
-    ApiService.getPickemGames.mockResolvedValue(sheet([game({ spread_line: 2.0 })]));
+  it('offers no pick-type switch while only one type is enabled', async () => {
+    // Against-the-spread is off because college lines only appear near kickoff, so a
+    // switch with one option would be furniture that does nothing.
+    ApiService.getPickemGames.mockResolvedValue(sheet([game()]));
     renderSheet();
     expect(await screen.findByText('Oklahoma')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: /Against the spread/ }));
-    expect(await screen.findByText('+2')).toBeInTheDocument();
-    expect(screen.getByText('-2')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Against the spread/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Straight up/ })).not.toBeInTheDocument();
   });
 
-  it('blocks an ATS pick on a game with no posted line', async () => {
-    ApiService.getPickemGames.mockResolvedValue(sheet([game({ spread_line: null })]));
+  it('lets every unlocked game be picked, line or no line', async () => {
+    // Straight up needs no spread, so a sheet with none is fully pickable — which is
+    // the whole reason ATS was the mode that felt broken.
+    ApiService.getPickemGames.mockResolvedValue(sheet([
+      game({ game_id: 'a', spread_line: null }),
+      game({ game_id: 'b', spread_line: null }),
+    ]));
     renderSheet();
-    expect(await screen.findByText('Oklahoma')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: /Against the spread/ }));
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Oklahoma/ })).toBeDisabled();
-    });
-    expect(screen.getByText(/no line/)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getAllByText('Oklahoma')).toHaveLength(2));
+    for (const b of screen.getAllByRole('button', { name: /Oklahoma|Michigan/ })) {
+      expect(b).toBeEnabled();
+    }
+    expect(screen.getByText(/0 of 2 open games picked/)).toBeInTheDocument();
   });
 
   it('saves the selected side and reports how many landed', async () => {
@@ -245,6 +249,46 @@ describe('pick sheet', () => {
     expect(screen.queryByText('#14')).not.toBeInTheDocument();
     expect(screen.queryByText('L1')).not.toBeInTheDocument();
     expect(screen.getByText('#6')).toBeInTheDocument();
+  });
+
+  it('switches sides rather than needing a deselect first', async () => {
+    ApiService.getPickemGames.mockResolvedValue(sheet([game()]));
+    renderSheet();
+    const away = await screen.findByRole('button', { name: /Oklahoma/ });
+    const home = screen.getByRole('button', { name: /Michigan/ });
+
+    await userEvent.click(away);
+    expect(away).toHaveAttribute('aria-pressed', 'true');
+    await userEvent.click(home);
+    expect(home).toHaveAttribute('aria-pressed', 'true');
+    expect(away).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('clears a pick when the chosen side is clicked again', async () => {
+    ApiService.getPickemGames.mockResolvedValue(sheet([game()]));
+    renderSheet();
+    const away = await screen.findByRole('button', { name: /Oklahoma/ });
+    await userEvent.click(away);
+    await userEvent.click(away);
+    expect(away).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByText(/0 of 1 open games picked/)).toBeInTheDocument();
+  });
+
+  it('keeps an unsaved pick through a reload the reader did not ask for', async () => {
+    // Signing in mid-visit reloads the sheet. Dropping selections then is the worst
+    // thing a pick sheet can do, and it is not something the reader triggered.
+    ApiService.getPickemGames.mockResolvedValue(sheet([game()]));
+    renderSheet();
+    const away = await screen.findByRole('button', { name: /Oklahoma/ });
+    await userEvent.click(away);
+    expect(screen.getByText(/1 of 1 open games picked/)).toBeInTheDocument();
+
+    // Force a reload by flipping a filter, which re-fetches.
+    await userEvent.click(screen.getByLabelText(/Hide games that have started/));
+    await userEvent.click(screen.getByLabelText(/Hide games that have started/));
+
+    expect(screen.getByRole('button', { name: /Oklahoma/ }))
+      .toHaveAttribute('aria-pressed', 'true');
   });
 
   it('cannot save while signed out, and says why', async () => {
