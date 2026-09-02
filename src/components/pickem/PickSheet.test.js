@@ -31,6 +31,14 @@ const game = (over = {}) => ({
   home_display: 'Michigan', away_display: 'Oklahoma',
   neutral_site: false, spread_line: 2.0, total_line: 45,
   home_score: null, away_score: null, completed: false, locked: false,
+  home_rank: 5, away_rank: 12, home_rating: 800, away_rating: 700,
+  home_record: '10-2', away_record: '8-4',
+  home_record_season: 2025, away_record_season: 2025,
+  home_ap_rank: 6, away_ap_rank: 14,
+  home_coaches_rank: 6, away_coaches_rank: 15,
+  home_fpi: 21.8, away_fpi: 12.4, home_fpi_rank: 7, away_fpi_rank: 19,
+  home_streak: 'W3', away_streak: 'L1',
+  model_home_win_prob: 0.62, model_pick: 'Michigan', model_confidence: 'medium',
   ...over,
 });
 
@@ -189,6 +197,54 @@ describe('pick sheet', () => {
     // The date belongs to the heading; repeating it on every row is noise.
     expect(heads[0].textContent).toMatch(/Sep/);
     expect(screen.getByRole('listitem').textContent).not.toMatch(/Sep/);
+  });
+
+  it('shows the context a pick actually turns on', async () => {
+    ApiService.getPickemGames.mockResolvedValue(sheet([game()]));
+    renderSheet();
+    expect(await screen.findByText('Oklahoma')).toBeInTheDocument();
+
+    // Polls, form and the market, each labelled so a bare number is unambiguous.
+    expect(screen.getByText('#6')).toBeInTheDocument();          // AP
+    expect(screen.getByText('W3')).toBeInTheDocument();          // form
+    expect(screen.getByText('45')).toBeInTheDocument();          // over/under
+    expect(screen.getByText(/Michigan 62%/)).toBeInTheDocument(); // the model
+    expect(screen.getByText('+21.8 (#7)')).toBeInTheDocument();  // FPI
+  });
+
+  it("labels a record from a previous season with its year", async () => {
+    // The preseason board carries last year's record; "10-2" beside a 2026 week 1
+    // game would otherwise read as this season's.
+    ApiService.getPickemGames.mockResolvedValue(sheet([game()]));
+    renderSheet();
+    expect(await screen.findByText('Oklahoma')).toBeInTheDocument();
+    expect(screen.getAllByText('2025').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Record')).not.toBeInTheDocument();
+  });
+
+  it('hides FPI and ratings when the reader turns detail off', async () => {
+    ApiService.getPickemGames.mockResolvedValue(sheet([game()]));
+    renderSheet();
+    expect(await screen.findByText('+21.8 (#7)')).toBeInTheDocument();
+    await userEvent.click(screen.getByLabelText(/Show FPI and ratings/));
+    expect(screen.queryByText('+21.8 (#7)')).not.toBeInTheDocument();
+    // Polls and form stay, because most picks turn on those.
+    expect(screen.getByText('#6')).toBeInTheDocument();
+    expect(screen.getByText('W3')).toBeInTheDocument();
+  });
+
+  it('omits a chip entirely when the value is missing', async () => {
+    // An unranked opponent has no AP rank and no FPI, and an empty cell reads worse
+    // than no chip.
+    ApiService.getPickemGames.mockResolvedValue(sheet([game({
+      away_ap_rank: null, away_coaches_rank: null, away_fpi: null,
+      away_fpi_rank: null, away_streak: null, away_record: null,
+    })]));
+    renderSheet();
+    expect(await screen.findByText('Oklahoma')).toBeInTheDocument();
+    expect(screen.queryByText('#14')).not.toBeInTheDocument();
+    expect(screen.queryByText('L1')).not.toBeInTheDocument();
+    expect(screen.getByText('#6')).toBeInTheDocument();
   });
 
   it('cannot save while signed out, and says why', async () => {

@@ -21,7 +21,78 @@ const PICK_TYPES = [
   { key: 'ats', label: 'Against the spread', hint: 'Pick who covers' },
 ];
 
-function GameRow({ game, pickType, selected, onSelect }) {
+/**
+ * The context strip under a side: rank, polls, FPI, record, form.
+ *
+ * Rendered as a row of small labelled chips rather than a table, because most of these
+ * are absent for most teams — an unranked FCS opponent has no AP rank and no FPI — and a
+ * table of mostly-empty cells is harder to read than a short list of what is actually
+ * known. Each chip carries its own label so a bare number is never ambiguous.
+ */
+function SideContext({ game, side, showDetail }) {
+  const p = side;
+  const rank = game[`${p}_rank`];
+  const ap = game[`${p}_ap_rank`];
+  const coaches = game[`${p}_coaches_rank`];
+  const fpi = game[`${p}_fpi`];
+  const fpiRank = game[`${p}_fpi_rank`];
+  const record = game[`${p}_record`];
+  const recordSeason = game[`${p}_record_season`];
+  const streak = game[`${p}_streak`];
+
+  const chips = [];
+  if (record) {
+    // The preseason board carries last year's record, so say which year it is rather
+    // than letting "14-3" read as this season's.
+    const stale = recordSeason && recordSeason !== game.season;
+    chips.push({
+      key: 'rec',
+      label: stale ? `${recordSeason}` : 'Record',
+      value: record,
+      title: stale
+        ? `${recordSeason} regular-season record`
+        : 'Record this season',
+    });
+  }
+  if (streak) {
+    chips.push({
+      key: 'streak',
+      label: 'Form',
+      value: streak,
+      tone: streak.startsWith('W') ? 'good' : streak.startsWith('L') ? 'bad' : '',
+      title: `${streak[0] === 'W' ? 'Won' : streak[0] === 'L' ? 'Lost' : 'Tied'} last ${streak.slice(1)}`,
+    });
+  }
+  if (ap) chips.push({ key: 'ap', label: 'AP', value: `#${ap}`, title: 'AP poll' });
+  if (coaches && coaches !== ap) {
+    chips.push({ key: 'co', label: 'Coaches', value: `#${coaches}`, title: 'Coaches poll' });
+  }
+  if (showDetail && fpi !== null && fpi !== undefined) {
+    chips.push({
+      key: 'fpi',
+      label: 'FPI',
+      value: `${Number(fpi) > 0 ? '+' : ''}${Number(fpi).toFixed(1)}${fpiRank ? ` (#${fpiRank})` : ''}`,
+      title: "ESPN's Football Power Index, and its rank",
+    });
+  }
+  if (showDetail && rank) {
+    chips.push({ key: 'rk', label: 'Rating', value: `#${rank}`, title: "This site's power ranking" });
+  }
+
+  if (!chips.length) return null;
+  return (
+    <div className="pk-ctx">
+      {chips.map((c) => (
+        <span key={c.key} className={`pk-chip${c.tone ? ` pk-chip--${c.tone}` : ''}`} title={c.title}>
+          <span className="pk-chip-label">{c.label}</span>
+          <span className="pk-chip-value">{c.value}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function GameRow({ game, pickType, selected, onSelect, showDetail }) {
   const locked = game.locked;
   const noLine = pickType === 'ats' && game.spread_line === null;
   const disabled = locked || noLine;
@@ -64,10 +135,45 @@ function GameRow({ game, pickType, selected, onSelect }) {
         {noLine && !locked && <span className="pk-tag">no line</span>}
       </div>
       <div className="pk-sides">
-        {sideButton('away')}
+        <div className="pk-side-wrap">
+          {sideButton('away')}
+          <SideContext game={game} side="away" showDetail={showDetail} />
+        </div>
         <span className="pk-at">at</span>
-        {sideButton('home')}
+        <div className="pk-side-wrap">
+          {sideButton('home')}
+          <SideContext game={game} side="home" showDetail={showDetail} />
+        </div>
       </div>
+
+      {/* The market and the model, once per game rather than per side. */}
+      {(game.total_line !== null || game.model_pick) && (
+        <div className="pk-game-foot">
+          {game.total_line !== null && game.total_line !== undefined && (
+            <span className="pk-chip" title="Closing over/under">
+              <span className="pk-chip-label">O/U</span>
+              <span className="pk-chip-value">{game.total_line}</span>
+            </span>
+          )}
+          {game.model_pick && (
+            <span
+              className="pk-chip pk-chip--model"
+              title={`This site's model, ${game.model_confidence} confidence`}
+            >
+              <span className="pk-chip-label">Model</span>
+              <span className="pk-chip-value">
+                {game.model_pick}
+                {game.model_home_win_prob !== null && game.model_home_win_prob !== undefined
+                  && ` ${Math.round(
+                    (game.model_pick === game.home_display
+                      ? game.model_home_win_prob
+                      : 1 - game.model_home_win_prob) * 100,
+                  )}%`}
+              </span>
+            </span>
+          )}
+        </div>
+      )}
     </li>
   );
 }
@@ -83,6 +189,9 @@ export default function PickSheet({ sport, season, authConfigured }) {
   const [status, setStatus] = useState(null);
   const [signedIn, setSignedIn] = useState(Boolean(getSession()));
   const [onlyOpen, setOnlyOpen] = useState(true);
+  // Rank and FPI are the numbers people either want on every card or find noisy;
+  // records and polls are always shown because they are what most picks turn on.
+  const [showDetail, setShowDetail] = useState(true);
 
   useEffect(() => onAuthChange((s) => setSignedIn(Boolean(s))), []);
 
@@ -264,6 +373,14 @@ export default function PickSheet({ sport, season, authConfigured }) {
           />
           Hide games that have started
         </label>
+        <label className="pk-toggle">
+          <input
+            type="checkbox"
+            checked={showDetail}
+            onChange={(e) => setShowDetail(e.target.checked)}
+          />
+          Show FPI and ratings
+        </label>
       </div>
 
       {!signedIn && (
@@ -289,6 +406,7 @@ export default function PickSheet({ sport, season, authConfigured }) {
                 game={g}
                 pickType={pickType}
                 selected={draft[g.game_id] || null}
+                showDetail={showDetail}
                 onSelect={(side) => setDraft((d) => {
                   const next = { ...d };
                   if (side) next[g.game_id] = side; else delete next[g.game_id];
