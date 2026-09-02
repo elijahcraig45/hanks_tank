@@ -65,7 +65,7 @@ describe('pick sheet', () => {
   it('renders each game as two pickable sides', async () => {
     ApiService.getPickemGames.mockResolvedValue(sheet([game()]));
     renderSheet();
-    await waitFor(() => expect(screen.getByText('Oklahoma')).toBeInTheDocument());
+    expect(await screen.findByText('Oklahoma')).toBeInTheDocument();
     expect(screen.getByText('Michigan')).toBeInTheDocument();
   });
 
@@ -78,12 +78,10 @@ describe('pick sheet', () => {
 
     // The sheet hides started games by default, which is what you want while picking;
     // reviewing them means unticking the filter.
-    await waitFor(() => expect(
-      screen.getByLabelText(/Hide games that have started/),
-    ).toBeInTheDocument());
+    expect(await screen.findByLabelText(/Hide games that have started/)).toBeInTheDocument();
     await userEvent.click(screen.getByLabelText(/Hide games that have started/));
 
-    await waitFor(() => expect(screen.getByText(/Final 17–24/)).toBeInTheDocument());
+    expect(await screen.findByText(/Final 17–24/)).toBeInTheDocument();
     const buttons = screen.getAllByRole('button', { name: /Oklahoma|Michigan/ });
     for (const b of buttons) expect(b).toBeDisabled();
   });
@@ -92,16 +90,16 @@ describe('pick sheet', () => {
     // Stored positive-means-home-favoured; a reader wants "Oklahoma +2" / "Michigan -2".
     ApiService.getPickemGames.mockResolvedValue(sheet([game({ spread_line: 2.0 })]));
     renderSheet();
-    await waitFor(() => expect(screen.getByText('Oklahoma')).toBeInTheDocument());
+    expect(await screen.findByText('Oklahoma')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: /Against the spread/ }));
-    await waitFor(() => expect(screen.getByText('+2')).toBeInTheDocument());
+    expect(await screen.findByText('+2')).toBeInTheDocument();
     expect(screen.getByText('-2')).toBeInTheDocument();
   });
 
   it('blocks an ATS pick on a game with no posted line', async () => {
     ApiService.getPickemGames.mockResolvedValue(sheet([game({ spread_line: null })]));
     renderSheet();
-    await waitFor(() => expect(screen.getByText('Oklahoma')).toBeInTheDocument());
+    expect(await screen.findByText('Oklahoma')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: /Against the spread/ }));
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Oklahoma/ })).toBeDisabled();
@@ -116,7 +114,7 @@ describe('pick sheet', () => {
     });
     renderSheet();
 
-    await waitFor(() => expect(screen.getByText('Oklahoma')).toBeInTheDocument());
+    expect(await screen.findByText('Oklahoma')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: /Oklahoma/ }));
 
     const save = screen.getByRole('button', { name: 'Save picks' });
@@ -129,7 +127,7 @@ describe('pick sheet', () => {
     expect(payload.picks).toEqual([
       { game_id: 'g1', pick_type: 'su', selected: 'away' },
     ]);
-    await waitFor(() => expect(screen.getByText(/Saved 1 pick/)).toBeInTheDocument());
+    expect(await screen.findByText(/Saved 1 pick/)).toBeInTheDocument();
   });
 
   it('names the games it could not save rather than just counting them', async () => {
@@ -151,9 +149,7 @@ describe('pick sheet', () => {
     await waitFor(() => expect(save).toBeEnabled());
     await userEvent.click(save);
 
-    await waitFor(() => {
-      expect(screen.getByText(/Oklahoma at Michigan \(kicked off\)/)).toBeInTheDocument();
-    });
+    expect(await screen.findByText(/Oklahoma at Michigan \(kicked off\)/)).toBeInTheDocument();
   });
 
   it('seeds the sheet with picks already saved for this type', async () => {
@@ -169,11 +165,37 @@ describe('pick sheet', () => {
       .toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('groups games by kickoff day, so a sixty-game Saturday is scannable', async () => {
+    ApiService.getPickemGames.mockResolvedValue(sheet([
+      game({ game_id: 'thu', kickoff: '2026-09-10T23:00:00.000Z' }),
+      game({ game_id: 'sat1', kickoff: '2026-09-12T16:00:00.000Z' }),
+      game({ game_id: 'sat2', kickoff: '2026-09-12T20:00:00.000Z' }),
+    ]));
+    renderSheet();
+
+    // Two day groups, with the Saturday holding two games.
+    const heads = await screen.findAllByRole('heading', { level: 3 });
+    expect(heads).toHaveLength(2);
+    expect(heads[1].textContent).toMatch(/2 games/);
+    expect(heads[0].textContent).toMatch(/1 game$/);
+  });
+
+  it('shows only the clock on a row that already sits under a day heading', async () => {
+    ApiService.getPickemGames.mockResolvedValue(sheet([
+      game({ kickoff: '2026-09-12T16:00:00.000Z' }),
+    ]));
+    renderSheet();
+    const heads = await screen.findAllByRole('heading', { level: 3 });
+    // The date belongs to the heading; repeating it on every row is noise.
+    expect(heads[0].textContent).toMatch(/Sep/);
+    expect(screen.getByRole('listitem').textContent).not.toMatch(/Sep/);
+  });
+
   it('cannot save while signed out, and says why', async () => {
     googleAuth.getSession.mockReturnValue(null);
     ApiService.getPickemGames.mockResolvedValue(sheet([game()], { signed_in: false }));
     renderSheet();
-    await waitFor(() => expect(screen.getByText(/Sign in above to save/)).toBeInTheDocument());
+    expect(await screen.findByText(/Sign in above to save/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save picks' })).toBeDisabled();
   });
 });

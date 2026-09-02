@@ -1,6 +1,12 @@
 /* Pick'em contest. Prefix pk-. Reuses the ft- panel, table and switch furniture. */
 
 .pk-page { display: grid; gap: 1rem; }
+
+/* The football pages cap at 1240px, which suits a single wide table. A pick sheet is
+   dozens of small independent cards, so it reads far better across more columns —
+   sixty games at 1240px is a sixty-row scroll with dead space either side. */
+.pk-page .ft-hero-inner,
+.pk-page .ft-body { max-width: 1680px; }
 .pk-tagline {
   margin: .5rem 0 0; font-size: .85rem; max-width: 68ch;
   color: rgba(255, 255, 255, .78);
@@ -32,11 +38,39 @@
 
 /* ── The sheet ──────────────────────────────────────────────────────────── */
 
-.pk-games { list-style: none; margin: .8rem 0 0; padding: 0; display: grid; gap: .4rem; }
+/* ── Day groups ─────────────────────────────────────────────────────────── */
+
+.pk-day { margin-top: 1.1rem; }
+.pk-day:first-of-type { margin-top: .8rem; }
+
+/* Sticky so the day a game belongs to is still visible after scrolling into the
+   middle of a sixty-game Saturday. */
+.pk-day-head {
+  position: sticky; top: 0; z-index: 2;
+  display: flex; align-items: baseline; gap: .6rem;
+  margin: 0 0 .5rem; padding: .35rem 0;
+  background: #fff;
+  border-bottom: 1px solid var(--ht-gray-200);
+  font-size: .88rem; font-weight: 700;
+}
+.pk-day-count {
+  font-size: .74rem; font-weight: 400; color: var(--ht-gray-600);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Auto-fill rather than a fixed count, so the sheet uses whatever width it is given:
+   one column on a phone, four or five on a desktop. */
+.pk-games {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; gap: .45rem;
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  align-items: start;
+}
 
 .pk-game {
   border: 1px solid var(--ht-gray-200); border-radius: var(--ht-radius);
   padding: .5rem .65rem; background: #fff;
+  display: flex; flex-direction: column; gap: .35rem;
 }
 /* A locked game stays visible but reads as inert — hiding it would make a sheet
    silently change length as the day goes on. */
@@ -44,7 +78,7 @@
 
 .pk-game-meta {
   display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
-  font-size: .72rem; color: var(--ht-gray-600); margin-bottom: .35rem;
+  font-size: .72rem; color: var(--ht-gray-600);
 }
 .pk-kick { font-variant-numeric: tabular-nums; }
 .pk-tag {
@@ -56,6 +90,13 @@
 
 .pk-sides { display: flex; align-items: center; gap: .45rem; }
 .pk-at { font-size: .72rem; color: var(--ht-gray-400); flex: 0 0 auto; }
+
+/* Below about 26rem a two-across pair truncates long names to nothing, so the sides
+   stack and the "at" separator is dropped. */
+@container pk-card (max-width: 26rem) {
+  .pk-sides { flex-direction: column; align-items: stretch; }
+  .pk-at { display: none; }
+}
 
 .pk-side {
   flex: 1 1 0; min-width: 0;
@@ -88,9 +129,11 @@
 
 .pk-actions {
   display: flex; align-items: center; justify-content: space-between;
-  gap: 1rem; flex-wrap: wrap; margin-top: .9rem;
-  padding-top: .8rem; border-top: 1px solid var(--ht-gray-200);
-  position: sticky; bottom: 0; background: #fff;
+  gap: 1rem; flex-wrap: wrap; margin-top: 1.1rem;
+  padding: .8rem 0; border-top: 1px solid var(--ht-gray-200);
+  /* Sticky so the save button is reachable from anywhere in a long sheet rather than
+     only after scrolling to the bottom of sixty games. */
+  position: sticky; bottom: 0; z-index: 3; background: #fff;
 }
 .pk-count { font-size: .82rem; color: var(--ht-gray-600); }
 
@@ -121,3 +164,12 @@
 .pk-vegas { color: var(--ht-gray-600); }
 .pk-mine-kick { display: block; font-size: .72rem; color: var(--ht-gray-600); }
 .pk-beat { color: var(--ht-green); font-weight: 700; }
+
+/* ── Narrow screens ─────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .pk-games { grid-template-columns: 1fr; }
+  .pk-day-head { font-size: .82rem; }
+  .pk-actions { gap: .5rem; }
+  .pk-save { width: 100%; }
+}

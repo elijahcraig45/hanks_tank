@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ApiService from '../../services/api';
 import { getSession, onAuthChange } from '../../services/googleAuth';
-import { kickoffLabel, spreadFor } from './format';
+import { timeLabel, spreadFor } from './format';
 
 /**
  * The week's pick sheet.
@@ -45,9 +45,14 @@ function GameRow({ game, pickType, selected, onSelect }) {
   };
 
   return (
-    <li className={`pk-game${locked ? ' pk-game--locked' : ''}`}>
+    <li
+      className={`pk-game${locked ? ' pk-game--locked' : ''}`}
+      // Named container so the sides can stack when the card itself is narrow,
+      // independently of the viewport — the grid decides the card width, not the screen.
+      style={{ containerType: 'inline-size', containerName: 'pk-card' }}
+    >
       <div className="pk-game-meta">
-        <span className="pk-kick">{kickoffLabel(game.kickoff)}</span>
+        <span className="pk-kick">{timeLabel(game.kickoff)}</span>
         {game.neutral_site && <span className="pk-tag">neutral</span>}
         {locked && (
           <span className="pk-tag pk-tag--locked">
@@ -124,6 +129,27 @@ export default function PickSheet({ sport, season, authConfigured }) {
   const shown = useMemo(() => (
     onlyOpen ? games.filter((g) => !g.locked) : games
   ), [games, onlyOpen]);
+
+  /**
+   * Games grouped by kickoff day.
+   *
+   * A college Saturday is sixty games, and one flat list of them is unscannable. The
+   * day is also the unit people actually think in — "who have I got Thursday" — and it
+   * is what makes the lock legible, since a whole day locks at a time.
+   */
+  const byDay = useMemo(() => {
+    const groups = new Map();
+    for (const g of shown) {
+      const key = g.kickoff
+        ? new Date(g.kickoff).toLocaleDateString(undefined, {
+          weekday: 'long', month: 'short', day: 'numeric',
+        })
+        : 'Kickoff to be announced';
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(g);
+    }
+    return [...groups.entries()];
+  }, [shown]);
 
   const pickable = useMemo(() => shown.filter(
     (g) => !g.locked && (pickType === 'su' || g.spread_line !== null),
@@ -248,21 +274,31 @@ export default function PickSheet({ sport, season, authConfigured }) {
         </p>
       )}
 
-      <ul className="pk-games">
-        {shown.map((g) => (
-          <GameRow
-            key={g.game_id}
-            game={g}
-            pickType={pickType}
-            selected={draft[g.game_id] || null}
-            onSelect={(side) => setDraft((d) => {
-              const next = { ...d };
-              if (side) next[g.game_id] = side; else delete next[g.game_id];
-              return next;
-            })}
-          />
-        ))}
-      </ul>
+      {byDay.map(([day, dayGames]) => (
+        <div key={day} className="pk-day">
+          <h3 className="pk-day-head">
+            {day}
+            <span className="pk-day-count">
+              {dayGames.length} game{dayGames.length === 1 ? '' : 's'}
+            </span>
+          </h3>
+          <ul className="pk-games">
+            {dayGames.map((g) => (
+              <GameRow
+                key={g.game_id}
+                game={g}
+                pickType={pickType}
+                selected={draft[g.game_id] || null}
+                onSelect={(side) => setDraft((d) => {
+                  const next = { ...d };
+                  if (side) next[g.game_id] = side; else delete next[g.game_id];
+                  return next;
+                })}
+              />
+            ))}
+          </ul>
+        </div>
+      ))}
 
       {!shown.length && (
         <div className="ft-state">
