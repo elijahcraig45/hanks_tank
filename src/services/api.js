@@ -3,6 +3,7 @@
  * Handles all backend communication with error handling, retries, and caching
  */
 
+import { getToken } from './googleAuth';
 import { SEASONS } from '../config/constants';
 
 // Default to same-origin API routing in production so hankstank.com/api/* stays primary.
@@ -81,11 +82,21 @@ class ApiService {
     try {
       const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
       
+      // The pick'em endpoints authenticate with a Google ID token. Attached here
+      // rather than at each call site so no endpoint can forget it, and skipped
+      // silently when nobody is signed in — the public reads work either way.
+      const authHeaders = {};
+      if (options.auth !== false) {
+        const token = getToken();
+        if (token) authHeaders.Authorization = `Bearer ${token}`;
+      }
+
       const response = await fetch(url, {
         ...options,
         signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
+          ...authHeaders,
           ...options.headers,
         },
       });
@@ -134,9 +145,16 @@ class ApiService {
    */
   async get(endpoint, options = {}) {
     const cacheKey = `GET:${endpoint}`;
-    
+
+    // `cacheTTL: 0` means do not cache — distinct from omitting it, which takes the
+    // 10-minute default. It used to collapse into the default via `|| 10`, which made
+    // "always fresh" silently mean "ten minutes stale": enough for a pick sheet to show
+    // a game that had already kicked off as still open.
+    const ttl = options.cacheTTL === undefined ? 10 : Number(options.cacheTTL);
+    const cacheable = Number.isFinite(ttl) && ttl > 0;
+
     // Return cached data if valid
-    if (this.isCacheValid(cacheKey)) {
+    if (cacheable && this.isCacheValid(cacheKey)) {
       console.log(`📦 Cache hit: ${endpoint}`);
       return this.cache.get(cacheKey);
     }
@@ -150,7 +168,7 @@ class ApiService {
     // Make request
     const requestPromise = this.request(endpoint, { ...options, method: 'GET' })
       .then(data => {
-        this.setCache(cacheKey, data, options.cacheTTL || 10);
+        if (cacheable) this.setCache(cacheKey, data, ttl);
         this.pendingRequests.delete(cacheKey);
         return data;
       })
@@ -207,6 +225,139 @@ class ApiService {
     return this.get(`/football/${sport}/stats/teams?${qs.toString()}`, { cacheTTL: 30 });
   }
 
+  /**
+   * Per-team SEASON totals — a different resource from getFootballTeamStats, which is a
+   * per-week game log. Separate endpoints because the tables differ in grain: the season
+   * table has no `week` column, so sending one is meaningless rather than a filter.
+   *
+   * `group` names a column group from meta.groups ('core' by default, 'all' for
+   * everything); `fields` overrides it with an explicit list. Both are allow-listed
+   * server-side — the default keeps a 154-column table from arriving in full.
+   */
+  async getFootballTeamSeasonStats(
+    sport,
+    { season, team, search, group, fields, sort, direction, limit, offset } = {},
+  ) {
+    const qs = new URLSearchParams();
+    if (season) qs.set('season', String(season));
+    if (team) qs.set('team', team);
+    if (search) qs.set('search', search);
+    if (group) qs.set('group', group);
+    if (fields) qs.set('fields', fields);
+    if (sort) qs.set('sort', sort);
+    if (direction) qs.set('direction', direction);
+    if (limit) qs.set('limit', String(limit));
+    if (offset) qs.set('offset', String(offset));
+    return this.get(`/football/${sport}/stats/teams/season?${qs.toString()}`, {
+      cacheTTL: 30,
+    });
+  }
+
+  /**
+   * Team metadata: abbreviation, names, conference, colours, logos, and the aliases the
+   * other football tables use for the same team.
+   *
+   * Long TTL on purpose — this is reference data that changes once a year, and it is
+   * fetched to paint logos on cards that render in the homepage's first frame.
+   */
+  async getFootballTeams(sport, { search, conference, active, limit } = {}) {
+    const qs = new URLSearchParams();
+    if (search) qs.set('search', search);
+    if (conference) qs.set('conference', conference);
+    if (active === false) qs.set('active', 'false');
+    if (limit) qs.set('limit', String(limit));
+    return this.get(`/football/${sport}/teams?${qs.toString()}`, { cacheTTL: 1440 });
+  }
+
+  /**
+   * Live scoreboard for a week. Short TTL because it is the polling surface — one
+   * upstream call covers every game, so the backend absorbs the repeats.
+   */
+  // ============ Pick'em contest ============
+  // Reads are public; writes need a Google ID token, which request() attaches.
+
+  /** What the browser needs to render sign-in, and which sports are in play. */
+  async getPickemConfig() {
+    return this.get('/pickem/config', { cacheTTL: 60 });
+  }
+
+  /**
+   * A week's pick sheet. Every game carries a server-computed `locked`, and a
+   * signed-in caller gets their own picks back in `meta.picks` — one request, so the
+   * sheet and the user's existing selections can never render out of step.
+   *
+   * Not cached: a stale sheet could show a kicked-off game as still open.
+   */
+  async getPickemGames(sport, { season, week } = {}) {
+    const qs = new URLSearchParams({ sport });
+    if (season) qs.set('season', String(season));
+    if (week !== undefined && week !== null && week !== '') qs.set('week', String(week));
+    return this.get(`/pickem/games?${qs.toString()}`, { cacheTTL: 0 });
+  }
+
+  /** Upsert picks. Locked games come back in `data.rejected` rather than failing. */
+  async submitPicks(sport, { season, week, picks }) {
+    return this.request('/pickem/picks', {
+      method: 'PUT',
+      body: JSON.stringify({ sport, season, week, picks }),
+    });
+  }
+
+  /** Public standings. Omit `week` for the season table. */
+  async getPickemLeaderboard(sport, { season, week, pickType = 'ats' } = {}) {
+    const qs = new URLSearchParams({ sport, pick_type: pickType });
+    if (season) qs.set('season', String(season));
+    if (week !== undefined && week !== null && week !== '') qs.set('week', String(week));
+    return this.get(`/pickem/leaderboard?${qs.toString()}`, { cacheTTL: 1 });
+  }
+
+  /** The signed-in user's own graded picks, which the leaderboard only aggregates. */
+  async getMyPicks({ sport, season, week } = {}) {
+    const qs = new URLSearchParams();
+    if (sport) qs.set('sport', sport);
+    if (season) qs.set('season', String(season));
+    if (week !== undefined && week !== null && week !== '') qs.set('week', String(week));
+    return this.get(`/pickem/me?${qs.toString()}`, { cacheTTL: 0 });
+  }
+
+  async getFootballScoreboard(sport, { season, week, division } = {}) {
+    const qs = new URLSearchParams();
+    if (season) qs.set('season', String(season));
+    if (week) qs.set('week', String(week));
+    if (division) qs.set('division', division);
+    return this.get(`/football/${sport}/scoreboard?${qs.toString()}`, { cacheTTL: 0.5 });
+  }
+
+  /**
+   * Fixtures rather than scores. Served from the live feed, not BigQuery — the games
+   * tables hold completed games only, so an upcoming week is not in them.
+   */
+  async getFootballSchedule(sport, { season, week, team, division } = {}) {
+    const qs = new URLSearchParams();
+    if (season) qs.set('season', String(season));
+    if (week) qs.set('week', String(week));
+    if (team) qs.set('team', team);
+    if (division) qs.set('division', division);
+    return this.get(`/football/${sport}/schedule?${qs.toString()}`, { cacheTTL: 30 });
+  }
+
+  /**
+   * One game in full: linescore, win-probability curve, box scores, drives and the
+   * model's own pick.
+   *
+   * `week` is worth passing when the caller knows it — the upstream box-score and drive
+   * feeds cannot be queried without a week, and supplying it saves the backend a
+   * BigQuery lookup. Read `meta.available` to decide which panels to draw.
+   */
+  async getFootballGame(sport, gameId, { season, week } = {}) {
+    const qs = new URLSearchParams();
+    if (season) qs.set('season', String(season));
+    if (week) qs.set('week', String(week));
+    return this.get(`/football/${sport}/games/${gameId}?${qs.toString()}`, {
+      cacheTTL: 1,
+    });
+  }
+
   async getFootballRankings(sport, season, limit = 25) {
     return this.getRankings(sport, { season, limit });
   }
@@ -249,10 +400,12 @@ class ApiService {
   }
 
   /** Per-player season stats. Only sports with a full player table return rows. */
-  async getFootballPlayers(sport, { season, search, position, team, sort, direction, limit, offset } = {}) {
+  async getFootballPlayers(sport, { season, search, position, team, sort, direction, group, fields, limit, offset } = {}) {
     const qs = new URLSearchParams({ season: String(season) });
     if (search) qs.set('search', search);
     if (position) qs.set('position', position);
+    if (group) qs.set('group', group);
+    if (fields) qs.set('fields', fields);
     if (team) qs.set('team', team);
     if (sort) qs.set('sort', sort);
     if (direction) qs.set('direction', direction);

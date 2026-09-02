@@ -1,0 +1,223 @@
+/* Pick'em contest. Prefix pk-. Reuses the ft- panel, table and switch furniture. */
+
+.pk-page { display: grid; gap: 1rem; }
+
+/* The football pages cap at 1240px, which suits a single wide table. A pick sheet is
+   dozens of small independent cards, so it reads far better across more columns —
+   sixty games at 1240px is a sixty-row scroll with dead space either side. */
+.pk-page .ft-hero-inner,
+.pk-page .ft-body { max-width: 1680px; }
+.pk-tagline {
+  margin: .5rem 0 0; font-size: .85rem; max-width: 68ch;
+  color: rgba(255, 255, 255, .78);
+}
+
+/* ── Sign-in ────────────────────────────────────────────────────────────── */
+
+.pk-auth {
+  display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+  font-size: .82rem; color: rgba(255, 255, 255, .82);
+}
+.pk-auth--unset {
+  display: block; background: rgba(255, 255, 255, .08);
+  border-radius: var(--ht-radius); padding: .6rem .8rem; max-width: 46ch;
+}
+.pk-auth--unset p { margin: .3rem 0 0; color: rgba(255, 255, 255, .7); }
+.pk-auth-error { color: var(--sport-ftbl-on); }
+.pk-whoami { white-space: nowrap; }
+
+.pk-avatar { width: 1.6rem; height: 1.6rem; border-radius: 50%; }
+.pk-avatar--sm { width: 1.15rem; height: 1.15rem; vertical-align: -.2rem; margin-right: .35rem; }
+
+.pk-signout {
+  appearance: none; border: 1px solid rgba(255, 255, 255, .3);
+  background: transparent; color: inherit; font: inherit; font-size: .78rem;
+  padding: .2rem .6rem; border-radius: 999px; cursor: pointer;
+}
+.pk-signout:hover { background: rgba(255, 255, 255, .12); }
+
+/* ── The sheet ──────────────────────────────────────────────────────────── */
+
+/* ── Day groups ─────────────────────────────────────────────────────────── */
+
+.pk-day { margin-top: 1.1rem; }
+.pk-day:first-of-type { margin-top: .8rem; }
+
+/* Sticky so the day a game belongs to is still visible after scrolling into the
+   middle of a sixty-game Saturday. */
+.pk-day-head {
+  position: sticky; top: 0; z-index: 2;
+  display: flex; align-items: baseline; gap: .6rem;
+  margin: 0 0 .5rem; padding: .35rem 0;
+  background: #fff;
+  border-bottom: 1px solid var(--ht-gray-200);
+  font-size: .88rem; font-weight: 700;
+}
+.pk-day-count {
+  font-size: .74rem; font-weight: 400; color: var(--ht-gray-600);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Auto-fill rather than a fixed count, so the sheet uses whatever width it is given:
+   one column on a phone, four or five on a desktop. */
+.pk-games {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; gap: .45rem;
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  align-items: start;
+}
+
+.pk-game {
+  border: 1px solid var(--ht-gray-200); border-radius: var(--ht-radius);
+  padding: .5rem .65rem; background: #fff;
+  display: flex; flex-direction: column; gap: .35rem;
+}
+/* A locked game stays visible but reads as inert — hiding it would make a sheet
+   silently change length as the day goes on. */
+.pk-game--locked { background: var(--ht-gray-50); opacity: .72; }
+
+.pk-game-meta {
+  display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+  font-size: .72rem; color: var(--ht-gray-600);
+}
+.pk-kick { font-variant-numeric: tabular-nums; }
+.pk-tag {
+  font-size: .68rem; text-transform: uppercase; letter-spacing: .04em;
+  background: var(--ht-gray-100); color: var(--ht-gray-600);
+  padding: .05rem .35rem; border-radius: 3px;
+}
+.pk-tag--locked { background: var(--sport-ftbl-soft); color: var(--sport-ftbl); }
+
+/* Each side is a button plus its context, so the pair needs a wrapper to stay
+   aligned when one team has more chips than the other. */
+.pk-side-wrap { flex: 1 1 0; min-width: 0; display: grid; gap: .25rem; align-content: start; }
+
+.pk-sides { display: flex; align-items: flex-start; gap: .45rem; }
+.pk-at { font-size: .72rem; color: var(--ht-gray-400); flex: 0 0 auto; }
+
+/* Below about 26rem a two-across pair truncates long names to nothing, so the sides
+   stack and the "at" separator is dropped. */
+@container pk-card (max-width: 26rem) {
+  .pk-sides { flex-direction: column; align-items: stretch; }
+  .pk-at { display: none; }
+}
+
+.pk-side {
+  width: 100%;
+  display: flex; align-items: baseline; justify-content: space-between; gap: .4rem;
+  appearance: none; text-align: left; cursor: pointer;
+  border: 1px solid var(--ht-gray-200); border-radius: var(--ht-radius);
+  background: #fff; color: inherit; font: inherit; font-size: .85rem;
+  padding: .4rem .55rem;
+  transition: border-color .12s ease, background .12s ease;
+}
+.pk-side:hover:not(:disabled) { border-color: var(--sport-ftbl); }
+.pk-side:focus-visible { outline: 2px solid var(--sport-ftbl); outline-offset: 1px; }
+.pk-side:disabled { cursor: not-allowed; color: var(--ht-gray-600); }
+
+/* The selected side is marked by fill AND weight, not colour alone. */
+.pk-side--on {
+  background: var(--sport-ftbl-soft);
+  border-color: var(--sport-ftbl);
+  font-weight: 700;
+}
+.pk-side-team { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pk-side-spread {
+  flex: 0 0 auto; font-variant-numeric: tabular-nums;
+  font-size: .78rem; color: var(--ht-gray-600);
+}
+.pk-side--on .pk-side-spread { color: var(--sport-ftbl); }
+
+.pk-toggle { flex-direction: row !important; align-items: center; gap: .4rem; }
+.pk-toggle input { width: auto; }
+
+.pk-actions {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap; margin-top: 1.1rem;
+  padding: .8rem 0; border-top: 1px solid var(--ht-gray-200);
+  /* Sticky so the save button is reachable from anywhere in a long sheet rather than
+     only after scrolling to the bottom of sixty games. */
+  position: sticky; bottom: 0; z-index: 3; background: #fff;
+}
+.pk-count { font-size: .82rem; color: var(--ht-gray-600); }
+
+.pk-save {
+  appearance: none; border: 0; border-radius: var(--ht-radius);
+  background: var(--sport-ftbl); color: #fff; font: inherit; font-weight: 600;
+  padding: .5rem 1.1rem; cursor: pointer;
+}
+.pk-save:disabled { background: var(--ht-gray-400); cursor: not-allowed; }
+.pk-save:focus-visible { outline: 2px solid var(--ht-navy); outline-offset: 2px; }
+
+.pk-status {
+  margin: .7rem 0 0; padding: .5rem .7rem; border-radius: var(--ht-radius);
+  font-size: .82rem; border-left: 3px solid;
+}
+.pk-status--ok    { background: rgba(0, 131, 0, .08); border-color: var(--ht-green); }
+.pk-status--warn  { background: var(--sport-ftbl-soft); border-color: var(--sport-ftbl); }
+.pk-status--error { background: rgba(227, 73, 72, .09); border-color: var(--ht-red); }
+
+/* ── Standings ──────────────────────────────────────────────────────────── */
+
+.pk-board-name { white-space: nowrap; }
+.pk-board-you { background: var(--sport-ftbl-soft); }
+.pk-you {
+  margin-left: .4rem; font-size: .66rem; text-transform: uppercase;
+  letter-spacing: .05em; color: var(--sport-ftbl); font-weight: 700;
+}
+.pk-vegas { color: var(--ht-gray-600); }
+.pk-mine-kick { display: block; font-size: .72rem; color: var(--ht-gray-600); }
+.pk-beat { color: var(--ht-green); font-weight: 700; }
+
+/* ── Narrow screens ─────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .pk-games { grid-template-columns: 1fr; }
+  .pk-day-head { font-size: .82rem; }
+  .pk-actions { gap: .5rem; }
+  .pk-save { width: 100%; }
+}
+
+/* ── Context chips ──────────────────────────────────────────────────────── */
+
+/* A row of small labelled chips rather than a table: most of these values are absent
+   for most teams — an unranked opponent has no AP rank and no FPI — and a grid of
+   mostly-empty cells reads worse than a short list of what is actually known. */
+.pk-ctx {
+  display: flex; flex-wrap: wrap; gap: .25rem;
+  padding: 0 .1rem;
+}
+
+.pk-chip {
+  display: inline-flex; align-items: baseline; gap: .22rem;
+  font-size: .68rem; line-height: 1.5;
+  padding: .05rem .32rem; border-radius: 3px;
+  background: var(--ht-gray-100); color: var(--ht-gray-800);
+  white-space: nowrap;
+}
+/* Every chip carries its own label, so a bare number is never ambiguous. */
+.pk-chip-label {
+  text-transform: uppercase; letter-spacing: .04em;
+  font-size: .6rem; color: var(--ht-gray-600);
+}
+.pk-chip-value { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+.pk-chip--good .pk-chip-value { color: var(--ht-green); }
+.pk-chip--bad  .pk-chip-value { color: var(--ht-red); }
+
+.pk-chip--model {
+  background: var(--sport-mlb-soft);
+}
+.pk-chip--model .pk-chip-value { color: var(--sport-mlb); }
+
+/* The market and the model belong to the game, not to a side. */
+.pk-game-foot {
+  display: flex; flex-wrap: wrap; gap: .3rem;
+  padding-top: .3rem; border-top: 1px dashed var(--ht-gray-200);
+}
+
+/* Wider cards can hold the chips beside the team name; narrow ones stack. */
+@container pk-card (max-width: 26rem) {
+  .pk-ctx { gap: .2rem; }
+  .pk-chip { font-size: .64rem; }
+}

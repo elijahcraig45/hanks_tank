@@ -83,6 +83,7 @@ function Navbar() {
   const startsWithAny = (paths) => paths.some((p) => location.pathname.startsWith(p));
   const onBaseball = startsWithAny(BASEBALL_PATHS);
   const onFootball = startsWithAny(['/football', '/nfl']);
+  const onPickem = startsWithAny(['/pickem']);
 
   return (
     <nav className="ht-nav">
@@ -141,6 +142,17 @@ function Navbar() {
           >
             <span className="ht-sport-icon" aria-hidden="true">🏈</span>
             Football
+          </Link>
+
+          {/* The contest gets its own tab rather than a football sub-section: it is a
+              different thing to come to the site for, and it is the one page a visitor
+              may arrive at from a link someone else shared. */}
+          <Link
+            to="/pickem"
+            className={`ht-sport ht-sport--ftbl${onPickem ? ' ht-sport--active' : ''}`}
+          >
+            <span className="ht-sport-icon" aria-hidden="true">🎯</span>
+            Pick&rsquo;em
           </Link>
         </div>
 
