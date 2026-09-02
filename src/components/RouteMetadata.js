@@ -144,19 +144,19 @@ const ROUTE_METADATA = [
     path: '/pickem/:sport/:section',
     title: 'Pick\u2019em',
     description:
-      'Weekly NFL and college football pick\u2019em: pick winners straight up or against the spread, with a public leaderboard and every record set against the closing line.',
+      'Weekly NFL and college football pick\u2019em: pick the winner of every game, with a public leaderboard and every record measured against the closing favourite.',
   },
   {
     path: '/pickem/:sport',
     title: 'Pick\u2019em',
     description:
-      'Weekly NFL and college football pick\u2019em with a public leaderboard, scored against the closing line.',
+      'Weekly NFL and college football pick\u2019em with a public leaderboard, scored against the closing favourite.',
   },
   {
     path: '/pickem',
     title: 'Pick\u2019em',
     description:
-      'Weekly NFL and college football pick\u2019em with a public leaderboard, scored against the closing line.',
+      'Weekly NFL and college football pick\u2019em with a public leaderboard, scored against the closing favourite.',
   },
   {
     path: '/football/:league/game/:gameId',
