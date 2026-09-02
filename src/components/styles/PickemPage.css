@@ -1,12 +1,16 @@
 /* Pick'em contest. Prefix pk-. Reuses the ft- panel, table and switch furniture. */
 
-.pk-page { display: grid; gap: 1rem; }
+/* Deliberately NOT display:grid. `.ft-body` carries `margin: 0 auto`, and a grid item
+   with auto side margins stops stretching and shrinks to fit its content — which
+   collapsed the whole page into a narrow panel floating off to one side. The football
+   pages use plain block flow, which is why they were never affected. */
+.pk-page { min-height: 100vh; }
 
 /* The football pages cap at 1240px, which suits a single wide table. A pick sheet is
    dozens of small independent cards, so it reads far better across more columns —
    sixty games at 1240px is a sixty-row scroll with dead space either side. */
 .pk-page .ft-hero-inner,
-.pk-page .ft-body { max-width: 1680px; }
+.pk-page .ft-body { max-width: 1680px; width: 100%; }
 .pk-tagline {
   margin: .5rem 0 0; font-size: .85rem; max-width: 68ch;
   color: rgba(255, 255, 255, .78);
@@ -243,7 +247,10 @@
 
 /* ── Standings ──────────────────────────────────────────────────────────── */
 
-.pk-board-rec { white-space: nowrap; }
+.pk-board { width: 100%; }
+.pk-board th, .pk-board td { padding-top: .6rem; padding-bottom: .6rem; }
+.pk-board-rec { white-space: nowrap; font-size: .95rem; font-weight: 700; }
+.pk-board-name { font-size: .95rem; }
 
 /* Wins relative to the leader, so the shape of the table reads without comparing
    numbers across rows. */
@@ -253,16 +260,6 @@
 }
 .pk-winbar-fill { display: block; height: 100%; background: var(--sport-ftbl); }
 
-.pk-board-picks-total { color: var(--ht-gray-400); }
-
-/* Week-by-week form. CSS cells rather than a chart: one strip per entrant across a
-   dozen rows would otherwise be a dozen SVG trees for a row of numbers. */
-.pk-form { display: inline-flex; gap: 2px; }
-.pk-form-week {
-  min-width: 1.15rem; padding: .05rem .15rem; border-radius: 2px;
-  font-size: .68rem; font-variant-numeric: tabular-nums; text-align: center;
-  background: var(--ht-gray-100); color: var(--ht-gray-800);
-}
-.pk-form-week--good { background: rgba(0, 131, 0, .16); color: #056b05; }
-.pk-form-week--mid  { background: var(--sport-ftbl-soft); color: var(--sport-ftbl); }
-.pk-form-week--bad  { background: rgba(227, 73, 72, .14); color: #a3201f; }
+.pk-board-picks-total { color: var(--ht-gray-600); font-size: .8rem; }
+.pk-col-rank { width: 2.5rem; text-align: center; color: var(--ht-gray-600); }
+.pk-board-pct { font-size: .95rem; font-weight: 600; }

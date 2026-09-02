@@ -55,29 +55,31 @@ describe('standings', () => {
     expect(cell).toHaveClass('ft-neg');
   });
 
-  it('draws week-by-week form so a hot week reads differently from a steady record', async () => {
-    ApiService.getPickemLeaderboard.mockResolvedValue(board([entrant()]));
-    renderBoard();
-    await waitFor(() => expect(screen.getByText('Jacob')).toBeInTheDocument());
-    expect(screen.getByTitle('Week 1: 5-1')).toBeInTheDocument();
-    expect(screen.getByTitle('Week 2: 2-2-1')).toBeInTheDocument();
-  });
-
-  it('separates graded picks from picks made', async () => {
+  it('separates scored picks from picks made', async () => {
     // A short record should read as "not scored yet", not as a thin week.
     ApiService.getPickemLeaderboard.mockResolvedValue(board([entrant()]));
     renderBoard();
     await waitFor(() => expect(screen.getByText('Jacob')).toBeInTheDocument());
-    expect(screen.getByText('/20')).toBeInTheDocument();
+    expect(screen.getByText(/of 20/)).toBeInTheDocument();
   });
 
-  it('drops the season-only columns on a weekly board', async () => {
-    ApiService.getPickemLeaderboard.mockResolvedValue(board([entrant()], 'week'));
-    renderBoard({ week: '2' });
+  it('leaves out numbers that would need explaining', async () => {
+    // Form, best week and underdog counts read as a green "5" and two zeroes with one
+    // graded week. A number that needs explaining is worse than one left out.
+    ApiService.getPickemLeaderboard.mockResolvedValue(board([entrant()]));
+    renderBoard();
     await waitFor(() => expect(screen.getByText('Jacob')).toBeInTheDocument());
-    // Form and best week are season concepts.
-    expect(screen.queryByRole('columnheader', { name: 'Form' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('columnheader', { name: 'Best' })).not.toBeInTheDocument();
+    for (const name of ['Form', 'Best', 'Dogs']) {
+      expect(screen.queryByRole('columnheader', { name })).not.toBeInTheDocument();
+    }
+  });
+
+  it('warns that records will move while most picks are unscored', async () => {
+    ApiService.getPickemLeaderboard.mockResolvedValue(
+      board([entrant({ pending: 170 })]),
+    );
+    renderBoard();
+    expect(await screen.findByText(/will move a lot/)).toBeInTheDocument();
   });
 
   it('marks the viewer’s own row', async () => {
