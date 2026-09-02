@@ -394,7 +394,9 @@ function PlayersSection({ league, season, setSeason }) {
   const [meta, setMeta] = useState(null);
   const [search, setSearch] = useState('');
   const [position, setPosition] = useState('');
-  const [sort, setSort] = useState('passing_yards');
+  // Canonical across both sports now, so one default works for either.
+  const [sort, setSort] = useState('passing_yds');
+  const [group, setGroup] = useState('core');
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
@@ -404,7 +406,7 @@ function PlayersSection({ league, season, setSeason }) {
     try {
       const res = await ApiService.getFootballPlayers(league.sport, {
         season, search: search || undefined, position: position || undefined,
-        sort, limit: 50,
+        sort, group: group === 'core' ? undefined : group, limit: 50,
       });
       setRows(res.data || []);
       setMeta(res.meta || null);
@@ -415,12 +417,16 @@ function PlayersSection({ league, season, setSeason }) {
     } finally {
       setLoading(false);
     }
-  }, [league.sport, season, search, position, sort]);
+  }, [league.sport, season, search, position, sort, group]);
 
   useEffect(() => {
     const id = setTimeout(load, search ? 300 : 0);
     return () => clearTimeout(id);
   }, [load, search]);
+
+  // Switching league can invalidate the chosen sort, since the two sports publish
+  // overlapping but not identical stat sets.
+  useEffect(() => { setSort('passing_yds'); setGroup('core'); }, [league.sport]);
 
   if (loading && !meta) return <div className="ft-state">Loading players…</div>;
 
@@ -454,6 +460,8 @@ function PlayersSection({ league, season, setSeason }) {
   }
 
   const fields = meta?.sortable_fields || [];
+  const columns = meta?.columns || [];
+  const labelFor = (key) => columns.find((c) => c.key === key)?.label || key;
 
   return (
     <section className="ft-panel">
@@ -484,38 +492,30 @@ function PlayersSection({ league, season, setSeason }) {
         <label>
           Sort by
           <select value={sort} onChange={(e) => setSort(e.target.value)}>
-            {fields.map((f) => <option key={f} value={f}>{f}</option>)}
+            {fields.map((f) => <option key={f} value={f}>{labelFor(f)}</option>)}
           </select>
         </label>
+        {(meta?.groups || []).length > 1 && (
+          <label>
+            Columns
+            <select value={group} onChange={(e) => setGroup(e.target.value)}>
+              {(meta.groups || []).map((g) => (
+                <option key={g.key} value={g.key}>{g.label} ({g.count})</option>
+              ))}
+              <option value="all">Everything</option>
+            </select>
+          </label>
+        )}
       </div>
 
-      <div className="ft-table-wrap">
-        <table className="ft-table">
-          <thead>
-            <tr>
-              <th>Player</th><th>Pos</th><th>Team</th><th>G</th>
-              <th>Pass yds</th><th>Pass TD</th><th>Rush yds</th>
-              <th>Rec yds</th><th>Rec</th><th>Sacks</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.player_id}>
-                <td><strong>{r.player_display_name}</strong></td>
-                <td>{r.position ?? '—'}</td>
-                <td>{r.recent_team ?? '—'}</td>
-                <td>{r.games ?? '—'}</td>
-                <td>{r.passing_yards ?? '—'}</td>
-                <td>{r.passing_tds ?? '—'}</td>
-                <td>{r.rushing_yards ?? '—'}</td>
-                <td>{r.receiving_yards ?? '—'}</td>
-                <td>{r.receptions ?? '—'}</td>
-                <td>{r.def_sacks ?? '—'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* Rendered from meta.columns, so the same table serves the NFL's EPA and CPOE
+          columns and college's PPA-derived ones without knowing either vocabulary.
+          Headshot is a URL, not a stat, so it is dropped from the grid. */}
+      <ColumnDrivenTable
+        columns={columns.filter((c) => c.key !== 'headshot_url')}
+        rows={rows}
+        rowKey={(r, i) => r.player_id ?? `${r.player_name}-${i}`}
+      />
       {!loading && rows.length === 0 && (
         <div className="ft-state">No players match those filters.</div>
       )}

@@ -335,10 +335,12 @@ class ApiService {
   }
 
   /** Per-player season stats. Only sports with a full player table return rows. */
-  async getFootballPlayers(sport, { season, search, position, team, sort, direction, limit, offset } = {}) {
+  async getFootballPlayers(sport, { season, search, position, team, sort, direction, group, fields, limit, offset } = {}) {
     const qs = new URLSearchParams({ season: String(season) });
     if (search) qs.set('search', search);
     if (position) qs.set('position', position);
+    if (group) qs.set('group', group);
+    if (fields) qs.set('fields', fields);
     if (team) qs.set('team', team);
     if (sort) qs.set('sort', sort);
     if (direction) qs.set('direction', direction);
