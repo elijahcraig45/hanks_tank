@@ -1,0 +1,178 @@
+/* Football game page, scoreboard tiles, drive chart and win-probability figure.
+   Prefix fg-. Shares the ft- panel/table furniture from FootballPage.css. */
+
+.fg-page { display: grid; gap: 1rem; }
+
+/* ── Hero ───────────────────────────────────────────────────────────────── */
+
+.fg-hero {
+  background: linear-gradient(135deg, var(--ht-navy) 0%, var(--ht-navy-mid) 100%);
+  color: #fff;
+  border-radius: var(--ht-radius);
+  padding: 1.1rem 1.25rem;
+}
+
+.fg-hero-status {
+  display: flex; align-items: center; gap: .6rem;
+  font-size: .78rem; text-transform: uppercase; letter-spacing: .04em;
+}
+
+.fg-state { font-weight: 700; }
+.fg-state--in_progress { color: var(--sport-ftbl-on); }
+.fg-state--completed  { color: rgba(255,255,255,.72); }
+.fg-state--scheduled  { color: rgba(255,255,255,.72); text-transform: none; letter-spacing: 0; }
+
+.fg-tv { color: rgba(255,255,255,.6); }
+
+/* A game that is refreshing says so, rather than silently changing under the reader. */
+.fg-live-dot {
+  width: .5rem; height: .5rem; border-radius: 50%;
+  background: var(--sport-ftbl-on);
+  animation: fg-pulse 2s ease-in-out infinite;
+}
+@keyframes fg-pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) {
+  .fg-live-dot { animation: none; }
+}
+
+.fg-title {
+  display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
+  margin: .5rem 0 .35rem; font-size: 1.25rem; line-height: 1.25;
+}
+.fg-team  { font-weight: 700; }
+.fg-score { font-size: 1.75rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.fg-at    { color: rgba(255,255,255,.55); font-size: .85rem; }
+
+.fg-hero-meta {
+  display: flex; gap: 1rem; flex-wrap: wrap;
+  font-size: .8rem; color: rgba(255,255,255,.72);
+}
+.fg-lastplay { margin: .6rem 0 0; font-size: .82rem; color: rgba(255,255,255,.85); }
+
+/* ── Linescore ──────────────────────────────────────────────────────────── */
+
+.fg-linescore td, .fg-linescore th { text-align: center; }
+.fg-linescore td:first-child, .fg-linescore th:first-child { text-align: left; }
+
+/* ── Model pick ─────────────────────────────────────────────────────────── */
+
+.fg-pick {
+  margin-top: .85rem; padding: .7rem .85rem;
+  background: var(--sport-ftbl-soft);
+  border-left: 3px solid var(--sport-ftbl);
+  border-radius: var(--ht-radius);
+}
+.fg-pick-head { display: flex; align-items: center; gap: .55rem; font-size: .75rem; }
+.fg-pick-model { color: var(--ht-gray-600); font-family: var(--ht-font-mono); }
+.fg-pick-line { margin: .35rem 0 0; font-size: .9rem; }
+.fg-hit  { color: var(--ht-green); font-weight: 700; }
+.fg-miss { color: var(--ht-red);   font-weight: 700; }
+
+/* ── Figures (charts) ───────────────────────────────────────────────────── */
+
+.fg-figure { margin: 0; }
+.fg-figure-cap {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap; margin-bottom: .5rem;
+}
+.fg-figure-title { font-size: .95rem; font-weight: 600; }
+.fg-figure-meta  { font-size: .8rem; color: var(--ht-gray-600); font-variant-numeric: tabular-nums; }
+.fg-figure-note  { margin: .5rem 0 0; font-size: .78rem; color: var(--ht-gray-600); max-width: 70ch; }
+.fg-chart { width: 100%; }
+
+/* Two series, so a legend is always present — identity is never colour alone. */
+.fg-legend { display: flex; gap: .9rem; font-size: .78rem; color: var(--ht-gray-600); }
+.fg-key { display: inline-flex; align-items: center; gap: .35rem; }
+.fg-dot { width: .65rem; height: .65rem; border-radius: 2px; display: inline-block; }
+
+/* Hover tooltip for the win-probability curve. */
+.fg-tip {
+  background: #fff; border: 1px solid var(--ht-gray-200);
+  border-radius: var(--ht-radius); box-shadow: var(--ht-shadow);
+  padding: .55rem .7rem; max-width: 22rem; font-size: .8rem;
+}
+.fg-tip-head  { font-weight: 700; margin-bottom: .2rem; }
+.fg-tip-score { color: var(--ht-gray-800); font-variant-numeric: tabular-nums; }
+.fg-tip-meta  { color: var(--ht-gray-600); }
+.fg-tip-play  { margin-top: .3rem; color: var(--ht-gray-600); line-height: 1.4; }
+
+/* ── Drive chart ────────────────────────────────────────────────────────── */
+
+.fg-field-head { min-width: 12rem; }
+.fg-field-cell { width: 40%; }
+
+.fg-field {
+  position: relative; height: .8rem;
+  background: var(--ht-gray-100);
+  border-radius: 2px; overflow: hidden;
+}
+/* The 50-yard line, so a span reads as field position and not just as length. */
+.fg-field-mid {
+  position: absolute; left: 50%; top: 0; bottom: 0; width: 1px;
+  background: var(--ht-gray-400);
+}
+
+.fg-drive {
+  position: absolute; top: 0; bottom: 0;
+  border-radius: 2px;
+  /* A 2px surface ring keeps adjacent/overlapping spans legible. */
+  box-shadow: 0 0 0 1px #fff;
+}
+.fg-drive--home { background: #c2410c; }   /* --sport-ftbl */
+.fg-drive--away { background: #2a78d6; }   /* validated pair: CVD ΔE 27.9 */
+
+.fg-res--score    { color: var(--ht-green); font-weight: 700; }
+.fg-res--turnover { color: var(--ht-red); }
+
+/* ── Scoreboard tiles ───────────────────────────────────────────────────── */
+
+.fg-tiles {
+  display: grid; gap: .6rem;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+}
+
+.fg-tile {
+  display: block; padding: .65rem .8rem;
+  background: #fff; border: 1px solid var(--ht-gray-200);
+  border-radius: var(--ht-radius);
+  color: inherit; text-decoration: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.fg-tile:hover { border-color: var(--sport-ftbl); box-shadow: var(--ht-shadow-sm); }
+.fg-tile:focus-visible { outline: 2px solid var(--sport-ftbl); outline-offset: 1px; }
+.fg-tile--live { border-left: 3px solid var(--sport-ftbl); }
+
+.fg-tile-top {
+  display: flex; justify-content: space-between; gap: .5rem;
+  font-size: .7rem; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--ht-gray-600); margin-bottom: .4rem;
+}
+.fg-tile-top .fg-state--in_progress { color: var(--sport-ftbl); }
+.fg-tile-top .fg-state--completed,
+.fg-tile-top .fg-state--scheduled { color: var(--ht-gray-600); }
+
+.fg-tile-row {
+  display: flex; justify-content: space-between; gap: .5rem;
+  padding: .12rem 0; font-size: .85rem;
+}
+.fg-tile-row--won { font-weight: 700; }
+.fg-tile-team { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fg-tile-pts  { font-variant-numeric: tabular-nums; }
+.fg-tile-sit  { margin-top: .35rem; font-size: .74rem; color: var(--ht-gray-800); }
+.fg-tile-sit--muted { color: var(--ht-gray-600); }
+
+/* ── Player box ─────────────────────────────────────────────────────────── */
+
+.fg-playerbox {
+  display: grid; gap: 1.1rem;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+}
+.fg-playerbox-team h4 { font-size: .95rem; margin: 0 0 .5rem; }
+.fg-playerbox-cat h5 {
+  font-size: .78rem; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--ht-gray-600); margin: .6rem 0 .25rem;
+}
+.fg-statline { display: flex; gap: .5rem; font-size: .8rem; padding: .1rem 0; }
+.fg-statline-label { min-width: 5.5rem; color: var(--ht-gray-600); }
+.fg-statline-values { display: flex; flex-wrap: wrap; gap: .65rem; }
+.fg-statline-athlete { white-space: nowrap; }

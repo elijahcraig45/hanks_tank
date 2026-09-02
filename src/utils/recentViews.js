@@ -64,11 +64,22 @@ function buildDynamicView(pathname) {
     };
   }
 
+  const footballGameMatch = pathname.match(/^\/football\/([^/]+)\/game\/([^/]+)$/);
+  if (footballGameMatch) {
+    const LEAGUES = { nfl: "NFL", fbs: "College FBS", fcs: "College FCS" };
+    return {
+      label: `${LEAGUES[footballGameMatch[1]] || "Football"} game`,
+      hint: "Score, win probability and drives",
+      icon: "🏈",
+    };
+  }
+
   const footballMatch = pathname.match(/^\/football\/([^/]+)(?:\/([^/]+))?$/);
   if (footballMatch) {
     const LEAGUES = { nfl: "NFL", fbs: "College FBS", fcs: "College FCS" };
     const SECTIONS = {
       picks: "picks",
+      scoreboard: "scores and schedule",
       rankings: "power rankings",
       diagnostics: "model diagnostics",
       leaders: "league leaders",

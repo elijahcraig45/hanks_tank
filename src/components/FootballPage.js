@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import ApiService from '../services/api';
+import ScoreboardSection from './football/ScoreboardSection';
 import RankingsBoard from './RankingsBoard';
 import FootballDiagnostics from './FootballDiagnostics';
 import './styles/FootballPage.css';
@@ -27,6 +28,8 @@ export const LEAGUES = [
 
 const SECTIONS = [
   { key: 'picks', label: 'Picks' },
+  // College only for now: the live feed behind it publishes no NFL data.
+  { key: 'scoreboard', label: 'Scores', availableFor: (l) => l.sport === 'cfb' },
   { key: 'rankings', label: 'Power Rankings' },
   { key: 'diagnostics', label: 'Diagnostics' },
   { key: 'leaders', label: 'Leaders' },
@@ -991,7 +994,11 @@ export default function FootballPage() {
     () => LEAGUES.find((l) => l.key === leagueParam) || LEAGUES[0],
     [leagueParam]
   );
-  const section = SECTIONS.find((s) => s.key === sectionParam)?.key || 'picks';
+  const sectionDef = SECTIONS.find((s) => s.key === sectionParam);
+  const section = (sectionDef
+    && (!sectionDef.availableFor || sectionDef.availableFor(league)))
+    ? sectionDef.key
+    : 'picks';
 
   const [season, setSeason] = useState(SEASONS[0]);
   // Fetched once for the whole page: the picks filters, the diagnostics conference
@@ -1111,7 +1118,11 @@ export default function FootballPage() {
         </div>
 
         <nav className="ft-sections" aria-label="Section">
-          {SECTIONS.map((s) => (
+          {/* A section a league genuinely cannot serve is not shown at all. Sections
+              whose data merely is not built yet DO show, and say so — the difference
+              between "this sport has no such feed" and "not loaded yet" is worth
+              keeping visible. */}
+          {SECTIONS.filter((s) => !s.availableFor || s.availableFor(league)).map((s) => (
             <button
               key={s.key}
               className={`ft-section${s.key === section ? ' ft-section--active' : ''}`}
@@ -1155,6 +1166,9 @@ export default function FootballPage() {
         )}
         {section === 'players' && (
           <PlayersSection league={league} season={season} setSeason={setSeason} />
+        )}
+        {section === 'scoreboard' && (
+          <ScoreboardSection league={league} season={season} />
         )}
         {section === 'stats' && <StatsSection league={league} season={season} />}
 

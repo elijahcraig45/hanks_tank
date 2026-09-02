@@ -251,6 +251,48 @@ class ApiService {
     return this.get(`/football/${sport}/teams?${qs.toString()}`, { cacheTTL: 1440 });
   }
 
+  /**
+   * Live scoreboard for a week. Short TTL because it is the polling surface — one
+   * upstream call covers every game, so the backend absorbs the repeats.
+   */
+  async getFootballScoreboard(sport, { season, week, division } = {}) {
+    const qs = new URLSearchParams();
+    if (season) qs.set('season', String(season));
+    if (week) qs.set('week', String(week));
+    if (division) qs.set('division', division);
+    return this.get(`/football/${sport}/scoreboard?${qs.toString()}`, { cacheTTL: 0.5 });
+  }
+
+  /**
+   * Fixtures rather than scores. Served from the live feed, not BigQuery — the games
+   * tables hold completed games only, so an upcoming week is not in them.
+   */
+  async getFootballSchedule(sport, { season, week, team, division } = {}) {
+    const qs = new URLSearchParams();
+    if (season) qs.set('season', String(season));
+    if (week) qs.set('week', String(week));
+    if (team) qs.set('team', team);
+    if (division) qs.set('division', division);
+    return this.get(`/football/${sport}/schedule?${qs.toString()}`, { cacheTTL: 30 });
+  }
+
+  /**
+   * One game in full: linescore, win-probability curve, box scores, drives and the
+   * model's own pick.
+   *
+   * `week` is worth passing when the caller knows it — the upstream box-score and drive
+   * feeds cannot be queried without a week, and supplying it saves the backend a
+   * BigQuery lookup. Read `meta.available` to decide which panels to draw.
+   */
+  async getFootballGame(sport, gameId, { season, week } = {}) {
+    const qs = new URLSearchParams();
+    if (season) qs.set('season', String(season));
+    if (week) qs.set('week', String(week));
+    return this.get(`/football/${sport}/games/${gameId}?${qs.toString()}`, {
+      cacheTTL: 1,
+    });
+  }
+
   async getFootballRankings(sport, season, limit = 25) {
     return this.getRankings(sport, { season, limit });
   }
