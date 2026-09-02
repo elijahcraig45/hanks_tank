@@ -141,10 +141,16 @@ const ROUTE_METADATA = [
       'Weekly NFL and college football model picks, Bradley-Terry power rankings, and per-team advanced stats.',
   },
   {
+    path: '/football/:league/game/:gameId',
+    title: 'Football Game',
+    description:
+      'Live score, win-probability curve, drive chart and box score for a single college football game, alongside the model\u2019s own pick for it.',
+  },
+  {
     path: '/football/:league/:section',
     title: 'Football',
     description:
-      'Weekly NFL and college football model picks, Bradley-Terry power rankings, out-of-sample model diagnostics, league leaders, and per-team advanced stats.',
+      'Weekly NFL and college football model picks, live scores and schedules, Bradley-Terry power rankings, out-of-sample model diagnostics, league leaders, and per-team season and advanced stats.',
   },
   {
     path: '/transactions',
