@@ -83,6 +83,7 @@
 /* Two series, so a legend is always present — identity is never colour alone. */
 .fg-legend { display: flex; gap: .9rem; font-size: .78rem; color: var(--ht-gray-600); }
 .fg-key { display: inline-flex; align-items: center; gap: .35rem; }
+.fg-key strong { font-variant-numeric: tabular-nums; }
 .fg-dot { width: .65rem; height: .65rem; border-radius: 2px; display: inline-block; }
 
 /* Hover tooltip for the win-probability curve. */
@@ -91,7 +92,8 @@
   border-radius: var(--ht-radius); box-shadow: var(--ht-shadow);
   padding: .55rem .7rem; max-width: 22rem; font-size: .8rem;
 }
-.fg-tip-head  { font-weight: 700; margin-bottom: .2rem; }
+.fg-tip-rows { display: grid; gap: .15rem; margin-bottom: .25rem; }
+.fg-tip-row  { display: flex; align-items: center; gap: .35rem; }
 .fg-tip-score { color: var(--ht-gray-800); font-variant-numeric: tabular-nums; }
 .fg-tip-meta  { color: var(--ht-gray-600); }
 .fg-tip-play  { margin-top: .3rem; color: var(--ht-gray-600); line-height: 1.4; }

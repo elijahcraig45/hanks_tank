@@ -21,9 +21,9 @@ jest.mock('../../services/api', () => ({
 jest.mock('recharts', () => {
   const Stub = ({ children }) => <div>{children}</div>;
   return {
-    LineChart: Stub, Line: Stub, XAxis: Stub, YAxis: Stub,
-    CartesianGrid: Stub, Tooltip: Stub, ReferenceLine: Stub,
-    ResponsiveContainer: Stub,
+    AreaChart: Stub, Area: Stub, LineChart: Stub, Line: Stub,
+    XAxis: Stub, YAxis: Stub, CartesianGrid: Stub, Tooltip: Stub,
+    ReferenceLine: Stub, ResponsiveContainer: Stub,
   };
 });
 
@@ -107,6 +107,17 @@ describe('football game page', () => {
     expect(screen.getByText(/Aviva Stadium/)).toBeInTheDocument();
     // linescore quarters
     expect(screen.getByRole('columnheader', { name: 'Q1' })).toBeInTheDocument();
+  });
+
+  it('shows both teams in the win-probability legend, not colour alone', async () => {
+    ApiService.getFootballGame.mockResolvedValue(payload());
+    renderGame();
+    await waitFor(() => {
+      expect(screen.getByText('Win probability')).toBeInTheDocument();
+    });
+    // Two complementary bands, so both closing percentages are named.
+    expect(screen.getByText('62%')).toBeInTheDocument();
+    expect(screen.getByText('38%')).toBeInTheDocument();
   });
 
   it("shows the model's own pick and whether it landed", async () => {
