@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import HomePage from './HomePage';
+import HomePage, { fbsOnlyRecord } from './HomePage';
 import apiService from '../services/api';
 import { STORAGE_KEY } from '../utils/recentViews';
 
@@ -15,6 +15,8 @@ jest.mock('../services/api', () => ({
     getPredictions: jest.fn(),
     getFootballPredictions: jest.fn(),
     getFootballRankings: jest.fn(),
+    getFootballAccuracy: jest.fn(),
+    getFootballDiagnostics: jest.fn(),
     refreshNews: jest.fn(),
   },
 }));
@@ -190,5 +192,85 @@ describe('HomePage', () => {
     expect(await screen.findByText(/continue where you left off/i)).toBeInTheDocument();
     expect(screen.getByText('BOS Team')).toBeInTheDocument();
     expect(screen.getByText('Club dashboard')).toBeInTheDocument();
+  });
+});
+
+describe('college football card accuracy', () => {
+  const game = (crossDivision, correct) => ({ crossDivision, correct });
+
+  test('fbsOnlyRecord scores only FBS v FBS games', () => {
+    const rows = [
+      game(false, true), game(false, false), game(false, true), game(false, true),
+      game(true, true), game(true, true), game(true, true),
+    ];
+    const rec = fbsOnlyRecord(rows);
+    expect(rec.n).toBe(4);
+    expect(rec.accuracy).toBeCloseTo(0.75);
+    expect(rec.ci).toBeCloseTo(1.96 * Math.sqrt((0.75 * 0.25) / 4));
+  });
+
+  test('fbsOnlyRecord refuses to guess when the flag is missing', () => {
+    expect(fbsOnlyRecord(null)).toBeNull();
+    expect(fbsOnlyRecord([])).toBeNull();
+    expect(fbsOnlyRecord([game(false, true), { correct: true }])).toBeNull();
+    expect(fbsOnlyRecord([game(true, true)])).toBeNull();
+  });
+
+  function mockHomeBasics() {
+    apiService.getMLBNews.mockResolvedValue({ articles: [] });
+    apiService.getBravesNews.mockResolvedValue({ articles: [] });
+    apiService.getStandings.mockResolvedValue({ data: { standings: { records: [] } } });
+    apiService.getGames.mockResolvedValue({ dates: [{ games: [] }] });
+    apiService.getPredictions.mockResolvedValue({ predictions: [] });
+    apiService.getFootballPredictions.mockResolvedValue({ data: [] });
+    apiService.getFootballRankings.mockResolvedValue({ data: [] });
+    apiService.getPredictionDiagnostics.mockResolvedValue({ diagnostics: [] });
+    apiService.getFootballAccuracy.mockImplementation((sport) => Promise.resolve(
+      sport === 'cfb'
+        ? { data: { overall: { games: 10, model_accuracy: 0.9 } } }
+        : { data: null }
+    ));
+  }
+
+  afterEach(() => {
+    jest.resetAllMocks();
+    window.localStorage.clear();
+  });
+
+  const cfbCard = () => screen.getByRole('heading', { name: 'College football' }).closest('section');
+
+  test('headlines FBS v FBS with its interval and n, and shows all games second', async () => {
+    mockHomeBasics();
+    apiService.getFootballDiagnostics.mockResolvedValue({
+      diagnostics: [
+        game(false, true), game(false, true), game(false, true), game(false, false),
+        ...Array.from({ length: 6 }, () => game(true, true)),
+      ],
+    });
+    render(<MemoryRouter><HomePage /></MemoryRouter>);
+
+    await screen.findByRole('heading', { name: 'College football' });
+    const card = cfbCard();
+    expect(card).toHaveTextContent(/Model · FBS\sv\sFBS/);
+    expect(card).toHaveTextContent('75.0%');
+    expect(card).toHaveTextContent('±42');
+    expect(card).toHaveTextContent('4 games');
+    expect(card).toHaveTextContent('All games 90.0% (n=10) incl. FCS');
+    expect(apiService.getFootballDiagnostics).toHaveBeenCalledWith(
+      'cfb', expect.objectContaining({ division: 'fbs' })
+    );
+  });
+
+  test('falls back to all games with an explicit caveat when the split is unavailable', async () => {
+    mockHomeBasics();
+    apiService.getFootballDiagnostics.mockResolvedValue(null);
+    render(<MemoryRouter><HomePage /></MemoryRouter>);
+
+    await screen.findByRole('heading', { name: 'College football' });
+    const card = cfbCard();
+    expect(card).toHaveTextContent('Model · season');
+    expect(card).toHaveTextContent('90.0%');
+    expect(card).toHaveTextContent('Includes FCS opponents');
+    expect(card).not.toHaveTextContent('FBS v FBS');
   });
 });

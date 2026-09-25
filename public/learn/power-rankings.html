@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>/* Follow the theme chosen on the main site (same origin). */(function(){try{var t=localStorage.getItem('ht-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Power Rankings Evidence</title>
+<style>
+:root{color-scheme:light;
+ --ground:#f6f7f9;--surface:#fff;--surface-2:#eef1f5;
+ --ink:#111620;--ink-2:#4b5566;--ink-3:#7d8798;
+ --rule:#dee2e9;--rule-2:#c9d0da;
+ --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#8a63d2;
+ --warn-bg:#fdf1ea;--ok-bg:#e7f4ee;--note-bg:#e8eff9;
+ --f-display:"Helvetica Neue",Arial,system-ui,sans-serif;
+ --f-body:Georgia,"Times New Roman",serif;
+ --f-mono:ui-monospace,Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+ --ground:#13161b;--surface:#1a1e25;--surface-2:#21262e;
+ --ink:#eef1f5;--ink-2:#aeb8c6;--ink-3:#78828f;
+ --rule:#282e37;--rule-2:#39414c;
+ --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#9b7be0;
+ --warn-bg:#2a1f19;--ok-bg:#152620;--note-bg:#1b2533}}
+:root[data-theme="dark"]{color-scheme:dark;
+ --ground:#13161b;--surface:#1a1e25;--surface-2:#21262e;
+ --ink:#eef1f5;--ink-2:#aeb8c6;--ink-3:#78828f;
+ --rule:#282e37;--rule-2:#39414c;
+ --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#9b7be0;
+ --warn-bg:#2a1f19;--ok-bg:#152620;--note-bg:#1b2533}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{background:var(--ground);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.65;margin:0}
+.wrap{max-width:920px;margin:0 auto;padding:0 16px 80px}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance}
+h1{font-size:clamp(28px,5vw,40px);line-height:1.1;letter-spacing:-.02em}
+h2{font-size:clamp(21px,3vw,27px);line-height:1.2;margin-bottom:12px}
+h3{font-size:17px;margin:22px 0 8px}
+p{margin:0 0 1em}
+a{color:var(--s1)}
+code,.mono{font-family:var(--f-mono);font-size:.88em}
+header{border-bottom:1px solid var(--rule);padding:48px 0 26px;margin-bottom:10px}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.lede{font-size:18.5px;color:var(--ink-2);max-width:64ch;margin-top:16px}
+nav.toc{font-family:var(--f-display);font-size:14px;columns:2;column-gap:28px;margin:22px 0 0;padding:0;list-style:none}
+nav.toc li{margin:0 0 4px;break-inside:avoid}
+section{border-top:1px solid var(--rule);padding-top:30px;margin-top:36px}
+.col{max-width:68ch}
+.box{border-radius:0 4px 4px 0;padding:13px 16px;margin:18px 0;font-size:15.5px;line-height:1.55}
+.box p:last-child{margin:0}
+.box .eyebrow{display:block;margin-bottom:6px}
+.measured{background:var(--ok-bg);border-left:3px solid var(--s3)}
+.inferred{background:var(--note-bg);border-left:3px solid var(--s1)}
+.pitfall{background:var(--warn-bg);border-left:3px solid var(--s2)}
+.formula{font-family:var(--f-mono);background:var(--surface-2);padding:10px 14px;border-radius:4px;overflow-x:auto;font-size:14.5px;margin:14px 0}
+figure{margin:20px 0;background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:16px}
+figcaption{font-size:14px;color:var(--ink-2);margin-top:10px;font-family:var(--f-display);line-height:1.45}
+.tablewrap{overflow-x:auto;margin:16px 0}
+table{border-collapse:collapse;font-family:var(--f-display);font-size:14px;width:100%;min-width:560px}
+th,td{padding:7px 9px;border-bottom:1px solid var(--rule);text-align:right;vertical-align:top}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--ink-2);font-weight:600;border-bottom:1px solid var(--rule-2)}
+td.win{color:var(--s3);font-weight:600}
+td.lose{color:var(--s2)}
+.num{font-family:var(--f-mono);font-size:13px}
+svg{display:block;width:100%;height:auto}
+svg text{font-family:var(--f-display);fill:var(--ink-2)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-family:var(--f-display);font-size:13px;color:var(--ink-2);margin-top:8px}
+.legend span::before{content:"";display:inline-block;width:12px;height:3px;margin-right:6px;vertical-align:middle;background:var(--c)}
+details{border:1px solid var(--rule);border-radius:4px;padding:10px 14px;margin:10px 0;background:var(--surface)}
+summary{font-family:var(--f-display);font-weight:600;cursor:pointer}
+details p{margin:10px 0 0}
+dl.gloss dt{font-family:var(--f-display);font-weight:600;margin-top:14px}
+dl.gloss dd{margin:2px 0 0 0;color:var(--ink-2)}
+.pill{display:inline-block;font-family:var(--f-mono);font-size:11px;padding:1px 7px;border-radius:9px;border:1px solid var(--rule-2);color:var(--ink-2);vertical-align:1px}
+.pill.hi{border-color:var(--s3);color:var(--s3)}.pill.mid{border-color:var(--s1);color:var(--s1)}.pill.lo{border-color:var(--s2);color:var(--s2)}
+</style>
+<link rel="stylesheet" href="learn.css">
+</head>
+<body>
+<nav class="lh-bar" aria-label="Site">
+ <div class="lh-in">
+  <a class="lh-brand" href="/"><span class="lh-mark" aria-hidden="true">HT</span><span class="lh-name">Hank&rsquo;s Tank</span></a>
+  <span class="lh-sep" aria-hidden="true">/</span>
+  <a class="lh-learn" href="/learn">Learn</a>
+  <span class="lh-sep" aria-hidden="true">/</span>
+  <span class="lh-topic">Rankings</span>
+  <button type="button" class="lh-theme" id="lh-theme" aria-label="Switch theme" title="Switch theme">&#9790;</button>
+ </div>
+</nav>
+<div class="wrap">
+<header>
+  <div class="eyebrow">Hank's Tank &middot; power rankings &middot; 2026-09-25</div>
+  <h1>What the power rankings were, what they are now, and how to defend every choice</h1>
+  <p class="lede">The boards for MLB, NFL and college football are performance rankings. Every decision on this page is justified one way only: does it predict the <em>next</em> games better, measured on seasons the search never looked at. Agreement with the AP poll or ESPN's FPI is never a criterion. Everything here stays an experiment until more evidence arrives.</p>
+  <ul class="toc">
+    <li><a href="#result">1. The result in one table</a></li>
+    <li><a href="#bugs">2. Data bugs came first</a></li>
+    <li><a href="#bt">3. Bradley-Terry vs margin ratings</a></li>
+    <li><a href="#ridge">4. Ridge is a prior</a></li>
+    <li><a href="#decay">5. Decaying last season</a></li>
+    <li><a href="#wf">6. Walk-forward, not random CV</a></li>
+    <li><a href="#ll">7. Log loss, not accuracy</a></li>
+    <li><a href="#boot">8. Bootstrap intervals and rank bands</a></li>
+    <li><a href="#sel">9. Selection bias from 925 variants</a></li>
+    <li><a href="#polls">10. Why polls are not a target</a></li>
+    <li><a href="#conf">11. Confidence, change by change</a></li>
+    <li><a href="#defend">12. How to defend this</a></li>
+    <li><a href="#gloss">Glossary</a></li>
+  </ul>
+</header>
+
+<p class="col">Companion pages cover general material that is not repeated here: <a href="ml-course.html">ML_COURSE</a> (logistic regression, L1/L2 and what C does, empirical Bayes, proper losses, hyperparameter search), <a href="ml-lessons.html">ML_LESSONS</a> (bias and variance, leakage, splitting, power, a false positive killed), and <a href="football-models.html">football-models</a> (the margin ridge as a game predictor, &Phi;(margin/&sigma;), paired bootstrap). This page covers what is specific to <em>ranking</em> teams.</p>
+
+<section id="result">
+<h2>1. The result in one table</h2>
+<p class="col">Each number is the mean log loss per game, predicting a week's games from a fit on every game before that week. Settings were chosen on the <b>tune</b> seasons, then frozen and scored on the <b>eval</b> seasons. Lower is better; a coin flip scores 0.6931. The interval is a 95% bootstrap interval on the difference from the production board, resampling whole weeks.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Sport &middot; eval seasons</th><th>Games</th><th>Production (W/L)</th><th>Margin model</th><th>Difference [95% CI]</th><th>Decision</th></tr></thead>
+<tbody>
+<tr><td>College, 2022&ndash;25 (D1 v D1)</td><td class="num">6,317</td><td class="num">0.5447</td><td class="num">0.5090</td><td class="num win">&minus;0.0357 [&minus;0.0430, &minus;0.0281]</td><td>Adopt</td></tr>
+<tr><td>College, FBS v FBS only</td><td class="num">3,174</td><td class="num">0.5837</td><td class="num">0.5460</td><td class="num win">&minus;0.0378 [&minus;0.0473, &minus;0.0276]</td><td>(subset)</td></tr>
+<tr><td>NFL, 2021&ndash;25</td><td class="num">1,420</td><td class="num">0.6434</td><td class="num">0.6385</td><td class="num">&minus;0.0049 [&minus;0.0141, +0.0036]</td><td>Inconclusive alone</td></tr>
+<tr><td>NFL, 2006&ndash;15 (second unseen block)</td><td class="num">2,666</td><td class="num">0.6378</td><td class="num">0.6274</td><td class="num win">&minus;0.0104 [&minus;0.0163, &minus;0.0044]</td><td></td></tr>
+<tr><td>NFL, both blocks pooled</td><td class="num">4,086</td><td class="num">0.6398</td><td class="num">0.6312</td><td class="num win">&minus;0.0085 [&minus;0.0137, &minus;0.0034]</td><td>Adopt</td></tr>
+<tr><td>MLB, 2023&ndash;26 to date</td><td class="num">9,674</td><td class="num">0.6820</td><td class="num">0.6827</td><td class="num lose">+0.0008 [&minus;0.0006, +0.0022]</td><td>Keep W/L</td></tr>
+</tbody></table></div>
+<figure>
+  <svg id="forest" viewBox="0 0 640 330" role="img" aria-label="Log-loss difference from production with 95% intervals"></svg>
+  <figcaption>Difference in log loss from the production board on eval seasons. Left of zero is better. Green variants were adopted; the others were measured and rejected. "No prior" means the current season only, the "2026-only rating" option.</figcaption>
+</figure>
+<div class="box measured"><span class="eyebrow">Measured</span><p>Rank stability, as mean absolute week-over-week rank change on eval seasons: college FBS 6.61 &rarr; 4.25 (the margin board moves <em>less</em>), NFL 1.38 &rarr; 1.45, MLB unchanged at 0.89. Accuracy barely moves: college 71.0% &rarr; 73.6%, NFL 63.9% &rarr; 64.0% over 4,086 games.</p></div>
+</section>
+
+<section id="bugs">
+<h2>2. Data bugs came first</h2>
+<p class="col">No modelling choice matters if the games going in are wrong. The audit found seven, and each now has a regression test.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Bug</th><th>Cause</th><th>Before</th><th>After</th></tr></thead>
+<tbody>
+<tr><td>MLB records one game off (Braves, Giants and others)</td><td>A suspended game appears on its original date and its resumption date, both "Final"; "Completed Early" official games were dropped</td><td>5 clubs wrong</td><td>30/30 clubs match StatsAPI standings, 2023&ndash;26</td></tr>
+<tr><td>2025 NFL board stopped at week 18</td><td>nflverse labels playoff rounds WC/DIV/CON/SB; the loader asked for "POST", which does not exist</td><td>0 playoff games</td><td>all playoff rounds included</td></tr>
+<tr><td>Rank bands disagreed with ranks</td><td>The bootstrap refit last season at full weight, and ranked college teams across both divisions while the board ranks within one</td><td>MLB mean |rank &minus; band median| 2.47; 34/344 college teams outside their own band</td><td>MLB 1.20; 0 college teams outside</td></tr>
+<tr><td>29+ D2/NAIA schools on the FCS board</td><td>A team's division was read off the feed its games came from; the FCS feed lists every lower-division opponent</td><td>FCS board 206 teams</td><td>128 (conference membership from ESPN's group tree)</td></tr>
+<tr><td>Delaware State on the FBS board</td><td>Appending new games re-ran the "listed in both feeds" test over cached rows that had already been reduced to one listing, zeroing every cached cross-division flag</td><td>24 FCS teams flip to FBS once flags are wiped</td><td>flags preserved; divisions no longer depend on them</td></tr>
+<tr><td>Division movers (NDSU, Sacramento State)</td><td>Division map built first-seen over last season then this one</td><td>rated as FCS</td><td>current-season division</td></tr>
+<tr><td>Caches never refreshed</td><td>Every loader used a cache file forever once it existed</td><td>&mdash;</td><td>in-progress seasons refetch after 3 hours; finished seasons are frozen</td></tr>
+</tbody></table></div>
+<p class="col">Rerunning the college evaluation turned up three more identity problems: ESPN abbreviations collide (Valdosta State and Valparaiso are both <code>VAL</code>), 20 D1 programs were split in two by ESPN renames (UConn, App State, St. Thomas and others), and a program that dropped out of D1 stayed on the board. All three are fixed.</p>
+<div class="box pitfall"><span class="eyebrow">Lesson</span><p>Every one of these was silent. The board rendered, the numbers looked plausible, and nothing threw. Checking the loader's output against an independent source (the official standings) found the MLB problem in minutes.</p></div>
+</section>
+
+<section id="bt">
+<h2>3. Bradley-Terry vs margin ratings</h2>
+<p class="col">Both models fit one number per team in a single global solve over every game, with a home-field term and, for college, an FBS/FCS term. They differ only in what they are asked to explain.</p>
+<div class="formula">Bradley-Terry:  P(home wins) = sigmoid(s_home &minus; s_away + h)       fit by logistic regression on won/lost<br>Margin ridge:   E[home margin] = m_home &minus; m_away + h            fit by weighted least squares on the score<br>                P(home wins) = sigmoid(predicted margin / scale)</div>
+<p class="col">W/L throws information away. A 35-point win and a 1-point win are the same data point to Bradley-Terry, but the margin says a lot about how much better one team is. With only 12 college games per team the extra information per game matters most, which is where the gain is largest (&minus;0.036). The NFL, with 17 games and closer teams, gains less (&minus;0.0085). Baseball gains nothing: run differential and wins carry about the same information over a 162-game season, and team strength itself only explains about 0.011 nats over a coin flip.</p>
+<p class="col"><code>scale</code> converts points into log-odds. It is fitted once per sport on the tune seasons (college 10.6 points per log-odds unit, NFL 4.7) and then frozen. Fitting it in-sample would make the model overconfident, because in-sample predicted margins are too good. The NFL value is small because the ridge shrinks predicted margins a lot, so the scale corrects for that shrinkage.</p>
+<p class="col">Margin capping stops a blowout of a hopeless opponent from counting as more than a comfortable win. The NFL picked a cap at 21. College picked no cap: caps of 28, 38 and 50 all scored worse on the tune seasons (0.5239, 0.5206, 0.5183 against 0.5172 uncapped).</p>
+<figure>
+  <svg id="weekly" viewBox="0 0 640 260" role="img" aria-label="College log loss by week, production vs margin"></svg>
+  <div class="legend"><span style="--c:var(--s2)">production (W/L)</span><span style="--c:var(--s3)">margin model</span></div>
+  <figcaption>College football log loss by week, eval seasons 2022&ndash;25 (weeks 17+ are bowls and playoffs, pooled). The margin model is lower in every week, and the gap is largest early (&minus;0.052 [&minus;0.065, &minus;0.038] over weeks 1&ndash;4), when W/L has the least evidence to work with.</figcaption>
+</figure>
+<div class="box inferred"><span class="eyebrow">Inferred, not measured</span><p>That the margin board "ranks the better teams higher" is an interpretation. What was measured is that it predicts the next week's results better. For a performance ranking those are meant to be the same claim, but the evidence is about prediction.</p></div>
+</section>
+
+<section id="ridge">
+<h2>4. Ridge regularization is a prior</h2>
+<p class="col">Both fits add a penalty on the size of team ratings. Adding a squared-penalty term is exactly what you get by putting a Gaussian prior centred on zero ("every team starts average") on each rating and taking the most likely value afterwards (the MAP estimate). The penalty strength is how tightly you believe teams cluster around average. (<a href="ml-course.html">ML_COURSE</a> covers C and L2 in general.)</p>
+<div class="formula">minimise   &Sigma; w_g &middot; loss(game g)  +  &lambda; &middot; &Sigma; rating_t&sup2;<br>&equiv;  maximise  likelihood &times; Normal(rating_t | 0, &sigma;&sup2; &prop; 1/&lambda;)</div>
+<p class="col">This is what stops an unbeaten team against weak opposition from getting an infinite rating (complete separation in logistic regression), and it is why the penalty differs so much by sport: MLB's W/L fit uses C = 0.06 (heavy shrinkage, because teams really are close), while the college margin fit uses &alpha; = 0.3 (light, because college teams really are far apart). Each value came from the grid on tune seasons, not a guess.</p>
+</section>
+
+<section id="decay">
+<h2>5. Decaying last season: the early-season bias/variance trade</h2>
+<p class="col">In week 2 a team has played one or two games. Rating on those alone has huge variance. Last season's games are a lot of low-variance evidence about a team that has since changed, which introduces bias. The engine refits last season's games alongside this season's at a per-game weight of <code>w0 &middot; exp(&minus;week / tau)</code>, and the walk-forward search picks <code>w0</code> and <code>tau</code>.</p>
+<figure>
+  <svg id="decaychart" viewBox="0 0 640 250" role="img" aria-label="Weight of one last-season game by week"></svg>
+  <div class="legend"><span style="--c:var(--ink-3)">old NFL/college (1.0, tau 8)</span><span style="--c:var(--s1)">NFL margin (0.5, tau 8)</span><span style="--c:var(--s3)">college margin (0.25, tau 16)</span><span style="--c:var(--s4)">MLB, unchanged (1.0, tau 20)</span></div>
+  <figcaption>How much one of last season's games counts, relative to one of this season's. At NFL week 2 it fell from 0.78 to 0.39; for college from 0.78 to 0.22.</figcaption>
+</figure>
+<p class="col">The margin models want less of last season than the W/L model did. One reading: a margin carries more information per game, so fewer current games are needed before they outweigh the prior. That fits the numbers, but it is an inference.</p>
+<div class="box measured"><span class="eyebrow">Measured: dropping last season entirely always loses</span><p>A "2026-only" rating is worse in every sport: NFL +0.0156 [+0.0066, +0.0251], college +0.054 [+0.035, +0.075], MLB +0.0035 [+0.0017, +0.0052]. MLB still gives last season 0.26 weight per game at week 27. That looks sticky, but it is what the log loss wants: every less-sticky setting did worse on 2023&ndash;26. So no current-season-only rating was added to the board.</p></div>
+</section>
+
+<section id="wf">
+<h2>6. Walk-forward validation, and why random CV lies here</h2>
+<p class="col">For every week of every scored season: fit on games strictly before that week (plus last season at its decayed weight), predict that week's games, and record the loss. That is exactly the situation the live board is in on Monday morning.</p>
+<p class="col">Random k-fold cross-validation would hold out random games and fit on the rest, including games played <em>after</em> the ones being predicted. A team's week-10 result would help "predict" its week-3 game. That leaks the future into the rating. It flatters every model, and it flatters the less-regularized, less-anchored ones most, because they can use the leaked future games most aggressively. It would also make the prior look useless, since a model that can see the whole season never needs last year. The prior-decay question can only be answered with a time-ordered split. (<a href="ml-lessons.html">ML_LESSONS</a> covers leakage and splitting in general.)</p>
+</section>
+
+<section id="ll">
+<h2>7. Log loss, not accuracy</h2>
+<p class="col">Log loss scores the probability given to what actually happened: &minus;log(p) when the home team wins, &minus;log(1 &minus; p) when it loses. It is a proper scoring rule: you minimise it by reporting your true belief. Accuracy only asks whether the favourite won.</p>
+<div class="box measured"><span class="eyebrow">Measured: the NFL shows why this matters</span><p>Over 4,086 unseen NFL games, accuracy is 63.93% (production) vs 63.97% (margin), effectively identical. Log loss improves by 0.0085 with an interval that excludes zero. The two models pick the same favourites; the margin model is better calibrated about <em>how much</em> of a favourite each is. For a ranking, where the claim is "A is this much better than B" (the board's <code>p_beat_next</code>), that is the part that matters.</p></div>
+<p class="col">For scale: a coin flip is 0.6931. The NFL board improves on it by about 0.05&ndash;0.06 nats and college by about 0.18, so college's 0.036 gain is large. MLB's whole signal is about 0.011 nats, so a 0.0008 difference is noise.</p>
+</section>
+
+<section id="boot">
+<h2>8. Bootstrap intervals and rank bands</h2>
+<h3>Intervals on the comparison</h3>
+<p class="col">Every difference above comes with a bootstrap interval: resample the scored games with replacement 2,000 times, recompute the mean difference, and take the 2.5th and 97.5th percentiles. The resampling unit is a <em>week</em>, not a game. All games in a week are predicted from the same fit, so they are correlated. Resampling single games would treat them as independent and make the interval too narrow. The comparison is <em>paired</em>, meaning the same games are scored by both models, which removes the game-to-game difficulty that both models share.</p>
+<h3>Rank bands on the board</h3>
+<p class="col">The <code>rank 5&ndash;95%</code> column comes from a different bootstrap: resample the games, refit, and rerank, 200 times. It answers "how settled is this rank?" The old version resampled last season and this season as one pool at full weight, so it described a different model from the one that produced the ranks. The fix gives every replicate the same week, decay weights, divisions and model as the point estimate, and resamples each season separately.</p>
+<div class="box measured"><span class="eyebrow">Measured</span><p>MLB 2026: mean distance between a team's rank and its band median 2.47 &rarr; 1.20, no team outside its band. College 2026: 34 of 344 teams outside their own band (against overall rank) &rarr; 0 of 266 (within the board they are published on). A wide band, such as North Dakota State at FBS #9 with a band of 1&ndash;24 after four games, is the honest answer, not a bug.</p></div>
+</section>
+
+<section id="sel">
+<h2>9. Selection bias from trying 925 variants</h2>
+<p class="col">The grid tried 221&ndash;925 configurations per sport (model &times; penalty &times; cap &times; w0 &times; tau &times; in-season recency). If you try that many and report the best one's score on the same data, you report its luck along with its skill. The best of many noisy estimates is biased downward.</p>
+<p class="col">The defence is a tune/eval split in time: choose on 2016&ndash;20 (NFL), 2017&ndash;19 + 2021 (college) or 2018&ndash;22 (MLB), then score the single frozen pick on later seasons. The recency experiment shows why this matters:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Variant chosen on tune seasons</th><th>Tune gain vs production</th><th>Eval gain vs production</th></tr></thead>
+<tbody>
+<tr><td>NFL W/L re-tuned (C=1, recency 8, w0 0.25)</td><td class="num win">&minus;0.0024</td><td class="num lose">+0.0005</td></tr>
+<tr><td>MLB W/L re-tuned (C=0.25, recency 16)</td><td class="num win">&minus;0.0010</td><td class="num lose">+0.0007</td></tr>
+<tr><td>MLB margin (tune-best)</td><td class="num win">&minus;0.0015</td><td class="num lose">+0.0008</td></tr>
+<tr><td>NFL margin, recency 16 vs none (same other settings)</td><td class="num win">&minus;0.0012</td><td class="num">&minus;0.0001</td></tr>
+</tbody></table></div>
+<p class="col">Every one of those "wins" disappeared out of sample. The margin effect in college, in contrast, was &minus;0.033 on tune and &minus;0.036 on eval: a real effect survives the split.</p>
+<div class="box pitfall"><span class="eyebrow">Disclosure</span><p>Two choices were not made on tune data alone. (1) Recency weighting was dropped for the NFL after its eval gain (0.0001) was seen; the stated reason is that it gives up the order independence the board promises, but that decision was made with the eval number in view. (2) The NFL 2006&ndash;15 block was added after the 2021&ndash;25 result came out inconclusive. That block was never used for tuning, and the configuration was frozen before it was scored, but adding evidence because the first test was inconclusive is itself a choice. The pooled result should be read with that in mind. Among near-ties on tune (within 0.0005), the rule used was: no recency, then no cap, then the stronger penalty.</p></div>
+<p class="col">The BT/margin blend was slightly better than margin alone on college eval (&minus;0.0010 [&minus;0.0024, +0.0004]) and NFL (&minus;0.0013 [&minus;0.0032, +0.0007]). Neither interval excludes zero, and the blend doubles the fitting cost and is harder to explain, so it was not adopted.</p>
+</section>
+
+<section id="polls">
+<h2>10. Why media polls are not a target</h2>
+<p class="col">Tuning the board to agree with the AP poll or FPI would change what it measures without making it more correct:</p>
+<ul class="col">
+<li><b>Circularity.</b> Polls react to results, reputation, preseason expectations and each other. A model tuned to match them inherits all of that and adds nothing a reader can't get from the poll itself.</li>
+<li><b>No ground truth.</b> Agreement with a poll has no correct value. Log loss on next week's games does: the games get played, and the score is objective.</li>
+<li><b>Different questions.</b> Polls mix "most deserving" (a résumé question, which strength of record answers) with "best" (a strength question, which the rating answers). The board keeps them apart: the rating is fitted, SOR is shown beside it.</li>
+<li><b>They are shown, never fitted.</b> AP, coaches and FPI columns are joined for display after the fit. None of them enters the likelihood or the tuning objective.</li>
+</ul>
+<p class="col">If the board disagrees with the poll about a team, the defensible answer is the model's out-of-sample record, not a tweak until they agree.</p>
+</section>
+
+<section id="conf">
+<h2>11. Confidence, change by change</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>Change</th><th>Confidence</th><th>Evidence so far</th><th>What would raise it</th></tr></thead>
+<tbody>
+<tr><td>MLB gamePk dedupe, Completed Early</td><td><span class="pill hi">high</span></td><td>30/30 records match standings, 4 seasons</td><td>Keep a standings-match check in CI</td></tr>
+<tr><td>NFL playoffs included</td><td><span class="pill hi">high</span></td><td>2025 board now through week 22</td><td>&mdash;</td></tr>
+<tr><td>Bootstrap uses the same model</td><td><span class="pill hi">high</span></td><td>0 teams outside own band; MLB median gap halved</td><td>&mdash;</td></tr>
+<tr><td>College membership from conference tree</td><td><span class="pill hi">high</span></td><td>FBS 138 / FCS 128 in 2026, matching real counts</td><td>Spot-check vs NCAA membership list each August; offline fallback is the old, weaker inference</td></tr>
+<tr><td>Rename merging, abbreviation collision</td><td><span class="pill mid">medium-high</span></td><td>20 renames found, all real</td><td>Key on ESPN team id instead of name (needs the id in the games cache)</td></tr>
+<tr><td>Cache staleness refresh</td><td><span class="pill mid">medium-high</span></td><td>Unit tests only</td><td>Observe one live Cloud Function run</td></tr>
+<tr><td>College margin model</td><td><span class="pill hi">high</span></td><td>&minus;0.036, all 4 eval seasons better, every week better</td><td>2026 season as a live holdout</td></tr>
+<tr><td>NFL margin model</td><td><span class="pill mid">medium</span></td><td>&minus;0.0085 pooled over 15 seasons, 12/15 better; recent block alone inconclusive</td><td>2026&ndash;27 live; an NFL-specific check that 2021+ (17-game era) behaves like 2006&ndash;15</td></tr>
+<tr><td>Faster prior decay (NFL, college)</td><td><span class="pill mid">medium</span></td><td>Chosen jointly with the margin model; tune surface is flat within ~0.001 across w0 0.25&ndash;1.0</td><td>More seasons; the exact w0/tau is weakly identified</td></tr>
+<tr><td>MLB unchanged</td><td><span class="pill hi">high</span></td><td>No variant beats production on 9,674 games</td><td>&mdash;</td></tr>
+<tr><td>Model-computed NFL SOR</td><td><span class="pill lo">low-medium</span></td><td>Descriptive, not validated against anything</td><td>Decide whether SOR should use an average or a top-10 benchmark team</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="defend">
+<h2>12. How to defend this</h2>
+<details><summary>"Your #1 isn't the AP #1. Your model is wrong."</summary><p>The board is scored on one thing: how well it predicts the next week's games it has never seen. On 6,317 unseen college games its log loss is 0.509 against 0.545 for the previous board, and that gap held in all four eval seasons. The AP poll isn't a prediction you can score that way. If a poll-matching board predicted better, the evaluation would have picked it.</p></details>
+<details><summary>"Margin of victory rewards running up the score."</summary><p>That was tested. NFL margins are capped at 21. For college, caps of 28, 38 and 50 were tried and all predicted worse, so no cap was adopted. Beating a weak team by 50 still counts as beating a weak team, because opponent strength is in the same fit. The numbers say big wins carry real information about future results.</p></details>
+<details><summary>"Week 2 and the board is still mostly last year."</summary><p>Less than before: last season's games now count 0.39 each at NFL week 2 and 0.22 in college, down from 0.78. Dropping last season entirely made predictions clearly worse in every sport (NFL +0.016, college +0.054). Two games are not enough evidence on their own.</p></details>
+<details><summary>"MLB's board still counts 2025 in late September."</summary><p>Yes, at 0.26 per game. Every less-sticky setting predicted 2023&ndash;26 games worse, and dropping 2025 entirely costs 0.0035 [+0.0017, +0.0052]. Baseball teams are close together and single games are noisy, so the extra history helps. The rank bands show how little separates most MLB teams.</p></details>
+<details><summary>"You tried hundreds of settings. You found noise."</summary><p>The settings were picked on earlier seasons and scored once on later ones. Several tune-set winners, including in-season recency weighting and every MLB variant, did not survive that and were rejected. The college margin gain was about the same size on both sides of the split.</p></details>
+<details><summary>"The NFL result isn't significant."</summary><p>On 2021&ndash;25 alone it isn't: &minus;0.005 [&minus;0.014, +0.004]. On 2006&ndash;15, never used for tuning, it is &minus;0.010 [&minus;0.016, &minus;0.004], and pooled over 15 seasons it is &minus;0.0085 [&minus;0.014, &minus;0.003], better in 12 of 15. The second block was added after the first was inconclusive, so treat this as medium confidence. It stays an experiment until 2026 games confirm it.</p></details>
+<details><summary>"Accuracy didn't change, so what's the point?"</summary><p>Accuracy only checks whether the favourite won. Both models mostly pick the same favourites. The margin model gets the size of each edge right more often, which is what "gap to next" and "P(beat next)" on the board report. Log loss measures that; accuracy can't.</p></details>
+<details><summary>"Why is team X ranked 9th with a band of 1&ndash;24?"</summary><p>Because after four games the data can't tell ranks 1 and 24 apart for that team. The point rank is the single best estimate; the band says how much to trust it. The bands now come from the same model as the ranks, and no team's rank falls outside its own band.</p></details>
+</section>
+
+<section id="gloss">
+<h2>Glossary</h2>
+<dl class="gloss">
+<dt>Bradley-Terry</dt><dd>A model in which the chance A beats B depends only on the difference of their strengths, passed through a sigmoid. Fitted by logistic regression on wins and losses.</dd>
+<dt>Margin ridge</dt><dd>Least-squares fit of each game's score margin to team strengths plus home field, with an L2 penalty. Converted to a probability with a fixed per-sport scale.</dd>
+<dt>Ridge / L2 penalty</dt><dd>A penalty on the sum of squared ratings, which shrinks them toward average. Equivalent to a Gaussian prior.</dd>
+<dt>Prior decay (w0, tau)</dt><dd>Weight of one of last season's games: w0 &middot; exp(&minus;week/tau). w0 is its weight in week 0, tau how quickly it fades.</dd>
+<dt>Recency weighting</dt><dd>Also fading this season's older games. Measured, not adopted.</dd>
+<dt>Walk-forward</dt><dd>Evaluate each week using only games before it, in time order.</dd>
+<dt>Tune / eval split</dt><dd>Choose settings on earlier seasons, score the frozen choice on later ones.</dd>
+<dt>Log loss</dt><dd>Mean of &minus;log(probability given to the outcome that happened). 0.6931 is a coin flip. Lower is better.</dd>
+<dt>Nat</dt><dd>The unit of log loss when natural logs are used.</dd>
+<dt>Block bootstrap</dt><dd>Resampling whole weeks rather than games, to respect the correlation within a week.</dd>
+<dt>Rank band (5&ndash;95%)</dt><dd>The range a team's rank falls in across 200 refits on resampled games.</dd>
+<dt>Rank stability</dt><dd>Mean absolute change in a team's rank from one week to the next.</dd>
+<dt>Strength of record (SOR)</dt><dd>Wins minus what an average team would expect against the same schedule. A résumé measure, shown beside the rating and not fitted. ESPN's for college; computed from the board for the NFL.</dd>
+<dt>Selection bias</dt><dd>The optimism that comes from reporting the best of many tried variants on the data used to pick it.</dd>
+<dt>Complete separation</dt><dd>When a team never loses (or never wins), plain maximum likelihood sends its rating to infinity. The penalty prevents it.</dd>
+</dl>
+</section>
+</div>
+
+<script>
+(function () {
+  var NS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs, parent, text) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text != null) e.textContent = text;
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+  // 1. Forest plot of eval differences.
+  var rows = [
+    ["College margin", -0.0357, -0.0430, -0.0281, true],
+    ["College W/L re-tuned", -0.0041, -0.0063, -0.0018, false],
+    ["College no prior", 0.0540, 0.0351, 0.0746, false],
+    ["NFL margin, pooled 15 seasons", -0.0085, -0.0137, -0.0034, true],
+    ["NFL margin, 2021-25 only", -0.0049, -0.0141, 0.0036, false],
+    ["NFL W/L re-tuned", 0.0005, -0.0053, 0.0063, false],
+    ["NFL no prior", 0.0156, 0.0066, 0.0251, false],
+    ["MLB margin", 0.0008, -0.0006, 0.0022, false],
+    ["MLB blend", 0.0000, -0.0011, 0.0012, false],
+    ["MLB no prior", 0.0035, 0.0017, 0.0052, false]
+  ];
+  function forest() {
+    var svg = document.getElementById("forest"); svg.innerHTML = "";
+    var L = 250, R = 620, top = 18, rh = 29, lo = -0.05, hi = 0.08;
+    var x = function (v) { return L + (v - lo) / (hi - lo) * (R - L); };
+    [-0.04, -0.02, 0, 0.02, 0.04, 0.06, 0.08].forEach(function (t) {
+      el("line", { x1: x(t), x2: x(t), y1: top - 6, y2: top + rows.length * rh, stroke: t === 0 ? css("--ink-3") : css("--rule"), "stroke-width": t === 0 ? 1.5 : 1 }, svg);
+      el("text", { x: x(t), y: top + rows.length * rh + 16, "text-anchor": "middle", "font-size": 11 }, svg, (t > 0 ? "+" : "") + t.toFixed(2));
+    });
+    rows.forEach(function (r, i) {
+      var y = top + i * rh + rh / 2, c = r[4] ? css("--s3") : (r[2] > 0 ? css("--s2") : css("--ink-3"));
+      el("text", { x: L - 10, y: y + 4, "text-anchor": "end", "font-size": 12.5 }, svg, r[0]);
+      el("line", { x1: x(r[2]), x2: x(r[3]), y1: y, y2: y, stroke: c, "stroke-width": 2.5 }, svg);
+      el("circle", { cx: x(r[1]), cy: y, r: 5, fill: c }, svg);
+    });
+    el("text", { x: (L + R) / 2, y: top + rows.length * rh + 32, "text-anchor": "middle", "font-size": 11.5 }, svg, "log-loss difference vs production (negative = better)");
+  }
+
+  // 2. College weekly log loss.
+  var weekly = {1:[0.4251,0.3821],2:[0.4935,0.4338],3:[0.4796,0.4454],4:[0.5646,0.4945],5:[0.5548,0.5276],6:[0.5682,0.5183],7:[0.5817,0.5544],8:[0.5792,0.5697],9:[0.5502,0.5249],10:[0.5963,0.5632],11:[0.552,0.5243],12:[0.5522,0.5228],13:[0.5366,0.5004],14:[0.5419,0.5164],15:[0.6297,0.588],16:[0.4168,0.3829],17:[0.6866,0.6653]};
+  function weeklyChart() {
+    var svg = document.getElementById("weekly"); svg.innerHTML = "";
+    var L = 48, R = 620, T = 14, B = 222, lo = 0.35, hi = 0.70;
+    var ks = Object.keys(weekly).map(Number);
+    var x = function (w) { return L + (w - 1) / 16 * (R - L); };
+    var y = function (v) { return B - (v - lo) / (hi - lo) * (B - T); };
+    [0.4, 0.5, 0.6, 0.7].forEach(function (t) {
+      el("line", { x1: L, x2: R, y1: y(t), y2: y(t), stroke: css("--rule") }, svg);
+      el("text", { x: L - 6, y: y(t) + 4, "text-anchor": "end", "font-size": 11 }, svg, t.toFixed(1));
+    });
+    ks.forEach(function (w) { if (w % 2 === 1) el("text", { x: x(w), y: B + 16, "text-anchor": "middle", "font-size": 11 }, svg, w === 17 ? "17+" : w); });
+    el("text", { x: (L + R) / 2, y: B + 34, "text-anchor": "middle", "font-size": 11.5 }, svg, "week");
+    [[0, "--s2"], [1, "--s3"]].forEach(function (s) {
+      var d = ks.map(function (w, i) { return (i ? "L" : "M") + x(w).toFixed(1) + " " + y(weekly[w][s[0]]).toFixed(1); }).join(" ");
+      el("path", { d: d, fill: "none", stroke: css(s[1]), "stroke-width": 2.2 }, svg);
+      ks.forEach(function (w) { el("circle", { cx: x(w), cy: y(weekly[w][s[0]]), r: 2.6, fill: css(s[1]) }, svg); });
+    });
+  }
+
+  // 3. Prior weight curves.
+  function decayChart() {
+    var svg = document.getElementById("decaychart"); svg.innerHTML = "";
+    var L = 44, R = 620, T = 12, B = 210, W = 27;
+    var x = function (w) { return L + w / W * (R - L); };
+    var y = function (v) { return B - v * (B - T); };
+    [0, 0.25, 0.5, 0.75, 1].forEach(function (t) {
+      el("line", { x1: L, x2: R, y1: y(t), y2: y(t), stroke: css("--rule") }, svg);
+      el("text", { x: L - 6, y: y(t) + 4, "text-anchor": "end", "font-size": 11 }, svg, t.toFixed(2));
+    });
+    [0, 5, 10, 15, 20, 25].forEach(function (w) { el("text", { x: x(w), y: B + 16, "text-anchor": "middle", "font-size": 11 }, svg, w); });
+    el("text", { x: (L + R) / 2, y: B + 34, "text-anchor": "middle", "font-size": 11.5 }, svg, "week of the season");
+    [[1, 8, 18, "--ink-3", "4 3"], [0.5, 8, 22, "--s1", ""], [0.25, 16, 17, "--s3", ""], [1, 20, 27, "--s4", ""]].forEach(function (c) {
+      var pts = [];
+      for (var w = 0; w <= c[2]; w += 0.5) pts.push((pts.length ? "L" : "M") + x(w).toFixed(1) + " " + y(c[0] * Math.exp(-w / c[1])).toFixed(1));
+      el("path", { d: pts.join(" "), fill: "none", stroke: css(c[3]), "stroke-width": 2.2, "stroke-dasharray": c[4] }, svg);
+    });
+    el("line", { x1: x(2), x2: x(2), y1: T, y2: B, stroke: css("--rule-2"), "stroke-dasharray": "2 3" }, svg);
+    el("text", { x: x(2) + 4, y: T + 12, "font-size": 11 }, svg, "week 2");
+  }
+
+  function draw() { forest(); weeklyChart(); decayChart(); }
+  draw();
+  if (window.matchMedia) {
+    var mq = window.matchMedia("(prefers-color-scheme: dark)");
+    if (mq.addEventListener) mq.addEventListener("change", draw);
+  }
+})();
+</script>
+<script>/* Theme toggle for the learn pages; shares the site's stored choice. */
+(function(){var b=document.getElementById('lh-theme');if(!b)return;var r=document.documentElement;
+function cur(){var t=r.getAttribute('data-theme');if(t)return t;return window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+function lab(){var n=cur()==='dark'?'light':'dark';b.textContent=n==='light'?'\u2600':'\u263E';b.setAttribute('aria-label','Switch to '+n+' theme');b.title='Switch to '+n+' theme';}
+lab();b.addEventListener('click',function(){var n=cur()==='dark'?'light':'dark';try{localStorage.setItem('ht-theme',n);}catch(e){}
+r.setAttribute('data-theme',n);location.reload();});})();
+</script>
+</body>
+</html>

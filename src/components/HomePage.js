@@ -97,6 +97,28 @@ export function accuracyInterval(p, n) {
   return 1.96 * Math.sqrt((p * (1 - p)) / n);
 }
 
+/**
+ * College accuracy on FBS-vs-FBS games only.
+ *
+ * The season accuracy endpoint pools every game on the FBS board, and roughly two in
+ * five of those are FBS teams hosting FCS opponents, which the model almost never
+ * misses. That flatters the headline. The diagnostics rows carry a per-game
+ * `crossDivision` flag, so the like-for-like number can be computed here. Returns null
+ * when the rows are missing or do not carry the flag, so the caller can fall back to
+ * the pooled number with a caveat instead of showing a made-up split.
+ */
+export function fbsOnlyRecord(rows) {
+  if (!Array.isArray(rows) || rows.length === 0) return null;
+  const flagged = rows.filter(
+    (r) => typeof r.crossDivision === "boolean" && typeof r.correct === "boolean"
+  );
+  if (flagged.length !== rows.length) return null;
+  const fbs = flagged.filter((r) => !r.crossDivision);
+  if (fbs.length === 0) return null;
+  const accuracy = fbs.filter((r) => r.correct).length / fbs.length;
+  return { accuracy, n: fbs.length, ci: accuracyInterval(accuracy, fbs.length) };
+}
+
 function formatStandings(records) {
   if (!Array.isArray(records)) return {};
   const raw = {};
@@ -375,6 +397,7 @@ function SportCard({ sport, name, slate, record, leader, links }) {
             {record.ci != null && <span className="sc-ci"> ±{Math.round(record.ci * 100)}</span>}
           </dd>
           {record.n ? <span className="sc-n">{record.n} games</span> : null}
+          {record.secondary && <span className="sc-n sc-secondary">{record.secondary}</span>}
         </div>
         <div className="sc-leader">
           <dt>No. 1</dt>
@@ -482,6 +505,7 @@ function HomePage() {
   const [cfbRanks, setCfbRanks] = useState([]);
   const [boards, setBoards] = useState({});
   const [footballAccuracy, setFootballAccuracy] = useState({});
+  const [cfbFbsOnly, setCfbFbsOnly] = useState(null);
   const [picks, setPicks] = useState([]);
   const [diagnosticsSummary, setDiagnosticsSummary] = useState(null);
   const [highConfidenceSummary, setHighConfidenceSummary] = useState(null);
@@ -529,7 +553,7 @@ function HomePage() {
       // built yet must not blank the baseball half of the page, and vice versa.
       const [
         , standingsData, gamesData, diagnosticsData, mlbPreds, cfbRankRes,
-        mlbBoard, nflBoard, fbsBoard, nflAcc, fbsAcc, ...footballRes
+        mlbBoard, nflBoard, fbsBoard, nflAcc, fbsAcc, fbsDiag, ...footballRes
       ] = await Promise.all([
         fetchNews(),
         safe("getStandings", year),
@@ -542,6 +566,7 @@ function HomePage() {
         safe("getRankings", "cfb", { season: year, division: "fbs", limit: LEADERS_SHOWN }),
         safe("getFootballAccuracy", "nfl", year, null),
         safe("getFootballAccuracy", "cfb", year, "fbs"),
+        safe("getFootballDiagnostics", "cfb", { seasons: [year], division: "fbs" }),
         ...FOOTBALL_RAILS.map((l) =>
           safe("getFootballPredictions", l.sport, { season: year, division: l.division })
         ),
@@ -558,6 +583,7 @@ function HomePage() {
         cfb: { rows: fbsBoard?.data || [], meta: fbsBoard?.meta },
       });
       setFootballAccuracy({ nfl: nflAcc?.data || null, cfb: fbsAcc?.data || null });
+      setCfbFbsOnly(fbsOnlyRecord(fbsDiag?.diagnostics));
 
       const byLeague = {};
       const footballPicks = [];
@@ -654,7 +680,7 @@ function HomePage() {
     {
       sport: "cfb",
       label: "CFB · FBS",
-      window: `${season} season`,
+      window: `${season} season · incl. FCS opponents`,
       accuracy: cfbOverall?.model_accuracy,
       n: cfbOverall?.games,
       market: cfbOverall?.vegas_accuracy,
@@ -705,12 +731,25 @@ function HomePage() {
       sport: "cfb",
       name: "College football",
       slate: { label: "FBS games this week", value: football.fbs?.length || null },
-      record: {
-        label: "Model · season",
-        accuracy: cfbOverall?.model_accuracy,
-        n: cfbOverall?.games,
-        ci: accuracyInterval(cfbOverall?.model_accuracy, cfbOverall?.games),
-      },
+      // Headline the like-for-like FBS v FBS number; the pooled one is inflated by
+      // FCS opponents. Without the split, show the pooled number and say so.
+      record: cfbFbsOnly
+        ? {
+            label: "Model · FBS\u00a0v\u00a0FBS",
+            accuracy: cfbFbsOnly.accuracy,
+            n: cfbFbsOnly.n,
+            ci: cfbFbsOnly.ci,
+            secondary: cfbOverall?.model_accuracy != null
+              ? `All games ${formatPercent(cfbOverall.model_accuracy)} (n=${cfbOverall.games}) incl. FCS`
+              : null,
+          }
+        : {
+            label: "Model · season",
+            accuracy: cfbOverall?.model_accuracy,
+            n: cfbOverall?.games,
+            ci: accuracyInterval(cfbOverall?.model_accuracy, cfbOverall?.games),
+            secondary: cfbOverall?.model_accuracy != null ? "Includes FCS opponents" : null,
+          },
       leader: boards.cfb?.rows?.[0],
       links: [
         { to: footballPath("fbs", "picks"), label: "Predictions" },

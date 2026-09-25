@@ -114,3 +114,17 @@ test('footballSectionOf reads both path shapes', () => {
   expect(footballSectionOf('/cfb/fbs/game/401', false)).toBe('scoreboard');
   expect(footballSectionOf('/pickem/cfb', true)).toBe('pickem');
 });
+
+test('links to Learn from the top bar and from each sport bar', () => {
+  const { unmount } = renderNavbar('/learn');
+  expect(screen.getByRole('link', { name: 'Learn' })).toHaveAttribute('aria-current', 'page');
+  unmount();
+
+  [['/mlb/predictions', '/learn#mlb'], ['/nfl/picks', '/learn#football'], ['/cfb/fbs/rankings', '/learn#football']]
+    .forEach(([path, href]) => {
+      const { unmount: done } = renderNavbar(path);
+      const sections = within(screen.getByRole('navigation', { name: /sections/i }));
+      expect(sections.getByRole('link', { name: 'Learn' })).toHaveAttribute('href', href);
+      done();
+    });
+});

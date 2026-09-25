@@ -35,6 +35,8 @@ import ComparisonWorkbenchPage from './components/ComparisonWorkbenchPage';
 import ScenarioSimulatorPage from './components/ScenarioSimulatorPage';
 import ResearchWorkflowPage from './components/ResearchWorkflowPage';
 import NotFoundPage from './components/NotFoundPage';
+import LearnPage from './components/LearnPage';
+import SiteFooter from './components/SiteFooter';
 import RouteMetadata from './components/RouteMetadata';
 import RecentViewTracker from './components/RecentViewTracker';
 
@@ -114,6 +116,9 @@ function AppShell() {
           <Route path="/pickem/:sport" element={<PickemPage />} />
           <Route path="/pickem/:sport/:section" element={<PickemPage />} />
 
+          {/* ── Learn ── the index; the write-ups are static pages under public/learn/. */}
+          <Route path="/learn" element={<LearnPage />} />
+
           {/* ── Pre-redesign URLs ── */}
           {LEGACY_MLB_REDIRECTS.map(([from, to]) => (
             <Route key={from} path={from} element={<LegacyRedirect build={() => to} />} />
@@ -124,6 +129,7 @@ function AppShell() {
 
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+        <SiteFooter />
       </main>
     </>
   );
