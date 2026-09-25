@@ -28,6 +28,7 @@ import FootballGamePage from './components/football/FootballGamePage';
 import PickemPage from './components/pickem/PickemPage';
 import BaseballRankingsPage from './components/BaseballRankingsPage';
 import PredictionDiagnosticsPage from './components/PredictionDiagnosticsPage';
+import ModelsPage from './components/models/ModelsPage';
 import SplitExplorerPage from './components/SplitExplorerPage';
 import StatcastLabPage from './components/StatcastLabPage';
 import ComparisonWorkbenchPage from './components/ComparisonWorkbenchPage';
@@ -83,6 +84,7 @@ function AppShell() {
           <Route path="/mlb/transactions/:teamAbbr" element={<TeamTransactions />} />
           <Route path="/mlb/team/:teamAbbr" element={<TeamPage />} />
           <Route path="/mlb/player/:playerId" element={<PlayerPage />} />
+          <Route path={MLB.models} element={<ModelsPage sport="mlb" />} />
           <Route path={MLB.diagnostics} element={<PredictionDiagnosticsPage />} />
           <Route path={MLB.scenarioSimulator} element={<ScenarioSimulatorPage />} />
           <Route path="/mlb/lab" element={<Navigate to={MLB.splitExplorer} replace />} />

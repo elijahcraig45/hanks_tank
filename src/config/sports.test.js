@@ -4,18 +4,19 @@ const SECTIONS = [
   { key: 'picks', label: 'Picks' },
   { key: 'scoreboard', label: 'Scores', availableFor: (l) => l.sport === 'cfb' },
   { key: 'rankings', label: 'Power Rankings' },
+  { key: 'models', label: 'Models' },
   { key: 'diagnostics', label: 'Diagnostics' },
-  { key: 'models', label: 'Model Comparison' },
   { key: 'leaders', label: 'Leaders' },
   { key: 'players', label: 'Players' },
   { key: 'stats', label: 'Team Stats' },
 ];
 
-test('a models section added to FootballPage lands under Models beside diagnostics', () => {
+test('the models scoreboard leads the Models group, with diagnostics beside it', () => {
   const nav = footballNav('nfl', SECTIONS);
   const models = nav.find((n) => n.key === 'models');
-  expect(models.children.map((c) => c.to)).toEqual(['/nfl/diagnostics', '/nfl/models']);
-  expect(models.children.map((c) => c.label)).toEqual(['Diagnostics', 'Model Comparison']);
+  expect(models.to).toBe('/nfl/models');
+  expect(models.children.map((c) => c.to)).toEqual(['/nfl/models', '/nfl/diagnostics']);
+  expect(models.children.map((c) => c.label)).toEqual(['Model scoreboard', 'Diagnostics']);
 });
 
 test('football nav groups stats pages and skips sections a league lacks', () => {

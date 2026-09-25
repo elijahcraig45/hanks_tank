@@ -60,13 +60,13 @@ test('MLB team and game pages keep their section highlighted', () => {
   expect(sections.getByRole('link', { name: 'Scores' })).toHaveClass('ht-section--active');
 });
 
-test('football models group holds diagnostics, and Pick’em sits in the sport', () => {
+test('football Models leads to the model scoreboard, and Pick’em sits in the sport', () => {
   renderNavbar('/nfl/diagnostics');
 
   const sections = within(screen.getByRole('navigation', { name: /sections/i }));
   expect(sections.getByRole('link', { name: 'Models' })).toHaveClass('ht-section--active');
   expect(sections.getByRole('link', { name: /pick/i })).toHaveAttribute('href', '/pickem/nfl');
-  expect(sections.getByRole('link', { name: 'Models' })).toHaveAttribute('href', '/nfl/diagnostics');
+  expect(sections.getByRole('link', { name: 'Models' })).toHaveAttribute('href', '/nfl/models');
 });
 
 test('NFL has no scores section; college does, with a division switch', () => {
