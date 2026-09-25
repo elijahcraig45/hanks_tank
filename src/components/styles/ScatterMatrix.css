@@ -13,7 +13,7 @@
 }
 
 .col {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border);
   padding: 10px;
   border-radius: 5px;
 }
@@ -37,7 +37,7 @@
 }
 
 .scatter-chart {
-  border: 1px solid #eee;
+  border: 1px solid var(--border);
   border-radius: 5px;
   overflow: hidden;
 }
@@ -47,8 +47,8 @@
 }
 
 .custom-tooltip {
-  background-color: #fff;
-  border: 1px solid #ddd;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
   padding: 5px;
   border-radius: 3px;
   font-size: 12px;

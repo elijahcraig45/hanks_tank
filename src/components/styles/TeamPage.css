@@ -1,6 +1,6 @@
 .team-page {
   min-height: 100vh;
-  background: #f8f9fa;
+  background: var(--surface-2);
 }
 
 .team-hero-card {
@@ -53,11 +53,11 @@
 
 .team-tabs .nav-link {
   font-weight: 700;
-  color: #495057;
+  color: var(--text-2);
 }
 
 .team-tabs .nav-link.active {
-  color: #0d6efd;
+  color: var(--accent);
 }
 
 .team-stat-card {
@@ -66,7 +66,7 @@
 
 .team-stat-label {
   font-size: 0.74rem;
-  color: #64748b;
+  color: var(--text-muted);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -93,14 +93,14 @@
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #64748b;
+  color: var(--text-muted);
   font-weight: 700;
 }
 
 .team-info-value {
   font-size: 0.96rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text);
   margin-top: 0.15rem;
 }
 
@@ -116,10 +116,10 @@
   align-items: center;
   gap: 1rem;
   padding: 0.8rem 0.9rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
   border-radius: 10px;
-  background: #fff;
-  color: #0f172a;
+  background: var(--surface);
+  color: var(--text);
   transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
 }
 
@@ -127,7 +127,7 @@
   transform: translateY(-1px);
   border-color: rgba(13, 110, 253, 0.28);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-  color: #0d6efd;
+  color: var(--accent);
 }
 
 .team-schedule-matchup {
@@ -137,7 +137,7 @@
 
 .team-schedule-meta {
   font-size: 0.78rem;
-  color: #64748b;
+  color: var(--text-muted);
   margin-top: 0.2rem;
 }
 

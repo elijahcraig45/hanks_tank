@@ -1,81 +1,287 @@
-/* ── Design tokens ─────────────────────────────────────────────────── */
-:root {
-  --ht-blue:       #1a56db;
-  --ht-blue-dark:  #1043b5;
-  --ht-blue-light: #e8f0fe;
-  --ht-green:      #0d9f6e;
-  --ht-red:        #e02424;
-  --ht-navy:       #0f172a;
-  --ht-navy-mid:   #1e293b;
-  --ht-gray-50:    #f9fafb;
-  --ht-gray-100:   #f1f5f9;
-  --ht-gray-200:   #e2e8f0;
-  --ht-gray-400:   #94a3b8;
-  --ht-gray-600:   #475569;
-  --ht-gray-800:   #1e293b;
-  --ht-radius:     8px;
-  --ht-shadow-sm:  0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
-  --ht-shadow:     0 4px 16px rgba(0,0,0,.09);
-  --ht-shadow-lg:  0 10px 30px rgba(0,0,0,.12);
-  --ht-font-mono:  'SF Mono', 'Fira Code', 'Cascadia Code', Menlo, monospace;
+/* ══ Hank's Tank design tokens ═══════════════════════════════════════════
+   One set of semantic tokens for the whole site. Pages style against the
+   semantic names (--surface, --text, --accent …); the legacy --ht-* names
+   are kept as aliases so the older stylesheets pick up both themes without
+   being rewritten.
 
-  /* ── Sport accents ────────────────────────────────────────────────
-     One token per sport so the shell, the homepage rails and each sport's
-     pages can key off the same colour without hardcoding it in ten files.
-     Baseball keeps the original brand blue; football gets the warm amber so
-     the two rails are separable at a glance on a mixed scoreboard. */
-  --sport-mlb:       #1a56db;
-  --sport-mlb-soft:  rgba(26, 86, 219, .12);
-  --sport-mlb-on:    #7cb9ff;
-  --sport-ftbl:      #c2410c;
-  --sport-ftbl-soft: rgba(194, 65, 12, .12);
-  --sport-ftbl-on:   #fb9a4b;
+   Theme: <html data-theme="light|dark"> is set before first paint by the
+   inline script in public/index.html (stored choice, else the OS setting).
+   Bootstrap follows through data-bs-theme on the same element.
+
+   Sport accent: the shell sets data-sport="mlb|nfl|cfb|all" and --accent
+   resolves from it, so a component never hardcodes which sport it is in.
+   Every accent clears 4.5:1 as text on both the page and a card surface,
+   in both themes, and white text clears 4.5:1 on the light-theme accent:
+
+                light bg/surface   dark bg/surface
+     MLB        6.3 / 6.7          7.9 / 7.2
+     NFL        6.6 / 7.1          8.3 / 7.6
+     CFB        5.3 / 5.7          9.0 / 8.3
+     muted      5.8 / 6.3          7.7 / 7.0
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces and text */
+  --bg:            #f6f7f9;
+  --surface:       #ffffff;
+  --surface-2:     #f1f3f6;
+  --surface-3:     #e6e9ef;
+  --text:          #0f172a;
+  --text-2:        #334155;
+  --text-muted:    #566173;
+  --text-faint:    #8a94a6;
+  --text-on-accent: #ffffff;
+  --border:        #e2e6ec;
+  --border-strong: #cbd2dc;
+
+  /* Status — hits, misses, warnings. Kept distinct from every sport accent. */
+  --pos:        #0f7a4d;
+  --pos-soft:   #dcf5e8;
+  --neg:        #b42318;
+  --neg-soft:   #fde4e1;
+  --warn:       #9a6700;
+  --warn-soft:  #fff4d6;
+  --live:       #d92d20;
+
+  /* Sport accents */
+  --mlb:       #1d4ed8;
+  --mlb-soft:  #e3ebff;
+  --nfl:       #6d28d9;
+  --nfl-soft:  #efe7ff;
+  --cfb:       #b93c0a;
+  --cfb-soft:  #ffeadd;
+  --all:       #0f172a;
+  --all-soft:  #e8ebf0;
+
+  --accent:      var(--all);
+  --accent-soft: var(--all-soft);
+
+  /* Chrome — the navigation bars stay dark in both themes. */
+  --chrome:        #0b1220;
+  --chrome-2:      #141d31;
+  --chrome-text:   #e5e9f0;
+  --chrome-muted:  #a3aec0;
+  --chrome-border: rgba(255, 255, 255, .09);
+  --chrome-accent: #cfd6e3;
+
+  /* Type */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', sans-serif;
+  --font-mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
+  --text-2xs: 0.6875rem;
+  --text-xs:  0.75rem;
+  --text-sm:  0.8125rem;
+  --text-md:  0.9375rem;
+  --text-lg:  1.125rem;
+  --text-xl:  1.375rem;
+  --text-2xl: 1.75rem;
+
+  /* Space (4px grid) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  --radius-sm: 6px;
+  --radius:    10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, .06), 0 1px 3px rgba(15, 23, 42, .06);
+  --shadow:    0 4px 14px rgba(15, 23, 42, .08);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, .14);
+
+  --page-max: 1320px;
+  --gutter:   16px;
+  --topbar-h: 56px;
+  --bottombar-h: 60px;
+
+  /* ── Legacy aliases (pre-redesign stylesheets use these) ── */
+  --ht-blue:       var(--mlb);
+  --ht-blue-dark:  #1740b0;
+  --ht-blue-light: var(--mlb-soft);
+  --ht-green:      var(--pos);
+  --ht-red:        var(--neg);
+  --ht-navy:       var(--chrome);
+  --ht-navy-mid:   var(--chrome-2);
+  --ht-gray-50:    var(--bg);
+  --ht-gray-100:   var(--surface-2);
+  --ht-gray-200:   var(--border);
+  --ht-gray-400:   var(--text-faint);
+  --ht-gray-600:   var(--text-muted);
+  --ht-gray-800:   var(--text-2);
+  --ht-radius:     var(--radius-sm);
+  --ht-shadow-sm:  var(--shadow-sm);
+  --ht-shadow:     var(--shadow);
+  --ht-shadow-lg:  var(--shadow-lg);
+  --ht-font-mono:  var(--font-mono);
+
+  --sport-mlb:       var(--mlb);
+  --sport-mlb-soft:  var(--mlb-soft);
+  --sport-mlb-on:    #8ab8ff;
+  /* Football pages were written against one "football" colour. It now follows
+     whichever football sport is active (NFL violet or CFB orange). */
+  --sport-ftbl:      var(--cfb);
+  --sport-ftbl-soft: var(--cfb-soft);
+  --sport-ftbl-on:   #ffa36b;
 }
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg:            #0b1020;
+  --surface:       #131a2b;
+  --surface-2:     #1a2236;
+  --surface-3:     #222c43;
+  --text:          #e8ecf3;
+  --text-2:        #c3cad6;
+  --text-muted:    #9aa6b8;
+  --text-faint:    #6f7b8f;
+  --text-on-accent: #0b1020;
+  --border:        #263049;
+  --border-strong: #34405c;
+
+  --pos:        #4ade80;
+  --pos-soft:   rgba(74, 222, 128, .14);
+  --neg:        #f87171;
+  --neg-soft:   rgba(248, 113, 113, .14);
+  --warn:       #fbbf24;
+  --warn-soft:  rgba(251, 191, 36, .14);
+  --live:       #ff6b5e;
+
+  --mlb:       #6ea8ff;
+  --mlb-soft:  rgba(110, 168, 255, .14);
+  --nfl:       #b69cff;
+  --nfl-soft:  rgba(182, 156, 255, .15);
+  --cfb:       #ff9a5c;
+  --cfb-soft:  rgba(255, 154, 92, .14);
+  --all:       #e8ecf3;
+  --all-soft:  rgba(232, 236, 243, .10);
+
+  --chrome:        #070b16;
+  --chrome-2:      #10182b;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+  --shadow:    0 4px 14px rgba(0, 0, 0, .45);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, .55);
+
+  --ht-blue-dark: #9cc3ff;
+}
+
+/* Sport context. Set on the shell and on any element that is about one sport
+   (a homepage card, a pick row), so the accent can differ inside one page. */
+[data-sport='mlb'] { --accent: var(--mlb); --accent-soft: var(--mlb-soft); --chrome-accent: #8ab8ff; }
+[data-sport='nfl'] { --accent: var(--nfl); --accent-soft: var(--nfl-soft); --chrome-accent: #c4b0ff;
+  --sport-ftbl: var(--nfl); --sport-ftbl-soft: var(--nfl-soft); --sport-ftbl-on: #c4b0ff; }
+[data-sport='cfb'] { --accent: var(--cfb); --accent-soft: var(--cfb-soft); --chrome-accent: #ffa36b;
+  --sport-ftbl: var(--cfb); --sport-ftbl-soft: var(--cfb-soft); --sport-ftbl-on: #ffa36b; }
+[data-sport='all'] { --accent: var(--all); --accent-soft: var(--all-soft); --chrome-accent: #cfd6e3; }
+
+/* ── Base ─────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
-    'Helvetica Neue', sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--ht-gray-50);
-  color: #0f172a;
-  /* Better mobile rendering */
-  -webkit-text-size-adjust: 100%;
-  -ms-text-size-adjust: 100%;
+  background: var(--bg);
+  color: var(--text);
 }
 
-/* Ensure proper box sizing for all elements */
-*, *::before, *::after {
-  box-sizing: border-box;
-}
-
-/* Improve touch interaction on mobile */
 a, button, input, select, textarea {
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+code { font-family: var(--font-mono); }
+
+html, body { overflow-x: hidden; max-width: 100vw; }
+
+@media (max-width: 768px) {
+  body { font-size: 14px; }
+  .container, .container-fluid {
+    padding-left: var(--gutter) !important;
+    padding-right: var(--gutter) !important;
+  }
 }
 
-/* Mobile-specific improvements */
-@media (max-width: 768px) {
-  body {
-    font-size: 14px;
-  }
-  
-  /* Prevent horizontal scroll on mobile */
-  html, body {
-    overflow-x: hidden;
-    max-width: 100vw;
-  }
-  
-  /* Better spacing on mobile */
-  .container {
-    padding-left: 15px !important;
-    padding-right: 15px !important;
-  }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* ── Bootstrap bridge ──────────────────────────────────────────────────
+   bootstrap.min.css is imported after this file (src/index.js), so its
+   :root variables would win a tie. html[data-theme] outranks :root and
+   [data-bs-theme], which keeps Bootstrap cards, tables and forms on the
+   same surfaces as everything else in both themes. */
+html[data-theme] {
+  --bs-body-bg: var(--bg);
+  --bs-body-color: var(--text);
+  --bs-emphasis-color: var(--text);
+  --bs-secondary-color: var(--text-muted);
+  --bs-tertiary-color: var(--text-faint);
+  --bs-secondary-bg: var(--surface-2);
+  --bs-tertiary-bg: var(--surface-2);
+  --bs-border-color: var(--border);
+  --bs-border-color-translucent: var(--border);
+  --bs-heading-color: var(--text);
+  --bs-link-color: var(--mlb);
+  --bs-link-color-rgb: 29, 78, 216;
+  --bs-link-hover-color: var(--ht-blue-dark);
+  --bs-font-sans-serif: var(--font-sans);
+  --bs-font-monospace: var(--font-mono);
+}
+html[data-theme='dark'] {
+  --bs-link-color-rgb: 110, 168, 255;
+}
+html[data-theme] .card { --bs-card-bg: var(--surface); --bs-card-cap-bg: var(--surface); }
+html[data-theme] .table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--text);
+  --bs-table-border-color: var(--border);
+  --bs-table-striped-bg: var(--surface-2);
+  --bs-table-striped-color: var(--text);
+  --bs-table-hover-bg: var(--surface-2);
+  --bs-table-hover-color: var(--text);
+}
+html[data-theme] .table-light {
+  --bs-table-bg: var(--surface-2);
+  --bs-table-color: var(--text);
+  --bs-table-border-color: var(--border);
+}
+html[data-theme] .form-control,
+html[data-theme] .form-select {
+  background-color: var(--surface);
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+html[data-theme] .modal-content,
+html[data-theme] .dropdown-menu,
+html[data-theme] .list-group-item,
+html[data-theme] .popover { background-color: var(--surface); color: var(--text); border-color: var(--border); }
+html[data-theme='dark'] .text-muted { color: var(--text-muted) !important; }
+html[data-theme='dark'] .bg-light { background-color: var(--surface-2) !important; }
+html[data-theme='dark'] .bg-white { background-color: var(--surface) !important; }
+html[data-theme='dark'] .text-dark { color: var(--text) !important; }
+
+/* Recharts tooltips render inline white boxes; keep them readable in dark. */
+.recharts-default-tooltip {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text);
+  border-radius: var(--radius-sm);
+}
+.recharts-cartesian-axis-tick-value { fill: var(--text-muted); }
+.recharts-cartesian-grid line { stroke: var(--border); }
+.recharts-legend-item-text { color: var(--text-2) !important; }
+.recharts-responsive-container { max-width: 100%; }
+svg { max-width: 100%; }

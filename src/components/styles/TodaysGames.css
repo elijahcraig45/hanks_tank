@@ -19,7 +19,7 @@
 .games-section-title {
   font-size: 0.95rem;
   font-weight: 700;
-  color: #495057;
+  color: var(--text-2);
 }
 
 .games-section--live .games-section-title {
@@ -44,7 +44,7 @@
 .games-toolbar-label {
   font-size: 0.72rem;
   font-weight: 700;
-  color: #6c757d;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin-bottom: 0.3rem;
@@ -63,9 +63,9 @@
 }
 
 .status-chip {
-  border: 1px solid #d0d7de;
-  background: #fff;
-  color: #495057;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
   border-radius: 999px;
   padding: 0.28rem 0.7rem;
   font-size: 0.78rem;
@@ -86,12 +86,12 @@
   gap: 0.4rem;
 }
 .date-input {
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border);
   border-radius: 6px;
   padding: 3px 8px;
   font-size: 0.85rem;
-  color: #212529;
-  background: #fff;
+  color: var(--text);
+  background: var(--surface);
   cursor: pointer;
 }
 .date-input:focus {
@@ -100,16 +100,16 @@
 }
 .date-nav-btn {
   background: none;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border);
   border-radius: 6px;
   padding: 2px 9px;
   font-size: 1.1rem;
   line-height: 1.4;
-  color: #495057;
+  color: var(--text-2);
   cursor: pointer;
 }
 .date-nav-btn:hover {
-  background: #f0f0f0;
+  background: var(--surface-2);
 }
 .date-today-btn {
   background: #0d6efd;
@@ -128,7 +128,7 @@
 .game-card {
   transition: transform 0.15s, box-shadow 0.15s;
   border: 1px solid rgba(0,0,0,.08) !important;
-  background: #fff;
+  background: var(--surface);
   cursor: pointer;
 }
 
@@ -147,9 +147,9 @@
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid #d0d7de;
-  background: #fff;
-  color: #495057;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
   font-size: 0.72rem;
   font-weight: 700;
   line-height: 1;
@@ -158,7 +158,7 @@
 }
 
 .game-quick-link:hover {
-  color: #0d6efd;
+  color: var(--accent);
   border-color: rgba(13, 110, 253, 0.35);
 }
 
@@ -192,13 +192,13 @@
 .game-team-name {
   font-size: 0.95rem;
   font-weight: 700;
-  color: #212529;
+  color: var(--text);
   line-height: 1.2;
 }
 
 .game-team-record {
   font-size: 0.75rem;
-  color: #6c757d;
+  color: var(--text-muted);
 }
 
 .game-at {
@@ -210,7 +210,7 @@
 /* Pitchers line */
 .game-pitchers {
   font-size: 0.76rem;
-  color: #6c757d;
+  color: var(--text-muted);
 }
 
 /* Linescore table */
@@ -227,19 +227,19 @@
 
 .game-linescore th {
   font-weight: 600;
-  color: #6c757d;
+  color: var(--text-muted);
 }
 
 /* Status line */
 .game-status-line {
   font-size: 0.8rem;
-  color: #6c757d;
+  color: var(--text-muted);
   margin-top: 0.3rem;
 }
 
 .game-time {
   font-weight: 600;
-  color: #495057;
+  color: var(--text-2);
 }
 
 .live-snapshot {
@@ -260,7 +260,7 @@
   align-items: center;
   border-radius: 999px;
   background: rgba(108, 117, 125, 0.12);
-  color: #495057;
+  color: var(--text-2);
   padding: 0.22rem 0.5rem;
   font-size: 0.72rem;
   font-weight: 700;
@@ -274,7 +274,7 @@
 
 .live-matchup {
   font-size: 0.75rem;
-  color: #495057;
+  color: var(--text-2);
   font-weight: 600;
 }
 
@@ -282,14 +282,14 @@
    Prediction Panel
    ----------------------------------------------------------------------- */
 .prediction-panel {
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid var(--border);
   padding-top: 0.6rem;
   font-size: 0.82rem;
 }
 
 .prediction-label {
   font-weight: 600;
-  color: #495057;
+  color: var(--text-2);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -297,7 +297,7 @@
 
 .model-version {
   font-weight: 400;
-  color: #adb5bd;
+  color: var(--text-faint);
   font-size: 0.7rem;
 }
 
@@ -315,7 +315,7 @@
 
 .prediction-lean {
   font-size: 0.75rem;
-  color: #495057;
+  color: var(--text-2);
   font-weight: 600;
 }
 
@@ -325,7 +325,7 @@
   height: 20px;
   border-radius: 4px;
   overflow: hidden;
-  background: #e9ecef;
+  background: var(--surface-3);
   margin-top: 0.35rem;
 }
 
@@ -359,7 +359,7 @@
 .signal-item {
   padding: 0.1rem 0 0.1rem 1.1em;
   position: relative;
-  color: #343a40;
+  color: var(--text);
   font-size: 0.76rem;
   line-height: 1.4;
 }
@@ -373,7 +373,7 @@
 
 .signal-positive::before { content: "▲"; color: #198754; }
 .signal-negative::before { content: "▼"; color: #dc3545; }
-.signal-neutral::before  { content: "●"; color: #adb5bd; }
+.signal-neutral::before  { content: "●"; color: var(--text-faint); }
 
 @media (max-width: 767.98px) {
   .games-toolbar {

@@ -22,7 +22,7 @@
 
 .stat-label {
   font-size: 0.875rem;
-  color: #6c757d;
+  color: var(--text-muted);
   font-weight: 500;
   margin-bottom: 0.5rem;
   text-transform: uppercase;
@@ -32,7 +32,7 @@
 .stat-value {
   font-size: 2rem;
   font-weight: 700;
-  color: #212529;
+  color: var(--text);
   line-height: 1;
   margin-bottom: 0.25rem;
 }
@@ -67,7 +67,7 @@
 
 /* Radar Chart Customization */
 .recharts-polar-grid-concentric-polygon {
-  stroke: #dee2e6;
+  stroke: var(--border);
   stroke-width: 1;
 }
 
@@ -95,12 +95,12 @@
 
 .table tbody td:first-child {
   font-weight: 500;
-  color: #495057;
+  color: var(--text-2);
 }
 
 .table tbody td:last-child {
   font-weight: 600;
-  color: #212529;
+  color: var(--text);
 }
 
 /* Primary Rows */
@@ -137,7 +137,7 @@
 
 .recharts-default-tooltip {
   background-color: rgba(255, 255, 255, 0.95) !important;
-  border: 1px solid #dee2e6 !important;
+  border: 1px solid var(--border) !important;
   border-radius: 0.375rem !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
   padding: 0.75rem !important;
@@ -145,7 +145,7 @@
 
 .recharts-tooltip-label {
   font-weight: 600 !important;
-  color: #212529 !important;
+  color: var(--text) !important;
   margin-bottom: 0.5rem !important;
 }
 
@@ -213,12 +213,12 @@
 /* Print Styles */
 @media print {
   .enhanced-team-dashboard {
-    color: #000;
+    color: var(--text);
   }
   
   .stat-card {
     box-shadow: none;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--border);
     page-break-inside: avoid;
   }
   

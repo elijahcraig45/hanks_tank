@@ -7,7 +7,7 @@
 
 .search-results {
   position: relative;
-  background-color: #ffffff;
+  background-color: var(--surface);
   border: 2px solid #3b82f6;
   border-radius: 0.375rem;
   max-height: 300px;
@@ -19,10 +19,10 @@
 .search-result-item {
   padding: 0.75rem 1rem;
   cursor: pointer;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
   transition: background-color 0.2s;
-  color: #1f2937;
-  background-color: #ffffff;
+  color: var(--text);
+  background-color: var(--surface);
 }
 
 .search-result-item:hover {
@@ -54,9 +54,9 @@
 
 .stat-card {
   padding: 1rem;
-  background-color: #ffffff;
+  background-color: var(--surface);
   border-radius: 0.5rem;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -68,7 +68,7 @@
 .stat-value {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #1a1a1a;
+  color: var(--text);
 }
 
 .composite-score {
@@ -85,9 +85,9 @@
 
 .h2h-record {
   padding: 1rem;
-  background-color: #ffffff;
+  background-color: var(--surface);
   border-radius: 0.5rem;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border);
   flex: 1;
   min-width: 200px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -98,8 +98,8 @@
 }
 
 .custom-tooltip {
-  background-color: white !important;
-  border: 1px solid #dee2e6 !important;
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border) !important;
 }
 
 /* Progress bar customization */
@@ -247,35 +247,35 @@
 .table-responsive {
   border-radius: 0.5rem;
   overflow: hidden;
-  background-color: #ffffff;
+  background-color: var(--surface);
 }
 
 .table {
   margin-bottom: 0;
-  background-color: #ffffff;
+  background-color: var(--surface);
 }
 
 .table thead th {
-  background-color: #f8f9fa;
-  border-bottom: 2px solid #dee2e6;
+  background-color: var(--surface-2);
+  border-bottom: 2px solid var(--border);
   font-weight: 600;
   position: sticky;
   top: 0;
   z-index: 10;
-  color: #1a1a1a;
+  color: var(--text);
 }
 
 .table tbody td {
-  background-color: #ffffff;
-  color: #1a1a1a;
+  background-color: var(--surface);
+  color: var(--text);
 }
 
 .table tbody tr:nth-of-type(odd) {
-  background-color: #f8f9fa;
+  background-color: var(--surface-2);
 }
 
 .table tbody tr:nth-of-type(odd) td {
-  background-color: #f8f9fa;
+  background-color: var(--surface-2);
 }
 
 /* Scatter plot tooltip */
