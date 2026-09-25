@@ -4,6 +4,7 @@ import { SEASONS } from '../config/constants';
 import {
   CFB_DIVISIONS, MLB_NAV, SPORTS, footballNav, footballPath, sportContext,
 } from '../config/sports';
+import { LEARN_BASE, LEARN_GROUP_FOR_SPORT } from '../config/learn';
 import { SECTIONS as FOOTBALL_SECTIONS } from './FootballPage';
 import { resolvedTheme, setTheme } from '../utils/theme';
 import './styles/Navbar.css';
@@ -107,6 +108,13 @@ function SportBar({ ctx, nav, pathname }) {
               {item.label}
             </Link>
           ))}
+          {/* The write-ups on how this sport's models work. */}
+          <Link
+            to={`${LEARN_BASE}#${LEARN_GROUP_FOR_SPORT[ctx.sport] || ''}`}
+            className="ht-section ht-section--learn"
+          >
+            Learn
+          </Link>
         </nav>
 
         {ctx.sport === 'cfb' && !ctx.pickem && (
@@ -154,6 +162,7 @@ function Navbar() {
     return [];
   }, [ctx, pathname]);
   const onPickem = pathname.startsWith('/pickem');
+  const onLearn = pathname === LEARN_BASE || pathname.startsWith(`${LEARN_BASE}/`);
 
   // The accent follows the sport everywhere, including portalled modals.
   useEffect(() => {
@@ -190,6 +199,13 @@ function Navbar() {
             </nav>
 
             <div className="ht-top-actions">
+              <Link
+                to={LEARN_BASE}
+                className={`ht-learn${onLearn ? ' ht-learn--active' : ''}`}
+                aria-current={onLearn ? 'page' : undefined}
+              >
+                Learn
+              </Link>
               <Link to="/pickem" className={`ht-pickem${onPickem ? ' ht-pickem--active' : ''}`}>
                 <span aria-hidden="true">🎯</span> Pick&rsquo;em
               </Link>
