@@ -156,7 +156,7 @@ function normalizePick(row, sport, leagueKey) {
     winner: row.predicted_winner,
     crossDivision: Boolean(row.cross_division),
     date: row.game_date || row.game_time_utc,
-    href: sport === "mlb" ? `/game/${row.game_pk}` : `/football/${leagueKey}/picks`,
+    href: sport === "mlb" ? `/mlb/game/${row.game_pk}` : `/football/${leagueKey}/picks`,
   };
 }
 
@@ -229,7 +229,7 @@ function MlbGameTile({ game }) {
   );
 
   return (
-    <Link to={`/game/${game.gamePk}`} className="tile">
+    <Link to={`/mlb/game/${game.gamePk}`} className="tile">
       <div className={`tile-inner${status.cls === "live" ? " tile-inner--live" : ""}`}>
         <div className="tile-status">
           <span className={`ts ts--${status.cls}`}>{status.text}</span>
@@ -481,7 +481,7 @@ function HomePage() {
       <div className="home-body">
         {/* ── Sport rails ── */}
         {games.length > 0 && (
-          <Rail title="MLB" accent="mlb" count={games.length} moreTo="/games" moreLabel="Scoreboard">
+          <Rail title="MLB" accent="mlb" count={games.length} moreTo="/mlb/games" moreLabel="Scoreboard">
             {games.map((g) => <MlbGameTile key={g.gamePk} game={g} />)}
           </Rail>
         )}
@@ -509,7 +509,7 @@ function HomePage() {
           <div className="home-quiet">
             Nothing on the board right now. Try the{" "}
             <Link to="/football">football tab</Link> or{" "}
-            <Link to="/predictions">MLB predictions</Link>.
+            <Link to="/mlb/predictions">MLB predictions</Link>.
           </div>
         )}
 
@@ -554,7 +554,7 @@ function HomePage() {
                 <div className="card-head"><h2>Favorite teams</h2></div>
                 <div className="fav-grid">
                   {favoriteTeams.map((team) => (
-                    <Link key={team.abbreviation} to={`/team/${team.abbreviation}`} className="fav">
+                    <Link key={team.abbreviation} to={`/mlb/team/${team.abbreviation}`} className="fav">
                       {team.teamId && (
                         <img
                           src={getTeamLogoUrl(team.teamId)}
@@ -654,7 +654,7 @@ function HomePage() {
                             {teams.map((team, i) => (
                               <tr key={i} className={abbr(team.Tm) === "ATL" ? "std-fav" : ""}>
                                 <td>
-                                  <Link to={`/team/${abbr(team.Tm)}`} className="std-team">
+                                  <Link to={`/mlb/team/${abbr(team.Tm)}`} className="std-team">
                                     {team.tmId && (
                                       <img
                                         src={getTeamLogoUrl(team.tmId)}

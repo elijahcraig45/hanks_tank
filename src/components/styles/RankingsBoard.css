@@ -277,3 +277,40 @@
 .rb--ftbl .rb-filter select:focus { border-color: var(--sport-ftbl); }
 .rb--mlb  .rb-filter select:focus { border-color: var(--sport-mlb); }
 .rb-filter-note { font-size: 0.74rem; color: var(--ht-gray-400); }
+
+/* ─── Rank range band (RankBand.js) ──────────────────────────────────────
+   The uncertainty is the headline of these boards, so the range is drawn,
+   not just printed: bar = 5th–95th percentile rank, tick = point rank, on
+   the full board's scale so overlapping neighbours are visible. */
+.rb-range { color: var(--text-2); white-space: nowrap; }
+.rb-range-text { display: inline-block; min-width: 3.2em; }
+.rank-band {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  width: 96px;
+  height: 10px;
+  margin-left: 8px;
+  border-radius: 5px;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.rank-band-range {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent) 38%, transparent);
+}
+.rank-band-point {
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+@media (max-width: 640px) {
+  .rank-band { width: 64px; margin-left: 6px; }
+}

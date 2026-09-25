@@ -159,7 +159,7 @@ const PlayerPage = () => {
           <Alert.Heading>No Data Found</Alert.Heading>
           <p>{error}</p>
           <div className="d-flex gap-2">
-            <Button as={Link} to="/PlayerBatting" variant="primary">Browse Players</Button>
+            <Button as={Link} to="/mlb/stats/player-batting" variant="primary">Browse Players</Button>
             <Button as={Link} to="/" variant="outline-secondary">Home</Button>
           </div>
         </Alert>
@@ -359,7 +359,7 @@ const PlayerPage = () => {
                   {teamAbbreviation && (
                     <Button
                       as={Link}
-                      to={`/team/${teamAbbreviation}`}
+                      to={`/mlb/team/${teamAbbreviation}`}
                       variant="outline-light"
                       size="sm"
                     >
@@ -391,14 +391,14 @@ const PlayerPage = () => {
               <Card.Header className="bg-white fw-semibold">Quick Links</Card.Header>
               <Card.Body className="d-flex flex-column gap-2">
                 {teamAbbreviation && (
-                  <Button as={Link} to={`/team/${teamAbbreviation}`} variant="outline-primary">
+                  <Button as={Link} to={`/mlb/team/${teamAbbreviation}`} variant="outline-primary">
                     Open {teamMeta?.shortName || team} Team Page
                   </Button>
                 )}
-                <Button as={Link} to="/PlayerBatting" variant="outline-secondary">
+                <Button as={Link} to="/mlb/stats/player-batting" variant="outline-secondary">
                   Player Batting Leaders
                 </Button>
-                <Button as={Link} to="/PlayerPitching" variant="outline-secondary">
+                <Button as={Link} to="/mlb/stats/player-pitching" variant="outline-secondary">
                   Player Pitching Leaders
                 </Button>
               </Card.Body>
@@ -688,7 +688,7 @@ const PlayerPage = () => {
               <div className="d-flex justify-content-end mb-3">
                 <Button
                   as={Link}
-                  to={`/statcast-lab?playerId=${playerId}&position=${strikezonePosition}&season=${selectedYear}&q=${encodeURIComponent(playerName)}`}
+                  to={`/mlb/lab/statcast-lab?playerId=${playerId}&position=${strikezonePosition}&season=${selectedYear}&q=${encodeURIComponent(playerName)}`}
                   variant="outline-primary"
                   size="sm"
                 >
@@ -701,8 +701,8 @@ const PlayerPage = () => {
         </Tabs>
 
         <div className="d-flex gap-2 flex-wrap mt-4 pb-4">
-          <Button as={Link} to="/PlayerBatting" variant="outline-primary" size="sm">All Batting Leaders</Button>
-          <Button as={Link} to="/PlayerPitching" variant="outline-secondary" size="sm">All Pitching Leaders</Button>
+          <Button as={Link} to="/mlb/stats/player-batting" variant="outline-primary" size="sm">All Batting Leaders</Button>
+          <Button as={Link} to="/mlb/stats/player-pitching" variant="outline-secondary" size="sm">All Pitching Leaders</Button>
           <Button as={Link} to="/" variant="outline-secondary" size="sm">Home</Button>
         </div>
 

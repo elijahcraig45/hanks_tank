@@ -402,12 +402,12 @@ const PlayerPitching = () => {
                             className={getStatTypeColor(key)}
                           >
                             {key === "Team" ? (
-                              <Link to={`/team/${value}`} className="text-decoration-none fw-bold">
+                              <Link to={`/mlb/team/${value}`} className="text-decoration-none fw-bold">
                                 {value}
                               </Link>
                             ) : key === "Name" ? (
                               <span>
-                                <Link to={`/player/${player.playerId}`} className="text-decoration-none fw-bold player-name">
+                                <Link to={`/mlb/player/${player.playerId}`} className="text-decoration-none fw-bold player-name">
                                   {value}
                                 </Link>
                                 {isQualifiedPitcher(player) && (

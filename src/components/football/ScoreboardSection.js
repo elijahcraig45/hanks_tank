@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ApiService from '../../services/api';
+import { footballGamePath } from '../../config/sports';
 import { gameClock, kickoff } from './format';
 
 /**
@@ -27,7 +28,7 @@ function GameTile({ game, league }) {
   return (
     <Link
       className={`fg-tile${live ? ' fg-tile--live' : ''}`}
-      to={`/football/${league}/game/${game.game_id}`}
+      to={footballGamePath(league, game.game_id)}
     >
       <div className="fg-tile-top">
         <span className={`fg-state fg-state--${game.status}`}>{gameClock(game)}</span>
@@ -57,7 +58,7 @@ function ScheduleRow({ game, league }) {
       <td>{game.week}</td>
       <td>{kickoff(game.start_date)}</td>
       <td>
-        <Link to={`/football/${league}/game/${game.game_id}?week=${game.week}`}>
+        <Link to={`${footballGamePath(league, game.game_id)}?week=${game.week}`}>
           {game.away_school} at {game.home_school}
         </Link>
       </td>

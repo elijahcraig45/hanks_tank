@@ -21,23 +21,26 @@ export default function BaseballRankingsPage() {
 
   return (
     <div className="rank-page">
-      <header className="rank-hero rank-hero--mlb">
-        <div className="rank-hero-inner">
+      <header className="ht-page-head">
+        <div className="ht-page-head-inner">
           <div>
-            <h1>MLB Power Rankings</h1>
-            <p className="rank-sub">
-              Every 2026 game refit at once, so the order does not depend on when games
-              were played.
+            <p className="ht-eyebrow">MLB</p>
+            <h1>Power Rankings</h1>
+            <p className="ht-page-sub">
+              Every {season} game refit at once, so the order does not depend on when games
+              were played. Bars show each team&rsquo;s 90% rank range.
             </p>
           </div>
-          <select
-            className="rank-season"
-            value={season}
-            onChange={(e) => setSeason(Number(e.target.value))}
-            aria-label="Season"
-          >
-            {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
-          </select>
+          <label className="ht-season">
+            <span>Season</span>
+            <select
+              value={season}
+              onChange={(e) => setSeason(Number(e.target.value))}
+              aria-label="Season"
+            >
+              {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </label>
         </div>
       </header>
 
@@ -46,9 +49,9 @@ export default function BaseballRankingsPage() {
 
         <p className="rank-foot">
           Football boards use the identical model —{' '}
-          <Link to="/football/nfl/rankings">NFL</Link>,{' '}
-          <Link to="/football/fbs/rankings">College FBS</Link>,{' '}
-          <Link to="/football/fcs/rankings">College FCS</Link>.
+          <Link to="/nfl/rankings">NFL</Link>,{' '}
+          <Link to="/cfb/fbs/rankings">College FBS</Link>,{' '}
+          <Link to="/cfb/fcs/rankings">College FCS</Link>.
         </p>
       </div>
     </div>

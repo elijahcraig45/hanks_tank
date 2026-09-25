@@ -1,229 +1,390 @@
-/* ─── Hank's Tank navigation ──────────────────────────────────────────────
-   Two sports sit at the top level. Baseball's depth is folded into a mega
-   menu so the bar reads as a sports site rather than an MLB tool. */
+/* ─── Site shell ─────────────────────────────────────────────────────────
+   Top bar (brand · sport switcher · Pick'em · theme), a sport bar with the
+   sport's sections, an optional pill row for a section's pages, and on a
+   phone a fixed bottom tab bar for the sport choice. Colours come from the
+   tokens in index.css; the accent follows [data-sport]. */
 
-.ht-nav {
-  background: var(--ht-navy);
-  border-bottom: 1px solid rgba(255,255,255,.07);
+.ht-skip {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  z-index: 2000;
+  background: var(--surface);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+}
+.ht-skip:focus { left: 8px; }
+
+.ht-shell {
   position: sticky;
   top: 0;
   z-index: 1030;
-  box-shadow: 0 2px 12px rgba(0,0,0,.35);
 }
 
-.ht-nav-inner {
-  max-width: 1400px;
+/* ── Top bar ── */
+.ht-top {
+  background: var(--chrome);
+  border-bottom: 1px solid var(--chrome-border);
+}
+.ht-top-inner {
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 0 1.25rem;
-  height: 56px;
+  height: var(--topbar-h);
+  padding: 0 var(--gutter);
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: var(--space-6);
 }
 
-/* ── Brand ── */
 .ht-brand {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 10px;
   text-decoration: none;
   flex-shrink: 0;
-  user-select: none;
 }
 .ht-brand-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
-  background: linear-gradient(135deg, var(--sport-mlb), var(--sport-ftbl));
-  color: #fff;
-  font-size: 0.66rem;
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.02em;
+  letter-spacing: .02em;
+  color: #fff;
+  /* The three sports, side by side. */
+  background: linear-gradient(135deg, #1d4ed8 0 33%, #6d28d9 33% 66%, #b93c0a 66% 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18);
 }
 .ht-brand-name {
-  font-weight: 800;
-  font-size: 1.05rem;
   color: #fff;
-  letter-spacing: -0.02em;
+  font-weight: 750;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
 }
 .ht-brand-year {
-  font-family: var(--ht-font-mono);
-  font-size: 0.68rem;
-  color: rgba(255,255,255,.55);
-  background: rgba(255,255,255,.07);
-  padding: 1px 6px;
+  color: var(--chrome-muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  border: 1px solid var(--chrome-border);
   border-radius: 4px;
-  letter-spacing: 0.04em;
-  font-weight: 600;
+  padding: 1px 5px;
 }
 
-/* ── Link row ── */
-.ht-links {
+.ht-switcher {
   display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin-left: auto;
+  align-items: stretch;
+  gap: 2px;
   height: 100%;
 }
-@media (max-width: 900px) { .ht-links { display: none; } }
-
-.ht-link {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: rgba(255,255,255,.68);
-  text-decoration: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  transition: color .13s, background .13s;
-  white-space: nowrap;
-}
-.ht-link:hover   { color: #fff; background: rgba(255,255,255,.07); }
-.ht-link--active { color: #fff; background: rgba(255,255,255,.1); }
-
-/* ── Sport tabs ──
-   Full-height so the accent underline reads as a tab, not a button. */
-.ht-sport-wrap { position: relative; height: 100%; display: flex; align-items: center; }
-
-.ht-sport {
+.ht-switch {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  height: 100%;
+  gap: 7px;
   padding: 0 14px;
-  background: transparent;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: rgba(255,255,255,.8);
+  color: var(--chrome-muted);
+  font-size: var(--text-sm);
+  font-weight: 650;
   text-decoration: none;
   white-space: nowrap;
-  transition: color .13s, background .13s, border-color .13s;
+  transition: color .12s, background .12s;
 }
-.ht-sport:hover { color: #fff; background: rgba(255,255,255,.05); }
-
-.ht-sport-icon { font-size: 0.95rem; line-height: 1; }
-
-.ht-sport--mlb.ht-sport--active {
-  color: #fff;
-  border-bottom-color: var(--sport-mlb-on);
-  background: linear-gradient(to top, rgba(124,185,255,.12), transparent 70%);
-}
-.ht-sport--ftbl.ht-sport--active {
-  color: #fff;
-  border-bottom-color: var(--sport-ftbl-on);
-  background: linear-gradient(to top, rgba(251,154,75,.14), transparent 70%);
-}
-
-.ht-caret { font-size: 0.6rem; opacity: .65; }
-
-/* ── Baseball mega menu ── */
-.ht-mega {
+.ht-switch:hover { color: #fff; background: rgba(255, 255, 255, .05); }
+.ht-switch::after {
+  content: '';
   position: absolute;
-  top: 100%;
-  right: 0;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(150px, 1fr));
-  gap: 1.25rem;
-  background: var(--ht-navy-mid);
-  border: 1px solid rgba(255,255,255,.1);
-  border-top: 2px solid var(--sport-mlb-on);
-  border-radius: 0 0 10px 10px;
-  box-shadow: 0 16px 40px rgba(0,0,0,.45);
-  padding: 1rem 1.15rem 1.15rem;
-  animation: htDropIn .13s ease;
-}
-@keyframes htDropIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.ht-mega-heading {
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-  color: var(--ht-gray-400);
-  padding: 0 8px 6px;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-  margin-bottom: 5px;
-}
-
-.ht-mega-item {
-  display: block;
-  padding: 6px 8px;
-  font-size: 0.82rem;
-  color: rgba(255,255,255,.76);
-  text-decoration: none;
-  border-radius: 5px;
-  white-space: nowrap;
-  transition: background .1s, color .1s;
-}
-.ht-mega-item:hover { background: rgba(255,255,255,.09); color: #fff; }
-.ht-mega-item--active { color: var(--sport-mlb-on); font-weight: 600; }
-
-/* ── Mobile ── */
-.ht-mobile-toggle {
-  display: none;
-  flex-direction: column;
-  gap: 4px;
+  left: 10px;
+  right: 10px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
   background: transparent;
-  border: 0;
-  cursor: pointer;
-  padding: 6px;
+}
+.ht-switch--active { color: #fff; }
+.ht-switch--active::after { background: var(--chrome-accent); }
+.ht-switch-icon { font-size: 0.95rem; }
+
+.ht-top-actions {
   margin-left: auto;
-  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
-.ht-mobile-toggle:hover { background: rgba(255,255,255,.08); }
-.ht-mobile-toggle span {
-  display: block;
-  width: 20px;
-  height: 2px;
-  background: rgba(255,255,255,.8);
-  border-radius: 2px;
-}
-@media (max-width: 900px) { .ht-mobile-toggle { display: flex; } }
-
-.ht-mobile-menu {
-  background: var(--ht-navy-mid);
-  border-top: 1px solid rgba(255,255,255,.07);
-  padding: 8px 0 14px;
-  max-height: calc(100vh - 56px);
-  overflow-y: auto;
-}
-.ht-mobile-link {
-  display: block;
-  padding: 9px 1.5rem;
-  font-size: 0.88rem;
-  color: rgba(255,255,255,.75);
+.ht-pickem {
+  color: var(--chrome-text);
   text-decoration: none;
-  transition: background .1s, color .1s;
+  font-size: var(--text-sm);
+  font-weight: 650;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--chrome-border);
+  white-space: nowrap;
 }
-.ht-mobile-link:hover { background: rgba(255,255,255,.06); color: #fff; }
+.ht-pickem:hover { color: #fff; background: rgba(255, 255, 255, .06); }
+.ht-pickem--active { background: rgba(255, 255, 255, .1); color: #fff; border-color: rgba(255, 255, 255, .22); }
 
-.ht-mobile-sport {
-  margin: 10px 0 2px;
-  padding: 8px 1.5rem;
-  border-left: 3px solid transparent;
+.ht-icon-btn {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--chrome-border);
+  background: transparent;
+  color: var(--chrome-text);
+  font-size: 1rem;
+  cursor: pointer;
 }
-.ht-mobile-sport--mlb  { border-left-color: var(--sport-mlb-on);  background: rgba(124,185,255,.08); }
-.ht-mobile-sport--ftbl { border-left-color: var(--sport-ftbl-on); background: rgba(251,154,75,.09); }
-.ht-mobile-sport-link {
-  display: block;
-  font-size: 0.98rem;
+.ht-icon-btn:hover { background: rgba(255, 255, 255, .08); color: #fff; }
+
+/* ── Sport bar ── */
+.ht-sportbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+.ht-sportbar-inner {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 46px;
+}
+.ht-sportbar-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  text-decoration: none;
+  color: var(--accent);
+  font-weight: 750;
+  font-size: var(--text-sm);
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+}
+.ht-sportbar-full { color: var(--accent); }
+
+.ht-sections {
+  display: flex;
+  align-items: stretch;
+  align-self: stretch;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex: 1;
+  min-width: 0;
+}
+.ht-sections::-webkit-scrollbar { display: none; }
+.ht-section {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: color .12s;
+}
+.ht-section:hover { color: var(--text); }
+.ht-section--active { color: var(--text); }
+.ht-section--active::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--accent);
+}
+
+.ht-division {
+  display: inline-flex;
+  flex-shrink: 0;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.ht-division-btn {
+  padding: 3px 11px;
+  border-radius: 999px;
+  font-size: var(--text-xs);
   font-weight: 700;
-  color: #fff;
+  letter-spacing: .03em;
+  color: var(--text-muted);
   text-decoration: none;
 }
+.ht-division-btn:hover { color: var(--text); }
+.ht-division-btn--active {
+  background: var(--accent);
+  color: var(--text-on-accent);
+}
+.ht-division-btn--active:hover { color: var(--text-on-accent); }
 
-.ht-mobile-section {
-  font-size: 0.61rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+/* ── Section pages (pill row) ── */
+.ht-subnav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.ht-subnav-inner {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 7px var(--gutter);
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ht-subnav-inner::-webkit-scrollbar { display: none; }
+.ht-pill {
+  flex-shrink: 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  background: var(--surface);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.ht-pill:hover { border-color: var(--border-strong); color: var(--text); }
+.ht-pill--active {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  color: var(--accent);
+}
+
+/* ── Bottom bar (phone) ── */
+.ht-bottom { display: none; }
+
+@media (max-width: 899px) {
+  .ht-switcher, .ht-pickem { display: none; }
+  .ht-top-inner { gap: var(--space-3); height: 50px; }
+  .ht-sportbar-full { display: none; }
+  .ht-sportbar-inner { gap: var(--space-2); min-height: 44px; padding-right: 8px; }
+  .ht-sportbar-name { padding: 4px 8px; }
+  .ht-section { padding: 0 10px; }
+  /* Fade the right edge so a clipped section list reads as scrollable. */
+  .ht-sections {
+    mask-image: linear-gradient(to right, #000 88%, transparent);
+    -webkit-mask-image: linear-gradient(to right, #000 88%, transparent);
+  }
+
+  .ht-bottom {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1030;
+    background: var(--chrome);
+    border-top: 1px solid var(--chrome-border);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .ht-bottom-link {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    height: var(--bottombar-h);
+    color: var(--chrome-muted);
+    text-decoration: none;
+    font-size: 0.68rem;
+    font-weight: 650;
+    position: relative;
+  }
+  .ht-bottom-icon { font-size: 1.15rem; line-height: 1; }
+  .ht-bottom-link--active { color: #fff; }
+  .ht-bottom-link--active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 28%;
+    right: 28%;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+    background: var(--chrome-accent);
+  }
+
+  .ht-main { padding-bottom: calc(var(--bottombar-h) + env(safe-area-inset-bottom)); }
+}
+
+@media (max-width: 380px) {
+  .ht-brand-year { display: none; }
+}
+
+/* ── Shared page header ──────────────────────────────────────────────────
+   Used by pages rebuilt in the redesign (football, rankings); the older
+   MLB pages keep their own headers inside the shell. */
+.ht-page-head {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.ht-page-head-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: var(--space-5) var(--gutter) var(--space-4);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+.ht-page-head h1 {
+  margin: 0;
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.ht-page-head .ht-page-sub {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  max-width: 62ch;
+}
+.ht-eyebrow {
+  margin: 0 0 2px;
+  font-size: var(--text-2xs);
+  font-weight: 750;
+  letter-spacing: .1em;
   text-transform: uppercase;
-  color: var(--ht-gray-400);
-  padding: 10px 1.5rem 3px;
+  color: var(--accent);
+}
+.ht-season {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.ht-season select {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .ht-page-head h1 { font-size: var(--text-xl); }
+  .ht-page-head-inner { padding-top: var(--space-4); padding-bottom: var(--space-3); }
 }
