@@ -329,3 +329,117 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ─── Filters on phones ─────────────────────────────────────────────────
+   Search, confidence, sort and the two switches used to fill the first
+   phone screen. Below 768px they sit in a panel behind a "Filters" button
+   with an active-filter count; at 768px and up the panel is always shown
+   and the button bar is hidden, so the desktop toolbar is unchanged. The
+   form controls are the same elements in both layouts, so every filter
+   keeps its behaviour. */
+.pred-filterbar { display: none; }
+
+@media (max-width: 767.98px) {
+  .pred-toolbar-card .pred-toolbar { gap: 0; padding: 0.6rem 0.75rem; }
+  .pred-filterbar {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 0;
+  }
+  .pred-toolbar-card:not(.pred-toolbar-card--open) .pred-toolbar-panel { display: none; }
+  .pred-toolbar-card--open .pred-toolbar-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+  }
+  /* The bar already shows the update time. */
+  .pred-toolbar-updated { display: none; }
+
+  .pred-filter-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+    min-height: 36px;
+    padding: 0.3rem 0.75rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .pred-toolbar-card--open .pred-filter-toggle {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .pred-filter-icon { font-size: 0.8rem; }
+  .pred-filter-caret { font-size: 0.7rem; color: var(--text-muted); }
+  .pred-filter-count {
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    display: inline-grid;
+    place-items: center;
+    background: var(--accent);
+    color: var(--text-on-accent);
+    font-size: 0.72rem;
+    font-weight: 800;
+  }
+  .pred-filterbar-summary {
+    flex: 1;
+    min-width: 0;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pred-filter-clear {
+    flex-shrink: 0;
+    border: 0;
+    background: none;
+    padding: 0.3rem 0.2rem;
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+}
+
+/* Long team names ellipsize instead of running into the other team: the
+   name's wrapper is a flex child and needs min-width: 0 to be allowed to
+   shrink. */
+.pred-team-cell > div { min-width: 0; }
+.pred-team-link { display: block; min-width: 0; }
+.pred-winner-crown { flex-shrink: 0; }
+
+/* Phones: the page actions sit on one compact row, and the long date label
+   (the date input already shows the date) gives its line back to games. */
+@media (max-width: 767.98px) {
+  .pred-head-actions {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    scrollbar-width: none;
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+  .pred-head-actions::-webkit-scrollbar { display: none; }
+  .pred-head-actions .btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-height: 32px;
+    padding: 0.2rem 0.65rem;
+    font-size: 0.8rem;
+  }
+  .predictions-page .pred-date-row { margin-bottom: 0.75rem !important; }
+}
+@media (max-width: 480px) {
+  .pred-date-label { display: none; }
+}
