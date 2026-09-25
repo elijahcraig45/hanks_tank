@@ -79,3 +79,26 @@ scales, and one accent per sport (`--accent` resolves from `data-sport` on the s
 Light and dark themes follow the OS, with a manual override stored per browser;
 Bootstrap follows via `data-bs-theme`. Accent contrast against the page background is
 at least 4.5:1 in both themes (see the table in the commit adding the tokens).
+
+## Flagged, not changed
+
+- Unrouted components (listed above) are left in place; `AssistedAnalysis` is a
+  placeholder now reachable only at `/mlb/lab/assisted-analysis` (not in the nav).
+- Bootstrap CSS loads twice: the CDN `<link>` in `public/index.html` and the npm import
+  in `src/index.js` (5.3.0 and 5.3.2). Harmless, but one should go.
+- "Rankings movers" on the homepage is not possible yet: the rankings API returns no
+  prior rank. The homepage shows the top five per sport with rank bands instead.
+- `--text-faint` is 4.4:1 on the page background (4.7:1 on cards); use it only for
+  de-emphasised metadata.
+- In dark mode team-coloured names fall back to the theme text colour (brand navies
+  and golds are unreadable on one of the two themes); bars keep team colours.
+- The older MLB pages keep their own headers and Bootstrap layouts inside the new
+  shell; they are themed through the tokens but not restructured.
+
+## Merging the parallel branches
+
+`git merge-tree` reports no conflicts against `football-model-compare` or
+`fix/rankings-display`. After merging, the `models` section appears under
+Models → Model comparison automatically, and `/football/:league/models` redirects
+to `/nfl/models` / `/cfb/:division/models`. The rankings branch's `asOfLabel` header
+works unchanged; the homepage leader cards already read `meta.as_of_date`.
