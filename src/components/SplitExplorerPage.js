@@ -283,7 +283,7 @@ function SplitExplorerPage() {
           </p>
         </div>
         <div className="split-explorer-actions">
-          <Button as={Link} to="/mlb/models" variant="outline-secondary" size="sm">
+          <Button as={Link} to="/mlb/models/diagnostics" variant="outline-secondary" size="sm">
             Back to Diagnostics
           </Button>
           <SaveResearchViewButton
