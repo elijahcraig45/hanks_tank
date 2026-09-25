@@ -17,16 +17,17 @@ import {
   getTeamLogoUrl,
   getTeamShortName,
 } from "../utils/teamMetadata";
+import { MLB, footballPath } from "../config/sports";
+import RankBand from "./RankBand";
 import "./styles/HomePage.css";
 
 /**
- * The front page of a two-sport site.
+ * The all-sports front page.
  *
- * Structured as rails rather than a baseball dashboard with football bolted on: one
- * "today" rail per sport, then a single mixed board of the model's best picks across
- * both. The mixed board is the point — it is the only place the two pipelines are
- * compared side by side, and it is what makes this read as a sports page instead of
- * two products sharing a domain.
+ * Three sports on equal footing: a summary card each (slate size, model record with
+ * its uncertainty, the top of the power rankings), then one rail of upcoming games
+ * per sport with win probabilities, then the places the pipelines are compared side
+ * by side — the mixed best-picks board and the model scoreboard against baselines.
  */
 
 const DIVISION_MAP = {
@@ -40,7 +41,7 @@ const DIVISION_ORDER = [
 
 // Football leagues surfaced on the homepage. FCS is deliberately left off: its slate is
 // large, its games are rarely what someone opens the front page for, and it is one
-// click away on the football tab.
+// click away in the CFB section.
 const FOOTBALL_RAILS = [
   { key: "nfl", sport: "nfl", division: null, label: "NFL" },
   { key: "fbs", sport: "cfb", division: "fbs", label: "College FBS" },
@@ -48,10 +49,11 @@ const FOOTBALL_RAILS = [
 
 // The homepage board shows at most this many picks from any one sport. Without a cap
 // football wins every slot: a 95% FBS-over-FCS mismatch outranks every baseball game
-// ever played, and the board stops being about both sports.
-const PICKS_PER_SPORT = 4;
+// ever played, and the board stops being about all three sports.
+const PICKS_PER_SPORT = 3;
 
 const DIAGNOSTICS_WINDOW_DAYS = 30;
+const LEADERS_SHOWN = 5;
 
 const abbr = (name) =>
   getTeamAbbreviationFromName(name) || (name || "").substring(0, 3).toUpperCase();
@@ -77,6 +79,23 @@ const gameStatusLabel = (game) => {
   if (state === "Final") return { text: "Final", cls: "final" };
   return { text: fmtTime(game.gameDate), cls: "preview" };
 };
+
+/** Calls an ApiService method if it exists, resolving to null on any failure. */
+function safe(method, ...args) {
+  const fn = apiService[method];
+  if (typeof fn !== "function") return Promise.resolve(null);
+  try {
+    return Promise.resolve(fn.apply(apiService, args)).catch(() => null);
+  } catch {
+    return Promise.resolve(null);
+  }
+}
+
+/** Half-width of a 95% normal interval on an accuracy, in probability units. */
+export function accuracyInterval(p, n) {
+  if (p == null || !n) return null;
+  return 1.96 * Math.sqrt((p * (1 - p)) / n);
+}
 
 function formatStandings(records) {
   if (!Array.isArray(records)) return {};
@@ -123,11 +142,11 @@ export function upcomingFootball(rows, now = Date.now()) {
 }
 
 /**
- * Best picks across both sports, capped per sport so each is actually represented.
+ * Best picks across every sport, capped per sport so each is actually represented.
  *
  * Cross-division games are dropped outright. An FBS side favoured over an FCS one is
  * the model's most confident output and its least interesting — the page's own
- * reasoning calls those picks cheap, so it should not lead with eight of them.
+ * reasoning calls those picks cheap, so it should not lead with a board of them.
  */
 export function buildPicksBoard(mlbPicks, footballPicks, limit = PICKS_PER_SPORT) {
   const TIER_RANK = { high: 0, medium: 1, low: 2 };
@@ -135,12 +154,14 @@ export function buildPicksBoard(mlbPicks, footballPicks, limit = PICKS_PER_SPORT
     (TIER_RANK[a.tier] ?? 9) - (TIER_RANK[b.tier] ?? 9) ||
     Math.abs(b.homeProb - 0.5) - Math.abs(a.homeProb - 0.5);
 
-  const usable = (p) => p.homeProb != null && !p.crossDivision;
-
-  return [
-    ...footballPicks.filter(usable).sort(rank).slice(0, limit),
-    ...mlbPicks.filter(usable).sort(rank).slice(0, limit),
-  ].sort(rank);
+  const usable = [...footballPicks, ...mlbPicks]
+    .filter((p) => p.homeProb != null && !p.crossDivision)
+    .sort(rank);
+  const taken = {};
+  return usable.filter((p) => {
+    taken[p.sport] = (taken[p.sport] || 0) + 1;
+    return taken[p.sport] <= limit;
+  });
 }
 
 /** One shape for a pick regardless of which pipeline produced it. */
@@ -156,12 +177,27 @@ function normalizePick(row, sport, leagueKey) {
     winner: row.predicted_winner,
     crossDivision: Boolean(row.cross_division),
     date: row.game_date || row.game_time_utc,
-    href: sport === "mlb" ? `/mlb/game/${row.game_pk}` : `/football/${leagueKey}/picks`,
+    href: sport === "mlb" ? MLB.game(row.game_pk) : footballPath(leagueKey, "picks"),
   };
 }
 
+/** "2026-09-24" → "Sep 24", parsed by hand so it cannot slip a day west of UTC. */
+function shortIsoDate(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
+  if (!m) return null;
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${months[Number(m[2]) - 1]} ${Number(m[3])}`;
+}
+
+function boardFreshness(meta) {
+  if (!meta) return null;
+  const through = shortIsoDate(meta.as_of_date);
+  if (through) return `through ${through}`;
+  return meta.as_of_week ? `week ${meta.as_of_week}` : null;
+}
+
 /* ── Horizontal rail with scroll affordances ─────────────────────────────── */
-function Rail({ title, accent, count, moreTo, moreLabel, children }) {
+function Rail({ title, sport, count, moreTo, moreLabel, children }) {
   const trackRef = useRef(null);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(false);
@@ -190,7 +226,7 @@ function Rail({ title, accent, count, moreTo, moreLabel, children }) {
   };
 
   return (
-    <section className={`rail rail--${accent}`}>
+    <section className="rail" data-sport={sport}>
       <div className="rail-head">
         <h2 className="rail-title">
           {title}
@@ -207,36 +243,58 @@ function Rail({ title, accent, count, moreTo, moreLabel, children }) {
   );
 }
 
+/** Away/home probability split, with the favourite's side filled. */
+function ProbBar({ homeProb }) {
+  if (homeProb == null) return null;
+  const home = Math.round(homeProb * 100);
+  return (
+    <div className="tile-bar" aria-hidden="true">
+      <div className="tile-bar-away" style={{ width: `${100 - home}%` }} />
+      <div className="tile-bar-home" style={{ width: `${home}%` }} />
+    </div>
+  );
+}
+
 /* ── Tiles ───────────────────────────────────────────────────────────────── */
-function MlbGameTile({ game }) {
+function MlbGameTile({ game, homeProb }) {
   const away = game.teams.away;
   const home = game.teams.home;
   const status = gameStatusLabel(game);
   const showScore = status.cls === "live" || status.cls === "final";
+  const probFor = (side) => {
+    if (homeProb == null) return null;
+    return Math.round((side === "home" ? homeProb : 1 - homeProb) * 100);
+  };
 
-  const side = (t) => (
-    <div className="tile-row">
-      <img
-        src={getTeamLogoUrl(t.team.id)}
-        alt=""
-        className="tile-logo"
-        onError={(e) => { e.target.style.display = "none"; }}
-      />
-      <span className="tile-team">{getTeamShortName(t.team.name)}</span>
-      <span className="tile-rec">{t.leagueRecord?.wins}-{t.leagueRecord?.losses}</span>
-      {showScore && <span className="tile-score">{t.score ?? ""}</span>}
-    </div>
-  );
+  const row = (t, side) => {
+    const p = probFor(side);
+    return (
+      <div className={`tile-row${p != null && p < 50 ? " tile-row--fade" : ""}`}>
+        <img
+          src={getTeamLogoUrl(t.team.id)}
+          alt=""
+          className="tile-logo"
+          onError={(e) => { e.target.style.display = "none"; }}
+        />
+        <span className="tile-team">{getTeamShortName(t.team.name)}</span>
+        <span className="tile-rec">{t.leagueRecord?.wins}-{t.leagueRecord?.losses}</span>
+        {showScore
+          ? <span className="tile-score">{t.score ?? ""}</span>
+          : p != null && <span className="tile-prob">{p}%</span>}
+      </div>
+    );
+  };
 
   return (
-    <Link to={`/mlb/game/${game.gamePk}`} className="tile">
+    <Link to={MLB.game(game.gamePk)} className="tile">
       <div className={`tile-inner${status.cls === "live" ? " tile-inner--live" : ""}`}>
         <div className="tile-status">
           <span className={`ts ts--${status.cls}`}>{status.text}</span>
         </div>
-        {side(away)}
-        {side(home)}
-        {game.venue && <div className="tile-venue">{game.venue.name}</div>}
+        {row(away, "away")}
+        {row(home, "home")}
+        <ProbBar homeProb={homeProb} />
+        {homeProb == null && game.venue && <div className="tile-venue">{game.venue.name}</div>}
       </div>
     </Link>
   );
@@ -248,13 +306,13 @@ function FootballGameTile({ row, leagueKey }) {
   const homeFav = homePct >= 50;
 
   return (
-    <Link to={`/football/${leagueKey}/picks`} className="tile">
+    <Link to={footballPath(leagueKey, "picks")} className="tile">
       <div className="tile-inner">
         <div className="tile-status">
           <span className="ts ts--preview">{fmtDay(row.game_date)}</span>
           {settled && (
             <span className={`ts-res ts-res--${row.prediction_correct ? "hit" : "miss"}`}>
-              {row.prediction_correct ? "✓" : "✗"}
+              {row.prediction_correct ? "✓ hit" : "✗ miss"}
             </span>
           )}
         </div>
@@ -266,29 +324,151 @@ function FootballGameTile({ row, leagueKey }) {
           <span className="tile-team"><span className="tile-at">@</span> {row.home_team_name}</span>
           <span className="tile-prob">{homePct}%</span>
         </div>
-        <div className="tile-bar">
-          <div className="tile-bar-away" style={{ width: `${100 - homePct}%` }} />
-          <div className="tile-bar-home" style={{ width: `${homePct}%` }} />
-        </div>
+        <ProbBar homeProb={row.home_win_probability} />
       </div>
     </Link>
   );
 }
 
+const SPORT_ICON = { mlb: "⚾", nfl: "🏈", cfb: "🏟️", football: "🏈" };
+const LEAGUE_LABEL = { mlb: "MLB", nfl: "NFL", fbs: "FBS", fcs: "FCS" };
+
 function PickRow({ pick }) {
   const homeFav = (pick.homeProb ?? 0.5) >= 0.5;
   const favProb = homeFav ? pick.homeProb : 1 - pick.homeProb;
   return (
-    <Link to={pick.href} className={`pick pick--${pick.sport}`}>
-      <span className="pick-sport" aria-hidden="true">{pick.sport === "mlb" ? "⚾" : "🏈"}</span>
+    <Link to={pick.href} className={`pick pick--${pick.sport}`} data-sport={pick.sport}>
+      <span className="pick-sport" aria-hidden="true">{SPORT_ICON[pick.sport]}</span>
       <span className="pick-copy">
         <span className="pick-teams">{pick.away} <span className="pick-at">@</span> {pick.home}</span>
         <span className="pick-meta">
-          {pick.leagueKey.toUpperCase()} · {fmtDay(pick.date)} · picks <strong>{pick.winner}</strong>
+          {LEAGUE_LABEL[pick.leagueKey] || pick.leagueKey.toUpperCase()} · {fmtDay(pick.date)}
+          {pick.tier && <> · <span className={`tier tier--${pick.tier}`}>{pick.tier}</span></>}
         </span>
       </span>
-      <span className="pick-prob">{formatPercent(favProb)}</span>
+      <span className="pick-call">
+        <span className="pick-winner">{pick.winner}</span>
+        <span className="pick-prob">{formatPercent(favProb)}</span>
+      </span>
     </Link>
+  );
+}
+
+/* ── Sport summary card ──────────────────────────────────────────────────── */
+function SportCard({ sport, name, slate, record, leader, links }) {
+  return (
+    <section className="sc" data-sport={sport}>
+      <div className="sc-head">
+        <span className="sc-icon" aria-hidden="true">{SPORT_ICON[sport]}</span>
+        <h2 className="sc-name">{name}</h2>
+        <Link to={links[0].to} className="sc-open">Open →</Link>
+      </div>
+      <dl className="sc-stats">
+        <div>
+          <dt>{slate.label}</dt>
+          <dd>{slate.value ?? "—"}</dd>
+        </div>
+        <div>
+          <dt>{record.label}</dt>
+          <dd>
+            {formatPercent(record.accuracy)}
+            {record.ci != null && <span className="sc-ci"> ±{Math.round(record.ci * 100)}</span>}
+          </dd>
+          {record.n ? <span className="sc-n">{record.n} games</span> : null}
+        </div>
+        <div className="sc-leader">
+          <dt>No. 1</dt>
+          <dd title={leader?.team}>{leader ? leader.team : "—"}</dd>
+          {leader?.rank_p95 != null && (
+            <span className="sc-n">plausible rank {leader.rank_p05}–{leader.rank_p95}</span>
+          )}
+        </div>
+      </dl>
+      <nav className="sc-links" aria-label={`${name} shortcuts`}>
+        {links.map((l) => <Link key={l.to} to={l.to}>{l.label}</Link>)}
+      </nav>
+    </section>
+  );
+}
+
+/* ── Model scoreboard ────────────────────────────────────────────────────── */
+const AXIS_LO = 0.3;
+const AXIS_HI = 0.9;
+const axisPos = (p) => `${Math.min(100, Math.max(0, ((p - AXIS_LO) / (AXIS_HI - AXIS_LO)) * 100))}%`;
+
+function ScoreRow({ row }) {
+  const ci = accuracyInterval(row.accuracy, row.n);
+  const marks = [
+    { key: "market", label: "Market", value: row.market },
+    { key: "elo", label: "Elo", value: row.elo },
+    { key: "home", label: "Home team", value: row.home },
+  ].filter((m) => m.value != null);
+
+  return (
+    <li className="ms-row" data-sport={row.sport}>
+      <div className="ms-label">
+        <span className="ms-sport">{row.label}</span>
+        <span className="ms-window">{row.window} · n={row.n || 0}</span>
+      </div>
+      <div className="ms-value">
+        <strong>{formatPercent(row.accuracy)}</strong>
+        {ci != null && <span className="ms-ci">±{(ci * 100).toFixed(0)} pts</span>}
+      </div>
+      <div className="ms-plot" aria-hidden="true">
+        <span className="ms-coin" style={{ left: axisPos(0.5) }} />
+        {row.accuracy != null && ci != null && (
+          <span
+            className="ms-band"
+            style={{ left: axisPos(row.accuracy - ci), right: `calc(100% - ${axisPos(row.accuracy + ci)})` }}
+          />
+        )}
+        {row.accuracy != null && <span className="ms-dot" style={{ left: axisPos(row.accuracy) }} />}
+        {marks.map((m) => (
+          <span key={m.key} className={`ms-mark ms-mark--${m.key}`} style={{ left: axisPos(m.value) }} />
+        ))}
+      </div>
+      <div className="ms-baselines">
+        {marks.length ? marks.map((m) => (
+          <span key={m.key} className={`ms-chip ms-chip--${m.key}`}>
+            {m.label} {formatPercent(m.value, 0)}
+          </span>
+        )) : <span className="ms-chip ms-chip--none">{row.note}</span>}
+      </div>
+    </li>
+  );
+}
+
+/* ── Power-ranking leaders ───────────────────────────────────────────────── */
+function LeadersCard({ sport, label, rows, meta, to }) {
+  const scaleTo = Math.max(10, ...rows.map((r) => r.rank_p95 || 0));
+  return (
+    <div className="pl" data-sport={sport}>
+      <div className="pl-head">
+        <Link to={to} className="pl-title">{label}</Link>
+        <span className="pl-meta">{boardFreshness(meta)}</span>
+      </div>
+      {rows.length === 0 ? (
+        <div className="empty-sm">No board yet this season</div>
+      ) : (
+        <ol className="pl-list">
+          {rows.map((r) => (
+            <li key={r.team} className="pl-row">
+              <span className="pl-rank">{r.rank}</span>
+              <span className="pl-team">
+                <span className="pl-name">{r.team}</span>
+                <span className="pl-rec">{r.record}</span>
+              </span>
+              <span className="pl-range">
+                <RankBand rank={r.rank} lo={r.rank_p05} hi={r.rank_p95} total={scaleTo} />
+                <span className="pl-range-text">
+                  {r.rank_p05 != null ? `${r.rank_p05}–${r.rank_p95}` : "—"}
+                </span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
   );
 }
 
@@ -297,8 +477,11 @@ function HomePage() {
   const [news, setNews] = useState({ mlb: [], braves: [] });
   const [standings, setStandings] = useState({});
   const [games, setGames] = useState([]);
+  const [mlbProbs, setMlbProbs] = useState({});
   const [football, setFootball] = useState({});
   const [cfbRanks, setCfbRanks] = useState([]);
+  const [boards, setBoards] = useState({});
+  const [footballAccuracy, setFootballAccuracy] = useState({});
   const [picks, setPicks] = useState([]);
   const [diagnosticsSummary, setDiagnosticsSummary] = useState(null);
   const [highConfidenceSummary, setHighConfidenceSummary] = useState(null);
@@ -342,22 +525,25 @@ function HomePage() {
       const today = new Date().toISOString().split("T")[0];
       const diagStart = subtractDaysFromIso(today, DIAGNOSTICS_WINDOW_DAYS - 1);
 
-      // allSettled throughout: a football table that has not been created yet must not
-      // blank the baseball half of the page, and vice versa.
+      // Every call settles to null on failure: a football table that has not been
+      // built yet must not blank the baseball half of the page, and vice versa.
       const [
-        , standingsData, gamesData, diagnosticsData, mlbPreds, cfbRankRes, ...footballRes
+        , standingsData, gamesData, diagnosticsData, mlbPreds, cfbRankRes,
+        mlbBoard, nflBoard, fbsBoard, nflAcc, fbsAcc, ...footballRes
       ] = await Promise.all([
         fetchNews(),
-        apiService.getStandings(year).catch(() => null),
-        apiService.getGames().catch(() => null),
-        apiService.getPredictionDiagnostics({ startDate: diagStart, endDate: today })
-          .catch(() => null),
-        apiService.getPredictions().catch(() => null),
-        apiService.getFootballRankings?.("cfb", year, 25).catch(() => null) ?? null,
+        safe("getStandings", year),
+        safe("getGames"),
+        safe("getPredictionDiagnostics", { startDate: diagStart, endDate: today }),
+        safe("getPredictions"),
+        safe("getFootballRankings", "cfb", year, 25),
+        safe("getRankings", "mlb", { season: year, limit: LEADERS_SHOWN }),
+        safe("getRankings", "nfl", { season: year, limit: LEADERS_SHOWN }),
+        safe("getRankings", "cfb", { season: year, division: "fbs", limit: LEADERS_SHOWN }),
+        safe("getFootballAccuracy", "nfl", year, null),
+        safe("getFootballAccuracy", "cfb", year, "fbs"),
         ...FOOTBALL_RAILS.map((l) =>
-          apiService.getFootballPredictions?.(l.sport, {
-            season: year, division: l.division,
-          }).catch(() => null) ?? null
+          safe("getFootballPredictions", l.sport, { season: year, division: l.division })
         ),
       ]);
 
@@ -366,17 +552,27 @@ function HomePage() {
 
       setGames(gamesData?.dates?.[0]?.games || []);
       setCfbRanks(cfbRankRes?.data || []);
+      setBoards({
+        mlb: { rows: mlbBoard?.data || [], meta: mlbBoard?.meta },
+        nfl: { rows: nflBoard?.data || [], meta: nflBoard?.meta },
+        cfb: { rows: fbsBoard?.data || [], meta: fbsBoard?.meta },
+      });
+      setFootballAccuracy({ nfl: nflAcc?.data || null, cfb: fbsAcc?.data || null });
 
       const byLeague = {};
       const footballPicks = [];
       FOOTBALL_RAILS.forEach((l, i) => {
         const rows = footballRes[i]?.data || [];
         byLeague[l.key] = upcomingFootball(rows);
-        byLeague[l.key].forEach((r) => footballPicks.push(normalizePick(r, "football", l.key)));
+        byLeague[l.key].forEach((r) => footballPicks.push(normalizePick(r, l.sport, l.key)));
       });
       setFootball(byLeague);
 
-      const mlbPicks = (mlbPreds?.predictions || []).map((r) => normalizePick(r, "mlb", "mlb"));
+      const mlbRows = mlbPreds?.predictions || [];
+      setMlbProbs(Object.fromEntries(
+        mlbRows.filter((r) => r.game_pk != null).map((r) => [r.game_pk, r.home_win_probability])
+      ));
+      const mlbPicks = mlbRows.map((r) => normalizePick(r, "mlb", "mlb"));
       setPicks(buildPicksBoard(mlbPicks, footballPicks));
 
       const normalizedDiagnostics = (diagnosticsData?.diagnostics || []).map((row) => ({
@@ -425,15 +621,110 @@ function HomePage() {
     return (
       <div className="home-loading">
         <div className="home-spinner" />
-        <p>Loading Hank's Tank…</p>
+        <p>Loading Hank&rsquo;s Tank…</p>
       </div>
     );
   }
 
+  const season = new Date().getFullYear();
+  const accRow = (key) => footballAccuracy[key]?.overall || null;
+  const nflOverall = accRow("nfl");
+  const cfbOverall = accRow("cfb");
+
+  const scoreboard = [
+    {
+      sport: "mlb",
+      label: "MLB",
+      window: `last ${DIAGNOSTICS_WINDOW_DAYS} days`,
+      accuracy: diagnosticsSummary?.accuracy,
+      n: diagnosticsSummary?.games,
+      note: `High-confidence picks ${formatPercent(highConfidenceSummary?.accuracy)} (n=${highConfidenceSummary?.games || 0})`,
+    },
+    {
+      sport: "nfl",
+      label: "NFL",
+      window: `${season} season`,
+      accuracy: nflOverall?.model_accuracy,
+      n: nflOverall?.games,
+      market: nflOverall?.vegas_accuracy,
+      elo: nflOverall?.elo_accuracy,
+      home: nflOverall?.always_home_accuracy,
+      note: "No baselines published",
+    },
+    {
+      sport: "cfb",
+      label: "CFB · FBS",
+      window: `${season} season`,
+      accuracy: cfbOverall?.model_accuracy,
+      n: cfbOverall?.games,
+      market: cfbOverall?.vegas_accuracy,
+      elo: cfbOverall?.elo_accuracy,
+      home: cfbOverall?.always_home_accuracy,
+      note: "No baselines published",
+    },
+  ];
+
+  const sportCards = [
+    {
+      sport: "mlb",
+      name: "MLB",
+      slate: { label: "Games today", value: games.length || null },
+      record: {
+        label: `Model · ${DIAGNOSTICS_WINDOW_DAYS}d`,
+        accuracy: diagnosticsSummary?.accuracy,
+        n: diagnosticsSummary?.games,
+        ci: accuracyInterval(diagnosticsSummary?.accuracy, diagnosticsSummary?.games),
+      },
+      leader: boards.mlb?.rows?.[0],
+      links: [
+        { to: MLB.predictions, label: "Predictions" },
+        { to: MLB.games, label: "Scores" },
+        { to: MLB.rankings, label: "Rankings" },
+        { to: MLB.diagnostics, label: "Models" },
+      ],
+    },
+    {
+      sport: "nfl",
+      name: "NFL",
+      slate: { label: "Games this week", value: football.nfl?.length || null },
+      record: {
+        label: "Model · season",
+        accuracy: nflOverall?.model_accuracy,
+        n: nflOverall?.games,
+        ci: accuracyInterval(nflOverall?.model_accuracy, nflOverall?.games),
+      },
+      leader: boards.nfl?.rows?.[0],
+      links: [
+        { to: footballPath("nfl", "picks"), label: "Predictions" },
+        { to: footballPath("nfl", "rankings"), label: "Rankings" },
+        { to: footballPath("nfl", "diagnostics"), label: "Models" },
+        { to: "/pickem/nfl", label: "Pick’em" },
+      ],
+    },
+    {
+      sport: "cfb",
+      name: "College football",
+      slate: { label: "FBS games this week", value: football.fbs?.length || null },
+      record: {
+        label: "Model · season",
+        accuracy: cfbOverall?.model_accuracy,
+        n: cfbOverall?.games,
+        ci: accuracyInterval(cfbOverall?.model_accuracy, cfbOverall?.games),
+      },
+      leader: boards.cfb?.rows?.[0],
+      links: [
+        { to: footballPath("fbs", "picks"), label: "Predictions" },
+        { to: footballPath("fbs", "scoreboard"), label: "Scores" },
+        { to: footballPath("fbs", "rankings"), label: "Rankings" },
+        { to: "/pickem/cfb", label: "Pick’em" },
+      ],
+    },
+  ];
+
   return (
     <div className="home">
       {error && (
-        <div className="home-alert">
+        <div className="home-alert" role="alert">
           {error}
           <button onClick={() => setError(null)} aria-label="Dismiss">×</button>
         </div>
@@ -442,47 +733,28 @@ function HomePage() {
       {/* ── Masthead ── */}
       <header className="home-mast">
         <div className="home-mast-inner">
-          <div>
-            <h1>Today</h1>
-            <p className="home-date">
-              {new Date().toLocaleDateString("en-US", {
-                weekday: "long", month: "long", day: "numeric",
-              })}
-              {lastUpdated && (
-                <span className="home-updated"> · updated {lastUpdated.toLocaleTimeString()}</span>
-              )}
-            </p>
-          </div>
-
-          <div className="home-kpis">
-            {[
-              { sport: "mlb", val: games.length || "—", label: "MLB games" },
-              { sport: "ftbl", val: footballCount || "—", label: "Football games" },
-              {
-                sport: "mlb",
-                val: formatPercent(diagnosticsSummary?.accuracy),
-                label: `MLB model · ${DIAGNOSTICS_WINDOW_DAYS}d`,
-              },
-              {
-                sport: "mlb",
-                val: formatPercent(highConfidenceSummary?.accuracy),
-                label: `High conf · ${DIAGNOSTICS_WINDOW_DAYS}d`,
-              },
-            ].map(({ sport, val, label }) => (
-              <div key={label} className={`kpi kpi--${sport}`}>
-                <div className="kpi-val">{val}</div>
-                <div className="kpi-label">{label}</div>
-              </div>
-            ))}
-          </div>
+          <p className="ht-eyebrow">All sports</p>
+          <h1>Today across MLB, NFL and college football</h1>
+          <p className="home-date">
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long", month: "long", day: "numeric",
+            })}
+            {lastUpdated && (
+              <span className="home-updated"> · updated {lastUpdated.toLocaleTimeString()}</span>
+            )}
+          </p>
         </div>
       </header>
 
       <div className="home-body">
+        <div className="sc-grid">
+          {sportCards.map((c) => <SportCard key={c.sport} {...c} />)}
+        </div>
+
         {/* ── Sport rails ── */}
         {games.length > 0 && (
-          <Rail title="MLB" accent="mlb" count={games.length} moreTo="/mlb/games" moreLabel="Scoreboard">
-            {games.map((g) => <MlbGameTile key={g.gamePk} game={g} />)}
+          <Rail title="MLB today" sport="mlb" count={games.length} moreTo={MLB.predictions} moreLabel="All predictions">
+            {games.map((g) => <MlbGameTile key={g.gamePk} game={g} homeProb={mlbProbs[g.gamePk]} />)}
           </Rail>
         )}
 
@@ -492,10 +764,10 @@ function HomePage() {
           return (
             <Rail
               key={l.key}
-              title={l.label}
-              accent="ftbl"
+              title={`${l.label} this week`}
+              sport={l.sport}
               count={rows.length}
-              moreTo={`/football/${l.key}/picks`}
+              moreTo={footballPath(l.key, "picks")}
               moreLabel="All picks"
             >
               {rows.map((r) => (
@@ -507,9 +779,10 @@ function HomePage() {
 
         {games.length === 0 && footballCount === 0 && (
           <div className="home-quiet">
-            Nothing on the board right now. Try the{" "}
-            <Link to="/football">football tab</Link> or{" "}
-            <Link to="/mlb/predictions">MLB predictions</Link>.
+            Nothing on the board right now. Try{" "}
+            <Link to={footballPath("nfl", "picks")}>NFL picks</Link>,{" "}
+            <Link to={footballPath("fbs", "picks")}>college picks</Link> or{" "}
+            <Link to={MLB.predictions}>MLB predictions</Link>.
           </div>
         )}
 
@@ -517,10 +790,10 @@ function HomePage() {
         <div className="home-grid">
           <div className="home-col-main">
             {picks.length > 0 && (
-              <section className="card">
-                <div className="card-head">
+              <section className="panel">
+                <div className="panel-head">
                   <h2>Model's best picks</h2>
-                  <span className="card-meta">both sports, highest confidence first</span>
+                  <span className="panel-meta">every sport, most confident first</span>
                 </div>
                 <div className="pick-list">
                   {picks.map((p) => <PickRow key={p.key} pick={p} />)}
@@ -528,9 +801,38 @@ function HomePage() {
               </section>
             )}
 
+            <section className="panel">
+              <div className="panel-head">
+                <h2>Model scoreboard</h2>
+                <span className="panel-meta">accuracy picking winners, with a 95% interval</span>
+              </div>
+              <ul className="ms-list">
+                {scoreboard.map((r) => <ScoreRow key={r.sport} row={r} />)}
+              </ul>
+              <div className="ms-legend" aria-hidden="true">
+                <span><i className="ms-dot ms-dot--legend" /> Model</span>
+                <span><i className="ms-mark ms-mark--market ms-mark--legend" /> Market favourite</span>
+                <span><i className="ms-mark ms-mark--elo ms-mark--legend" /> Elo</span>
+                <span><i className="ms-mark ms-mark--home ms-mark--legend" /> Home team</span>
+                <span className="ms-axis">axis 30–90%, dashed line = coin flip</span>
+              </div>
+            </section>
+
+            <section className="panel">
+              <div className="panel-head">
+                <h2>Power rankings</h2>
+                <span className="panel-meta">top {LEADERS_SHOWN} · bars are 90% rank ranges</span>
+              </div>
+              <div className="pl-grid">
+                <LeadersCard sport="mlb" label="MLB" to={MLB.rankings} {...boards.mlb} rows={boards.mlb?.rows || []} />
+                <LeadersCard sport="nfl" label="NFL" to={footballPath("nfl", "rankings")} {...boards.nfl} rows={boards.nfl?.rows || []} />
+                <LeadersCard sport="cfb" label="College FBS" to={footballPath("fbs", "rankings")} {...boards.cfb} rows={boards.cfb?.rows || []} />
+              </div>
+            </section>
+
             {recentViews.length > 0 && (
-              <section className="card">
-                <div className="card-head">
+              <section className="panel">
+                <div className="panel-head">
                   <h2>Continue where you left off</h2>
                   <button className="btn-ghost" onClick={handleClearRecentViews}>Clear</button>
                 </div>
@@ -550,11 +852,11 @@ function HomePage() {
             )}
 
             {favoriteTeams.length > 0 && (
-              <section className="card">
-                <div className="card-head"><h2>Favorite teams</h2></div>
+              <section className="panel">
+                <div className="panel-head"><h2>Favorite teams</h2></div>
                 <div className="fav-grid">
                   {favoriteTeams.map((team) => (
-                    <Link key={team.abbreviation} to={`/mlb/team/${team.abbreviation}`} className="fav">
+                    <Link key={team.abbreviation} to={MLB.team(team.abbreviation)} className="fav">
                       {team.teamId && (
                         <img
                           src={getTeamLogoUrl(team.teamId)}
@@ -578,14 +880,15 @@ function HomePage() {
                 { key: "mlb", title: "MLB News", items: sortedNews(news.mlb) },
                 { key: "braves", title: "Braves News", items: sortedNews(news.braves) },
               ].map(({ key, title, items }) => (
-                <section className="card" key={key}>
-                  <div className="card-head">
+                <section className="panel" key={key}>
+                  <div className="panel-head">
                     <h2>{title}</h2>
                     {key === "mlb" && (
                       <button
                         className="btn-ghost"
                         onClick={handleRefreshNews}
                         disabled={newsRefreshing}
+                        aria-label="Refresh news"
                       >
                         {newsRefreshing ? "…" : "↺"}
                       </button>
@@ -616,25 +919,27 @@ function HomePage() {
             </div>
           </div>
 
-          {/* ── Right rail: one panel, two sports ── */}
+          {/* ── Right rail: standings and the college top 25 ── */}
           <aside className="home-col-side">
-            <section className="card card--sticky">
+            <section className="panel panel--sticky">
               <div className="side-tabs" role="tablist">
                 <button
                   role="tab"
                   aria-selected={rightTab === "standings"}
+                  data-sport="mlb"
                   className={`side-tab${rightTab === "standings" ? " side-tab--active" : ""}`}
                   onClick={() => setRightTab("standings")}
                 >
-                  ⚾ Standings
+                  ⚾ MLB standings
                 </button>
                 <button
                   role="tab"
                   aria-selected={rightTab === "cfb"}
+                  data-sport="cfb"
                   className={`side-tab${rightTab === "cfb" ? " side-tab--active" : ""}`}
                   onClick={() => setRightTab("cfb")}
                 >
-                  🏈 Top 25
+                  🏟️ CFB top 25
                 </button>
               </div>
 
@@ -654,7 +959,7 @@ function HomePage() {
                             {teams.map((team, i) => (
                               <tr key={i} className={abbr(team.Tm) === "ATL" ? "std-fav" : ""}>
                                 <td>
-                                  <Link to={`/mlb/team/${abbr(team.Tm)}`} className="std-team">
+                                  <Link to={MLB.team(abbr(team.Tm))} className="std-team">
                                     {team.tmId && (
                                       <img
                                         src={getTeamLogoUrl(team.tmId)}
@@ -682,9 +987,9 @@ function HomePage() {
                 {rightTab === "cfb" && (
                   cfbRanks.length === 0 ? (
                     <div className="empty-sm">
-                      No college rankings for {new Date().getFullYear()} yet.
+                      No college rankings for {season} yet.
                       <br />
-                      <Link to="/football/fbs/rankings">See last season's board</Link>
+                      <Link to={footballPath("fbs", "rankings")}>See the FBS board</Link>
                     </div>
                   ) : (
                     <table className="std-table std-table--rank">

@@ -109,10 +109,14 @@ describe('HomePage', () => {
 
     expect(await screen.findByText('League headline')).toBeInTheDocument();
     expect(await screen.findByText('Braves headline')).toBeInTheDocument();
-    expect(screen.getByText('50.0%')).toBeInTheDocument();
-    expect(screen.getByText('100.0%')).toBeInTheDocument();
-    expect(screen.getByText('MLB model · 30d')).toBeInTheDocument();
-    expect(screen.getByText('High conf · 30d')).toBeInTheDocument();
+    // The MLB model record appears on its sport card and in the scoreboard.
+    expect(screen.getAllByText('50.0%').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText('Model · 30d')).toBeInTheDocument();
+    expect(screen.getByText(/High-confidence picks 100\.0% \(n=1\)/)).toBeInTheDocument();
+    // Three sports, each with its own card.
+    ['MLB', 'NFL', 'College football'].forEach((name) => {
+      expect(screen.getByRole('heading', { name })).toBeInTheDocument();
+    });
   });
 
   test('ranks football and baseball picks on one board', async () => {
@@ -159,7 +163,7 @@ describe('HomePage', () => {
     expect(await screen.findByText("Model's best picks")).toBeInTheDocument();
     const picks = document.querySelectorAll('.pick');
     // High-confidence football outranks a low-confidence baseball pick.
-    expect(picks[0]).toHaveClass('pick--football');
+    expect(picks[0]).toHaveClass('pick--nfl');
     expect(picks[1]).toHaveClass('pick--mlb');
   });
 
