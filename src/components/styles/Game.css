@@ -70,7 +70,7 @@
 }
 
 .game-pulse-card .card-body {
-  background: linear-gradient(180deg, rgba(248, 249, 250, 0.92) 0%, var(--surface) 100%);
+  background: linear-gradient(180deg, var(--surface-2) 0%, var(--surface) 100%);
 }
 
 .game-pulse-layout {
@@ -218,32 +218,32 @@
 
 .pulse-stat--gold {
   border-color: rgba(255, 193, 7, 0.18);
-  background: linear-gradient(180deg, rgba(255, 248, 225, 0.8) 0%, var(--surface) 100%);
+  background: linear-gradient(180deg, var(--warn-soft) 0%, var(--surface) 100%);
 }
 
 .pulse-stat--blue {
   border-color: rgba(13, 110, 253, 0.14);
-  background: linear-gradient(180deg, rgba(231, 243, 255, 0.85) 0%, var(--surface) 100%);
+  background: linear-gradient(180deg, var(--mlb-soft) 0%, var(--surface) 100%);
 }
 
 .pulse-stat--green {
   border-color: rgba(25, 135, 84, 0.16);
-  background: linear-gradient(180deg, rgba(232, 245, 233, 0.85) 0%, var(--surface) 100%);
+  background: linear-gradient(180deg, var(--pos-soft) 0%, var(--surface) 100%);
 }
 
 .pulse-stat--red {
   border-color: rgba(220, 53, 69, 0.14);
-  background: linear-gradient(180deg, rgba(255, 245, 245, 0.85) 0%, var(--surface) 100%);
+  background: linear-gradient(180deg, var(--neg-soft) 0%, var(--surface) 100%);
 }
 
 .pulse-stat--purple {
   border-color: rgba(111, 66, 193, 0.16);
-  background: linear-gradient(180deg, rgba(245, 240, 255, 0.88) 0%, var(--surface) 100%);
+  background: linear-gradient(180deg, var(--nfl-soft) 0%, var(--surface) 100%);
 }
 
 .pulse-stat--slate {
   border-color: rgba(108, 117, 125, 0.16);
-  background: linear-gradient(180deg, rgba(248, 249, 250, 0.95) 0%, var(--surface) 100%);
+  background: linear-gradient(180deg, var(--surface-2) 0%, var(--surface) 100%);
 }
 
 @media (max-width: 1199.98px) {

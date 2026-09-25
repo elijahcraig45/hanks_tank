@@ -226,8 +226,10 @@
   height: 110px;
   padding-top: 0.5rem;
 }
+.fd-spark { overflow-x: auto; overflow-y: hidden; }
 .fd-spark-col {
-  flex: 1;
+  flex: 1 0 12px;
+  min-width: 12px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
