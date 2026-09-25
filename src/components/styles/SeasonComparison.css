@@ -7,7 +7,7 @@
   flex-wrap: wrap;
   gap: 1rem;
   padding: 1rem;
-  background-color: #f8f9fa;
+  background-color: var(--surface-2);
   border-radius: 0.5rem;
 }
 
@@ -20,8 +20,8 @@
 }
 
 .season-comparison .card-header {
-  background-color: #f8f9fa;
-  border-bottom: 2px solid #dee2e6;
+  background-color: var(--surface-2);
+  border-bottom: 2px solid var(--border);
 }
 
 .season-comparison .table {
@@ -29,7 +29,7 @@
 }
 
 .season-comparison .table th {
-  background-color: #e9ecef;
+  background-color: var(--surface-3);
   font-weight: 600;
   text-align: center;
 }

@@ -223,7 +223,7 @@ function ComparisonWorkbenchPage() {
           </p>
         </div>
         <div className="comparison-workbench-actions">
-          <Button as={Link} to="/statcast-lab" variant="outline-secondary" size="sm">
+          <Button as={Link} to="/mlb/lab/statcast-lab" variant="outline-secondary" size="sm">
             Back to Statcast Lab
           </Button>
           <SaveResearchViewButton

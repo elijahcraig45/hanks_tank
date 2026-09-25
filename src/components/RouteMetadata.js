@@ -4,7 +4,7 @@ import { matchPath, useLocation } from 'react-router-dom';
 const SITE_NAME = "Hank's Tank";
 const SITE_URL = 'https://hankstank.com';
 const DEFAULT_DESCRIPTION =
-  "Hank's Tank is a baseball and football analytics site with daily model predictions, power rankings, live game detail, scouting reports, standings, and comparison tools.";
+  "Hank's Tank is a multi-sport analytics site for MLB, NFL and college football: daily model predictions, power rankings with uncertainty, live game detail, scouting reports, and model scoreboards.";
 
 const ROUTE_METADATA = [
   {
@@ -13,132 +13,146 @@ const ROUTE_METADATA = [
     description: DEFAULT_DESCRIPTION,
   },
   {
-    path: '/games',
+    path: '/mlb/games',
     title: 'Games',
     description:
       "Track today's MLB slate with live scores, inning state, play-by-play, strike-zone visuals, and matchup context.",
   },
   {
-    path: '/game/:gamePk',
+    path: '/mlb/game/:gamePk',
     title: 'Game Detail',
     description:
       'Dive into a live MLB game with linescore, scoring plays, strike zone, box score, and scouting report context.',
   },
   {
-    path: '/predictions',
+    path: '/mlb/predictions',
     title: 'Predictions',
     description:
       'See daily MLB win probabilities, confidence tiers, model signals, and links into each scouting report.',
   },
   {
-    path: '/prediction-diagnostics',
+    path: '/mlb/models',
+    title: 'MLB Model Scoreboard',
+    description:
+      'Every MLB model side by side — V10, a 3-feature logistic, the plate-appearance simulator blend, Elo and the market — scored only on pregame predictions, with confidence intervals and calibration.',
+  },
+  {
+    path: '/mlb/models/diagnostics',
     title: 'Prediction Diagnostics',
     description:
       'Audit MLB model performance with calibration, rolling diagnostics, confidence-tier results, and exportable postgame review.',
   },
   {
-    path: '/split-explorer',
+    path: '/mlb/lab/split-explorer',
     title: 'Split Explorer',
     description:
       'Compare MLB team and player split performance across home-away, handedness, and day-night contexts.',
   },
   {
-    path: '/statcast-lab',
+    path: '/mlb/lab/statcast-lab',
     title: 'Statcast Lab',
     description:
       'Explore MLB Statcast pitch mix, rolling trends, contact quality, and zone behavior for individual players.',
   },
   {
-    path: '/comparison-workbench',
+    path: '/mlb/lab/comparison-workbench',
     title: 'Comparison Workbench',
     description:
       'Compare MLB teams and players with league-relative percentiles, z-scores, season deltas, and similarity comps.',
   },
   {
-    path: '/scenario-simulator',
+    path: '/mlb/models/scenario-simulator',
     title: 'Scenario Simulator',
     description:
       'Run what-if MLB matchup scenarios with starter, lineup, bullpen, and context adjustments that shift the forecast distribution.',
   },
   {
-    path: '/research-workflow',
+    path: '/mlb/lab/research-workflow',
     title: 'Research Workflow',
     description:
       'Save Hank\'s Tank analysis views, maintain an MLB watchlist, and export research artifacts for notebook workflows.',
   },
   {
-    path: '/TeamBatting',
+    path: '/mlb/stats/team-batting',
     title: 'Team Batting',
     description: 'Browse team batting leaderboards and compare MLB offense across the current season.',
   },
   {
-    path: '/TeamPitching',
+    path: '/mlb/stats/team-pitching',
     title: 'Team Pitching',
     description: 'Browse team pitching leaderboards and compare staff-level performance across MLB.',
   },
   {
-    path: '/PlayerBatting',
+    path: '/mlb/stats/player-batting',
     title: 'Player Batting',
     description: 'Explore player batting leaderboards with sortable MLB hitting metrics and rate stats.',
   },
   {
-    path: '/PlayerPitching',
+    path: '/mlb/stats/player-pitching',
     title: 'Player Pitching',
     description: 'Explore player pitching leaderboards with sortable MLB run prevention and bat-missing metrics.',
   },
   {
-    path: '/AssistedAnalysis',
+    path: '/mlb/lab/assisted-analysis',
     title: 'Assisted Analysis',
     description: "Generate guided MLB analysis with Hank's Tank data and matchup context.",
   },
   {
-    path: '/season-comparison',
+    path: '/mlb/lab/season-comparison',
     title: 'Season Comparison',
     description: 'Compare seasons side by side to spot changes in team and player performance trends.',
   },
   {
-    path: '/player-comparison',
+    path: '/mlb/lab/player-comparison',
     title: 'Player Comparison',
     description: 'Compare players across MLB metrics, trends, and profile-level performance splits.',
   },
   {
-    path: '/team-comparison',
+    path: '/mlb/lab/team-comparison',
     title: 'Team Comparison',
     description: 'Compare teams across offense, pitching, and advanced MLB performance indicators.',
   },
   {
-    path: '/advanced-analysis',
+    path: '/mlb/lab/advanced-analysis',
     title: 'Advanced Analysis',
     description: 'Dig into advanced MLB analysis views built on deeper leaderboard and comparison tooling.',
   },
   {
-    path: '/team/:teamAbbr',
+    path: '/mlb/team/:teamAbbr',
     title: 'Team Page',
     description: 'Open a team dashboard with roster context, trends, standings-adjacent views, and recent performance.',
   },
   {
-    path: '/player/:playerId',
+    path: '/mlb/player/:playerId',
     title: 'Player Page',
     description: 'Open a player dashboard with trends, splits, profile details, and stat-driven context.',
   },
   {
-    path: '/rankings',
+    path: '/mlb/rankings',
     title: 'MLB Power Rankings',
     description:
       'Bradley-Terry power rankings for every MLB team, fitted over the whole season at '
       + 'once, with bootstrap rank ranges showing how little separates them.',
   },
   {
-    path: '/football',
-    title: 'Football',
-    description:
-      'Weekly NFL and college football model picks, Bradley-Terry power rankings, and per-team advanced stats.',
+    path: '/nfl',
+    title: 'NFL',
+    description: 'Weekly NFL model picks with confidence tiers, Bradley-Terry power rankings with rank ranges, out-of-sample model diagnostics and comparison, league leaders, and team stats.',
   },
   {
-    path: '/football/:league',
-    title: 'Football',
-    description:
-      'Weekly NFL and college football model picks, Bradley-Terry power rankings, and per-team advanced stats.',
+    path: '/nfl/:section',
+    title: 'NFL',
+    description: 'Weekly NFL model picks with confidence tiers, Bradley-Terry power rankings with rank ranges, out-of-sample model diagnostics and comparison, league leaders, and team stats.',
+  },
+  {
+    path: '/cfb/:league',
+    title: 'College Football',
+    description: 'College football (FBS and FCS) model picks, live scores, Bradley-Terry power rankings with rank ranges, model diagnostics and comparison, leaders, and team stats.',
+  },
+  {
+    path: '/mlb',
+    title: 'MLB',
+    description: 'Daily MLB win probabilities, live scores, power rankings, leaderboards, and model diagnostics.',
   },
   {
     path: '/pickem/:sport/:section',
@@ -159,26 +173,32 @@ const ROUTE_METADATA = [
       'Weekly NFL and college football pick\u2019em with a public leaderboard, scored against the closing favourite.',
   },
   {
-    path: '/football/:league/game/:gameId',
+    path: '/cfb/:league/game/:gameId',
     title: 'Football Game',
     description:
       'Live score, win-probability curve, drive chart and box score for a single college football game, alongside the model\u2019s own pick for it.',
   },
   {
-    path: '/football/:league/:section',
-    title: 'Football',
+    path: '/cfb/:league/:section',
+    title: 'College Football',
     description:
       'Weekly NFL and college football model picks, live scores and schedules, Bradley-Terry power rankings, out-of-sample model diagnostics, league leaders, and per-team season and advanced stats.',
   },
   {
-    path: '/transactions',
+    path: '/mlb/transactions',
     title: 'Transactions',
     description: 'Follow MLB transactions and roster movement from one dashboard.',
   },
   {
-    path: '/transactions/:teamAbbr',
+    path: '/mlb/transactions/:teamAbbr',
     title: 'Team Transactions',
     description: 'Follow recent roster movement and transactions for a specific MLB club.',
+  },
+  {
+    path: '/learn',
+    title: 'Learn',
+    description:
+      'How the Hank’s Tank models work, with the measured results: machine-learning foundations, the MLB models and simulator, the football models, and the power rankings.',
   },
 ];
 

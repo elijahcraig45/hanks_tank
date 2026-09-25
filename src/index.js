@@ -4,7 +4,12 @@ import './index.css';
 import './components/styles/GlobalFixes.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { applyTheme, resolvedTheme } from './utils/theme';
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+// The inline script in public/index.html normally does this before paint; repeating it
+// here covers any host page that strips inline scripts.
+if (!document.documentElement.getAttribute('data-theme')) applyTheme(resolvedTheme());
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

@@ -201,7 +201,7 @@ function StatcastLabPage() {
           </p>
         </div>
         <div className="statcast-lab-actions">
-          <Button as={Link} to="/split-explorer" variant="outline-secondary" size="sm">
+          <Button as={Link} to="/mlb/lab/split-explorer" variant="outline-secondary" size="sm">
             Back to Split Explorer
           </Button>
           <SaveResearchViewButton

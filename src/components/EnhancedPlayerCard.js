@@ -60,7 +60,7 @@ const EnhancedPlayerCard = ({ player, rank, showRank = true, showAdvanced = true
           <Col>
             <div className="d-flex align-items-center mb-2">
               <h5 className="mb-0 me-3">
-                <a href={`/player/${player.playerId}`} className="player-link">
+                <a href={`/mlb/player/${player.playerId}`} className="player-link">
                   {player.Name}
                 </a>
               </h5>

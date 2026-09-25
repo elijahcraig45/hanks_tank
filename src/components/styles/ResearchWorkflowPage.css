@@ -1,6 +1,6 @@
 .research-workflow-page {
   min-height: 100vh;
-  background: #f8f9fa;
+  background: var(--surface-2);
 }
 
 .research-workflow-header {
@@ -12,7 +12,7 @@
 }
 
 .research-workflow-eyebrow {
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.76rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -38,7 +38,7 @@
   gap: 0.75rem;
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 14px;
-  background: #fff;
+  background: var(--surface);
   padding: 0.85rem 0.95rem;
 }
 

@@ -6,7 +6,7 @@
 
 .year-selector-label {
   font-weight: 600;
-  color: #495057;
+  color: var(--text-2);
   margin-bottom: 0.5rem;
   font-size: 0.95rem;
 }

@@ -2,27 +2,28 @@ const STORAGE_KEY = "ht-recent-views";
 const MAX_RECENT_VIEWS = 6;
 
 const STATIC_VIEWS = {
-  "/predictions": { label: "Predictions", hint: "Daily model board", icon: "🔮" },
-  "/prediction-diagnostics": { label: "Prediction Diagnostics", hint: "Model audit view", icon: "📊" },
-  "/split-explorer": { label: "Split Explorer", hint: "Context splits", icon: "🧭" },
-  "/statcast-lab": { label: "Statcast Lab", hint: "Pitch and contact lab", icon: "🎯" },
-  "/comparison-workbench": { label: "Comparison Workbench", hint: "League-relative comps", icon: "🧰" },
-  "/scenario-simulator": { label: "Scenario Simulator", hint: "What-if matchup tool", icon: "🎲" },
-  "/research-workflow": { label: "Research Workflow", hint: "Saved views and watchlists", icon: "🗂️" },
-  "/games": { label: "Games", hint: "Today's scoreboard", icon: "📅" },
-  "/TeamBatting": { label: "Team Batting", hint: "Club leaderboards", icon: "🏏" },
-  "/TeamPitching": { label: "Team Pitching", hint: "Staff leaderboards", icon: "⚾" },
-  "/PlayerBatting": { label: "Player Batting", hint: "Hitter leaderboard", icon: "🧢" },
-  "/PlayerPitching": { label: "Player Pitching", hint: "Pitcher leaderboard", icon: "💪" },
-  "/advanced-analysis": { label: "Advanced Analysis", hint: "Deep-dive tools", icon: "🔬" },
-  "/season-comparison": { label: "Season Comparison", hint: "Year-over-year view", icon: "📈" },
-  "/team-comparison": { label: "Team Comparison", hint: "Club vs club", icon: "⚔️" },
-  "/player-comparison": { label: "Player Comparison", hint: "Player vs player", icon: "🆚" },
-  "/transactions": { label: "Transactions", hint: "League moves", icon: "🔄" },
-  "/AssistedAnalysis": { label: "Assisted Analysis", hint: "Guided insights", icon: "🤖" },
-  "/football": { label: "Football", hint: "NFL and college board", icon: "🏈" },
+  "/mlb/predictions": { label: "MLB Predictions", hint: "Daily model board", icon: "🔮" },
+  "/mlb/models": { label: "MLB Model Scoreboard", hint: "Every model, scored pregame", icon: "📈" },
+  "/mlb/models/diagnostics": { label: "Prediction Diagnostics", hint: "Model audit view", icon: "📊" },
+  "/mlb/lab/split-explorer": { label: "Split Explorer", hint: "Context splits", icon: "🧭" },
+  "/mlb/lab/statcast-lab": { label: "Statcast Lab", hint: "Pitch and contact lab", icon: "🎯" },
+  "/mlb/lab/comparison-workbench": { label: "Comparison Workbench", hint: "League-relative comps", icon: "🧰" },
+  "/mlb/models/scenario-simulator": { label: "Scenario Simulator", hint: "What-if matchup tool", icon: "🎲" },
+  "/mlb/lab/research-workflow": { label: "Research Workflow", hint: "Saved views and watchlists", icon: "🗂️" },
+  "/mlb/games": { label: "Games", hint: "Today's scoreboard", icon: "📅" },
+  "/mlb/stats/team-batting": { label: "Team Batting", hint: "Club leaderboards", icon: "🏏" },
+  "/mlb/stats/team-pitching": { label: "Team Pitching", hint: "Staff leaderboards", icon: "⚾" },
+  "/mlb/stats/player-batting": { label: "Player Batting", hint: "Hitter leaderboard", icon: "🧢" },
+  "/mlb/stats/player-pitching": { label: "Player Pitching", hint: "Pitcher leaderboard", icon: "💪" },
+  "/mlb/lab/advanced-analysis": { label: "Advanced Analysis", hint: "Deep-dive tools", icon: "🔬" },
+  "/mlb/lab/season-comparison": { label: "Season Comparison", hint: "Year-over-year view", icon: "📈" },
+  "/mlb/lab/team-comparison": { label: "Team Comparison", hint: "Club vs club", icon: "⚔️" },
+  "/mlb/lab/player-comparison": { label: "Player Comparison", hint: "Player vs player", icon: "🆚" },
+  "/mlb/transactions": { label: "Transactions", hint: "League moves", icon: "🔄" },
+  "/mlb/lab/assisted-analysis": { label: "Assisted Analysis", hint: "Guided insights", icon: "🤖" },
+  "/nfl": { label: "NFL", hint: "Weekly model picks", icon: "🏈" },
   "/pickem": { label: "Pick'em", hint: "Weekly picks and standings", icon: "🎯" },
-  "/rankings": { label: "MLB Power Rankings", hint: "Bradley-Terry board", icon: "📋" },
+  "/mlb/rankings": { label: "MLB Power Rankings", hint: "Bradley-Terry board", icon: "📋" },
 };
 
 function canUseStorage() {
@@ -38,7 +39,7 @@ function normalizePath(pathname = "/") {
 }
 
 function buildDynamicView(pathname) {
-  const gameMatch = pathname.match(/^\/game\/([^/]+)$/);
+  const gameMatch = pathname.match(/^\/mlb\/game\/([^/]+)$/);
   if (gameMatch) {
     return {
       label: `Game ${gameMatch[1]}`,
@@ -47,7 +48,7 @@ function buildDynamicView(pathname) {
     };
   }
 
-  const teamMatch = pathname.match(/^\/team\/([^/]+)$/);
+  const teamMatch = pathname.match(/^\/mlb\/team\/([^/]+)$/);
   if (teamMatch) {
     return {
       label: `${teamMatch[1].toUpperCase()} Team`,
@@ -56,7 +57,7 @@ function buildDynamicView(pathname) {
     };
   }
 
-  const playerMatch = pathname.match(/^\/player\/([^/]+)$/);
+  const playerMatch = pathname.match(/^\/mlb\/player\/([^/]+)$/);
   if (playerMatch) {
     return {
       label: `Player ${playerMatch[1]}`,
@@ -80,7 +81,7 @@ function buildDynamicView(pathname) {
     };
   }
 
-  const footballGameMatch = pathname.match(/^\/football\/([^/]+)\/game\/([^/]+)$/);
+  const footballGameMatch = pathname.match(/^\/(?=nfl|cfb\/)(?:cfb\/)?(nfl|fbs|fcs)\/game\/([^/]+)$/);
   if (footballGameMatch) {
     const LEAGUES = { nfl: "NFL", fbs: "College FBS", fcs: "College FCS" };
     return {
@@ -90,7 +91,7 @@ function buildDynamicView(pathname) {
     };
   }
 
-  const footballMatch = pathname.match(/^\/football\/([^/]+)(?:\/([^/]+))?$/);
+  const footballMatch = pathname.match(/^\/(?=nfl|cfb\/)(?:cfb\/)?(nfl|fbs|fcs)(?:\/([^/]+))?$/);
   if (footballMatch) {
     const LEAGUES = { nfl: "NFL", fbs: "College FBS", fcs: "College FCS" };
     const SECTIONS = {
@@ -98,6 +99,7 @@ function buildDynamicView(pathname) {
       scoreboard: "scores and schedule",
       rankings: "power rankings",
       diagnostics: "model diagnostics",
+      models: "model comparison",
       leaders: "league leaders",
       players: "player stats",
       stats: "team stats",
@@ -110,7 +112,7 @@ function buildDynamicView(pathname) {
     };
   }
 
-  const teamTransactionsMatch = pathname.match(/^\/transactions\/([^/]+)$/);
+  const teamTransactionsMatch = pathname.match(/^\/mlb\/transactions\/([^/]+)$/);
   if (teamTransactionsMatch) {
     return {
       label: `${teamTransactionsMatch[1].toUpperCase()} Transactions`,

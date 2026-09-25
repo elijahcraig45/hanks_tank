@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>/* Follow the theme chosen on the main site (same origin). */(function(){try{var t=localStorage.getItem('ht-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>V10 Feature Audit</title>
+<meta name="description" content="What the V10 feature-builder bugs were, what fixing them measurably changed, and the statistics you need to defend the decision.">
+<style>
+:root{
+  --bg:#fbfaf7;--fg:#1d1d1b;--muted:#5d5b55;--line:#e3e0d8;--card:#ffffff;
+  --accent:#2f5d8a;--good:#2e7d4f;--bad:#b3452c;--warn:#9a6b00;--code:#f1efe9;
+  --bar:#2f5d8a;--bar2:#9aa9b8;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#161614;--fg:#ecebe6;--muted:#a9a69d;--line:#34332f;--card:#1f1f1c;
+    --accent:#7fb0de;--good:#6cc692;--bad:#ef8a70;--warn:#e0b34f;--code:#2a2a26;
+    --bar:#7fb0de;--bar2:#5b6672;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#161614;--fg:#ecebe6;--muted:#a9a69d;--line:#34332f;--card:#1f1f1c;
+  --accent:#7fb0de;--good:#6cc692;--bad:#ef8a70;--warn:#e0b34f;--code:#2a2a26;
+  --bar:#7fb0de;--bar2:#5b6672;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+main{max-width:860px;margin:0 auto;padding:24px 16px 80px}
+h1{font-size:1.9rem;line-height:1.2;margin:.2em 0 .3em}
+h2{font-size:1.35rem;margin:2.2em 0 .5em;padding-top:.6em;border-top:1px solid var(--line)}
+h3{font-size:1.08rem;margin:1.4em 0 .3em}
+p,li{max-width:72ch}
+a{color:var(--accent)}
+.lede{color:var(--muted);font-size:1.05rem}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font-size:.9em;word-break:break-word}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:14px 0}
+.callout{border-left:4px solid var(--accent)}
+.callout.bad{border-left-color:var(--bad)}
+.callout.good{border-left-color:var(--good)}
+.tag{display:inline-block;font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:.1em .5em;border-radius:4px;border:1px solid currentColor;margin-right:.4em}
+.tag.m{color:var(--good)} .tag.i{color:var(--warn)}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:560px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;white-space:normal}
+th{font-weight:600;color:var(--muted)}
+tr.hl td{font-weight:600}
+.small{font-size:.86rem;color:var(--muted)}
+nav.toc{columns:2;column-gap:24px;font-size:.92rem}
+nav.toc a{display:block;padding:2px 0}
+@media (max-width:560px){nav.toc{columns:1}}
+details{border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:8px 0;background:var(--card)}
+summary{cursor:pointer;font-weight:600}
+dl dt{font-weight:600;margin-top:.7em}
+dl dd{margin:0 0 0 0;color:var(--fg)}
+svg text{fill:var(--fg);font-size:11px}
+svg .mut{fill:var(--muted)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tabs button{font:inherit;font-size:.85rem;padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
+.tabs button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);font-weight:600}
+</style>
+<link rel="stylesheet" href="learn.css">
+</head>
+<body>
+<nav class="lh-bar" aria-label="Site">
+ <div class="lh-in">
+  <a class="lh-brand" href="/"><span class="lh-mark" aria-hidden="true">HT</span><span class="lh-name">Hank&rsquo;s Tank</span></a>
+  <span class="lh-sep" aria-hidden="true">/</span>
+  <a class="lh-learn" href="/learn">Learn</a>
+  <span class="lh-sep" aria-hidden="true">/</span>
+  <span class="lh-topic">MLB</span>
+  <button type="button" class="lh-theme" id="lh-theme" aria-label="Switch theme" title="Switch theme">&#9790;</button>
+ </div>
+</nav>
+<main>
+
+<p class="small">Hank's Tank &middot; MLB &middot; written 2026-09-25</p>
+<h1>The V10 feature audit: what was broken, what fixing it changed, and how to defend the call</h1>
+<p class="lede">V10's feature table had copies, constants and three inputs that disagreed with what the model was trained on. Fixing them is right. It does not measurably change accuracy, and the numbers below show why. The page is built so you can explain every step to someone who pushes back.</p>
+
+<div class="card callout">
+<strong>Scope.</strong> This page covers collinearity, train/serve skew, and the specific evaluation behind these fixes. It doesn't repeat material covered elsewhere:
+<a href="ml-course.html">ML_COURSE</a> explains the algorithms (logistic regression, L1/L2, boosting, calibration, proper scoring rules),
+<a href="ml-lessons.html">ML_LESSONS</a> covers leakage, statistical power and why more features isn't more information, and
+<a href="model-history.html">MODEL_HISTORY</a> covers what V1 through V10 were actually worth.
+</div>
+
+<p><span class="tag m">measured</span> means computed in this audit. <span class="tag i">inferred</span> means reasoning from the evidence without a direct test.</p>
+
+<nav class="toc card">
+<a href="#tldr">1. The short version</a>
+<a href="#bugs">2. What was actually broken</a>
+<a href="#colin">3. Collinearity: correlation, VIF, rank, eigenvalues</a>
+<a href="#trees">4. Why trees shrug and logistic regression flips</a>
+<a href="#curse">5. Too many features per game</a>
+<a href="#skew">6. Train/serve skew and placeholder features</a>
+<a href="#honest">7. Honest pregame evaluation</a>
+<a href="#results">8. The results</a>
+<a href="#sharp">9. Accuracy at a threshold vs log loss</a>
+<a href="#boot">10. Bootstrap confidence intervals</a>
+<a href="#selection">11. Selection bias</a>
+<a href="#defend">12. How to defend this</a>
+<a href="#gloss">13. Glossary</a>
+</nav>
+
+<h2 id="tldr">1. The short version</h2>
+<ul>
+<li><span class="tag m">measured</span> The model in production uses <strong>73 features</strong>, not 158. <code>train_v10_models.py</code> keeps only the names that exist in the V8 training parquet. None of the buggy xFIP, wOBA or Statcast-percentile columns ever reached the model.</li>
+<li><span class="tag m">measured</span> Three inputs the model <em>does</em> use disagreed with training. This is <strong>train/serve skew</strong>: <code>season_pct_complete</code> (trained on 0 to 1, served as 1.0 every game), <code>day_of_week</code> (trained 1&ndash;7 with Sunday&nbsp;=&nbsp;1, served 0&ndash;6 with Monday&nbsp;=&nbsp;0) and <code>luck_differential</code> (served with the opposite sign).</li>
+<li><span class="tag m">measured</span> Correcting those three inputs moves walk-forward log loss by <strong>+0.0008</strong> (95% CI &minus;0.0014 to +0.0031), which is zero within noise. It changes 163 of 1,963 picks.</li>
+<li><span class="tag m">measured</span> The 3-feature logistic and V10 are statistically tied on log loss in every window. V10's edge at the sharp end is real in direction but not significant: <strong>+4.7pp</strong> (CI &minus;3.1 to +12.8).</li>
+<li><strong>Recommendation:</strong> keep the V10 model. Ship the builder fixes, because correctness is the default when the numbers are tied, and a flipped sign is a time bomb for any future retrain. Don't swap production.</li>
+</ul>
+
+<h2 id="bugs">2. What was actually broken</h2>
+<div class="tablewrap"><table>
+<tr><th>Bug</th><th>Symptom in 2026</th><th>In served model?</th><th>Fix</th></tr>
+<tr><td><code>fg_xfip</code> = ERA</td><td>exact copy of <code>fg_era</code></td><td>no</td><td>NULL, dropped from list</td></tr>
+<tr><td><code>fg_woba</code> = OBP</td><td>exact copy of <code>fg_obp</code></td><td>no</td><td>real wOBA from API counts</td></tr>
+<tr><td>whiff / FB velo / EV / hard-hit / barrel</td><td>constant 50.0 (10 columns)</td><td>no</td><td>NULL, dropped from list</td></tr>
+<tr><td><code>season_game_number</code></td><td>~197 in April: counted a year of history plus spring training</td><td>via <code>season_pct_complete</code></td><td>season-scoped, regular season only</td></tr>
+<tr><td><code>day_of_week</code></td><td>live 0&ndash;6 Mon=0, training 1&ndash;7 Sun=1</td><td><strong>yes</strong></td><td>serve in training encoding</td></tr>
+<tr><td><code>luck_differential</code></td><td>corr &minus;1.000 with home&minus;away live, +1.000 in training</td><td><strong>yes</strong></td><td>home &minus; away</td></tr>
+<tr><td><code>games_in_series</code></td><td>constant 3: read a key the API doesn't have</td><td>no</td><td>read <code>gamesInSeries</code></td></tr>
+<tr><td>spring training in rolling windows</td><td>~490 spring and exhibition games in April's 3g/10g/30g</td><td>yes (rolling runs)</td><td><code>game_type = 'R'</code></td></tr>
+</table></div>
+<p class="small">Also found, and relevant: the 2025 validation parquet has <em>frozen</em> team features (end-of-2024 values decayed, constant all season). V10's "56.4% on the 2025 holdout" was scored on inputs that never varied, so treat it as meaningless. The <code>train_weekly v10</code> job actually runs <code>train_v8_models.py</code>, so the V10 artifact (trained 2026-04-29) has never been retrained.</p>
+
+<h2 id="colin">3. Collinearity: four instruments, four different questions</h2>
+<p>"The features are collinear" can mean four different things, and each diagnostic answers only one of them. On V10's 158 listed features over 1,963 honest 2026 games <span class="tag m">measured</span>:</p>
+<div class="tablewrap"><table>
+<tr><th>Diagnostic</th><th>What it asks</th><th>V10 result</th></tr>
+<tr><td>Zero variance</td><td>Does the column carry any information at all?</td><td>16 constant</td></tr>
+<tr><td>Pairwise correlation |r|</td><td>Are two columns near-copies of each other?</td><td>28 pairs &gt; 0.9, 18 pairs &gt; 0.99</td></tr>
+<tr><td>VIF = 1/(1&minus;R&sup2;)</td><td>Can this column be predicted from <em>all</em> the others?</td><td>126 of 142 have VIF &gt; 5; 90 are effectively infinite</td></tr>
+<tr><td>Matrix rank</td><td>How many truly independent directions exist?</td><td>103 out of 142, so 39 exact dependencies</td></tr>
+<tr><td>Eigenvalues of the correlation matrix</td><td>Which directions carry almost no variance?</td><td>39 are zero; 62 are below 0.1; the top one is 22.5</td></tr>
+</table></div>
+<h3>Why they disagree</h3>
+<p><strong>Correlation only sees pairs.</strong> <code>run_diff_differential</code> is exactly <code>home_run_diff_10g &minus; away_run_diff_10g</code>, yet its correlation with the home term is only 0.758. No pair looks alarming, but together the three are perfectly dependent.</p>
+<p><strong>VIF sees one column against all the others</strong>, so it catches that triple, and it is infinite for every column that takes part in an exact identity. VIF is per column, though. It doesn't tell you how many redundant directions there are.</p>
+<p><strong>Rank counts redundant directions exactly</strong> (39), but it's all-or-nothing. A near-duplicate at r&nbsp;=&nbsp;0.999 still counts as full rank.</p>
+<p><strong>Eigenvalues grade that near-miss.</strong> A tiny eigenvalue is a direction the data barely moves in, and any model that tries to estimate a coefficient along it will be guessing. The condition number (largest eigenvalue divided by smallest) is about 10<sup>17</sup> here, which is numerically singular.</p>
+<p>For contrast, the 3-feature model has VIFs of 1.73, 1.73 and 1.01: Elo and Pythagorean correlate at 0.648, and the SP composite is nearly orthogonal to both. That is healthy.</p>
+
+<h2 id="trees">4. Why collinearity barely hurts trees' predictions but wrecks their importances, and flips logistic signs</h2>
+<h3>Trees: the predictions survive</h3>
+<p>A tree picks one column per split. If two columns are copies, it doesn't matter which one it picks, because the split is the same. <span class="tag m">measured</span> Adding an exact copy of <code>pythag_differential</code> to a 3-feature XGBoost gave predictions that correlate <strong>0.974</strong> with the original model's, and log loss moved by only 0.006.</p>
+<h3>Trees: the importances don't</h3>
+<p>The credit that one column earned gets split across its copies. Pythagorean importance went from 0.32 to 0.23, and the copy took 0.26. In the full 142-column model, the ranking of importances across 8 bootstrap refits agreed at a Spearman correlation of only <strong>0.27</strong>, and the top five features changed completely every time (one refit led with <code>fg_whip_differential</code>, another with <code>home_rested</code>). Never read a V10 importance chart as "what drives wins".</p>
+<div class="card callout bad"><strong>Caveat.</strong> "The predictions survive" means they survive collinearity. They don't survive a small sample. The same 8 bootstrap refits of the 142-column XGBoost produced predictions that correlate only 0.53 with each other. That instability comes from too many parameters per game (section 5), not from collinearity.</div>
+<h3>Logistic regression: signs flip</h3>
+<p>A linear model has to split one effect across correlated columns. When the columns are nearly collinear, many splits fit the data about equally well, and a small change in the sample moves which one wins. <span class="tag m">measured</span> Across 300 bootstrap refits of an unregularised logistic on five correlated strength columns:</p>
+<div class="tablewrap"><table>
+<tr><th>Coefficient</th><th>VIF</th><th>refits with positive sign</th><th>90% range</th></tr>
+<tr><td><code>elo_differential</code></td><td>124</td><td>51%</td><td>&minus;0.84 to +0.98</td></tr>
+<tr><td><code>elo_home_win_prob</code></td><td>123</td><td>57%</td><td>&minus;0.97 to +0.90</td></tr>
+<tr><td><code>pythag_differential</code></td><td>&infin;</td><td>100%</td><td>+0.04 to +0.14</td></tr>
+</table></div>
+<p>Elo is the best single strength signal we have, yet in that model its sign is a coin flip. In the clean 3-feature model, Pythagorean is positive in 100% of refits and the SP composite in 99.7%. Elo is still positive in only 68%, because it shares its signal with Pythagorean (VIF 1.73). That is why L1 regularisation is useful: it picks one column and zeroes the other, rather than letting the two trade off.</p>
+
+<h2 id="curse">5. Too many features per game</h2>
+<p>Each feature a model learns costs estimation variance, and a season gives you about 2,400 games. An earlier 450-trial automated search measured that 3 features beat the top-k subset, which beat all 161 features (log loss 0.6887, 0.6899, 0.6932). This audit reproduced the effect <span class="tag m">measured</span>. V10's own XGBoost settings, fit on this season's games over 36 deduplicated differentials, scored <strong>0.7572</strong> walk-forward, far worse than always picking the home team (0.6918). It made 684 picks at 64%+ confidence and won only 52.3% of them.</p>
+<p>Deduplicating the columns didn't rescue it. Collinearity was never the binding problem for trees. The number of parameters per game was. That's why the served V10 (trained on 24,428 games from 2015&ndash;24) and a 3-parameter logistic end up tied: each is a different way of staying under the sample cap.</p>
+<p><span class="tag m">measured</span> I also rebuilt real season-to-date team xFIP, wOBA, whiff%, fastball velocity, exit velocity, hard-hit% and barrel% from 772k Statcast pitches. Team xFIP had the best single-feature AUC in the whole set (0.565, against Pythagorean's 0.555). Adding all seven to the 3-feature model still changed walk-forward log loss by only +0.0002. The information is real, but it's already in Elo and Pythagorean. So the placeholders were dropped rather than rebuilt.</p>
+
+<h2 id="skew">6. Train/serve skew and placeholder features</h2>
+<p><strong>Train/serve skew</strong> means the model sees a feature computed one way during training and another way in production. It's worse than a bug in a feature the model ignores, because the model relies on the relationship it learned, and at serve time that relationship doesn't hold. A tree that learned "late season plus X means home wins" applied that rule to every April game, because <code>season_pct_complete</code> was 1.0 all year.</p>
+<p><strong>How to detect it.</strong> Put the served feature's distribution next to the training distribution. <span class="tag m">measured</span> Training had <code>season_pct_complete</code> at mean 0.505 (sd 0.294), while live was 1.000 (sd 0). <code>day_of_week</code> mean was 4.05 in training and 3.17 live. The correlation of <code>luck_differential</code> with home&nbsp;&minus;&nbsp;away was +1 in training and &minus;1 live. Checking distributions is cheap, and it catches this whole class of bug.</p>
+<p><strong>Placeholders</strong> (a constant 50.0, or ERA reused as xFIP) do the most harm when a model trains on them: a constant teaches nothing, and an alias double-counts one signal under two names. Here they did no harm only because the training data never contained them. A NULL is better than a fake value, because a NULL is visibly missing and a 50.0 looks like data.</p>
+<p><span class="tag m">measured</span> The surprising part is that fixing the three skewed inputs didn't help: +0.0008 log loss (CI &minus;0.0014 to +0.0031). <span class="tag i">inferred</span> Three reasons fit. The model's total signal is only about 0.005 nats, so little depends on any one input. <code>day_of_week</code> and <code>season_pct_complete</code> carry almost no outcome signal (AUC of the true season fraction is 0.509). And by September a pinned 1.0 is nearly correct. Ship the fix anyway. A future retrain on the 2026 table would otherwise learn the flipped sign.</p>
+
+<h2 id="honest">7. Honest pregame evaluation</h2>
+<p><code>game_predictions</code> and <code>game_v10_features</code> are also written by backfills after games finish. Taking the latest row per game picks the contaminated ones. Every row in this audit satisfies <code>computed_at &lt; first pitch</code> (for features) or <code>predicted_at &lt; game_time_utc</code> (for served predictions), and the filter runs <em>inside</em> the dedupe. <a href="ml-lessons.html">ML_LESSONS</a> covers the leakage story itself.</p>
+<p>Models fit on this season are scored <strong>walk-forward</strong>: the first fit uses 500 games, the model refits every 100, and it only ever predicts games after its training window. Results are reported on three windows:</p>
+<ul>
+<li><strong>Walk-forward:</strong> 1,463 games, 2026-06-03 to 09-24.</li>
+<li><strong>Last 400:</strong> 2026-08-25 to 09-24.</li>
+<li><strong>Fresh:</strong> 220 games after 2026-09-07. No earlier study had seen these, so they are the only games that can't have influenced any choice made here.</li>
+</ul>
+
+<h2 id="results">8. The results</h2>
+<div class="tabs" role="group" aria-label="window">
+<button data-w="wf" aria-pressed="true">Walk-forward (1,463)</button>
+<button data-w="ho" aria-pressed="false">Last 400</button>
+<button data-w="fr" aria-pressed="false">Fresh (220)</button>
+</div>
+<div class="card" id="chartcard">
+<svg id="chart" viewBox="0 0 640 250" width="100%" role="img" aria-label="log loss with 95% CI by model"></svg>
+<p class="small">Log loss, where lower is better, with 95% bootstrap CIs. The dashed line is always-home. The season-fit XGBoost sits off the right edge of the scale; its value is printed.</p>
+</div>
+<div class="tablewrap"><table id="rtable"></table></div>
+<p class="small">&Delta; vs served is paired: both models are scored on the same games, then those games are resampled. "&ge;64%" counts picks with max(p, 1&minus;p) &ge; 0.64.</p>
+
+<h2 id="sharp">9. Accuracy at a confidence threshold vs log loss and calibration</h2>
+<p><strong>Log loss</strong> scores every game and punishes confident misses heavily. It is a proper scoring rule, so it rewards being honest about uncertainty. <strong>Accuracy at &ge;64%</strong> scores only the games a model chooses to be confident about. That's a product metric ("how good are the strong picks?"), but it has two traps:</p>
+<ol>
+<li><strong>A calibrated model rarely reaches 64%.</strong> On a nearly coin-flip sport, a well-calibrated model is almost never 64% sure. The 3-feature logistic made 5 such picks in 1,463 games, while V10 made 185. Comparing their accuracy "at &ge;64%" compares 185 games with 5. So compare <strong>equal counts</strong>: each model's top 185 most-confident picks.</li>
+<li><strong>Easy games are easy for everyone.</strong> <span class="tag m">measured</span> On the exact 185 games where V10 was &ge;64% confident, the 3-feature model picked the same side often enough to hit <strong>62.7%</strong>, against V10's 64.9%. Most of V10's "sharp end" is the games themselves, not skill only V10 has.</li>
+</ol>
+<div class="tablewrap"><table>
+<tr><th>Window</th><th>N (V10 &ge;.64)</th><th>V10 accuracy</th><th>3-feat, top-N</th><th>Difference [95% CI]</th><th>P(V10 better)</th></tr>
+<tr><td>Walk-forward</td><td>185</td><td>64.9%</td><td>60.0%</td><td>+4.7pp [&minus;3.1, +12.8]</td><td>0.86</td></tr>
+<tr><td>Last 400</td><td>71</td><td>67.6%</td><td>63.4%</td><td>+5.2pp [&minus;6.9, +18.1]</td><td>0.76</td></tr>
+<tr><td>Fresh</td><td>42</td><td>71.4%</td><td>66.7%</td><td>+7.9pp [&minus;8.8, +25.0]</td><td>0.79</td></tr>
+</table></div>
+<p><strong>Verdict on "V10 wins at the sharp end":</strong> the direction held in all three windows, including the fresh one, but no interval excludes zero. It's a plausible edge, not an established one. On log loss, V10 was <em>worse</em> than the 3-feature model across the whole walk-forward span (by 0.0027) and <em>better</em> on the late-season windows (by 0.0088 and 0.0089). Every one of those intervals crosses zero.</p>
+<p><strong>Calibration</strong> (whether 60% calls win 60% of the time) is a separate property. <a href="ml-course.html">ML_COURSE</a> covers it. The practical consequence here: if you ever recalibrate V10, the 64% tier empties, so define tiers by <em>quantile</em>, not by a fixed probability.</p>
+
+<h2 id="boot">10. Bootstrap confidence intervals</h2>
+<p>A bootstrap resamples the evaluated games with replacement (2,000 times here), recomputes the metric on each resample, and reports the middle 95% of those values. It answers one question: "if the season had dealt a different but equally likely set of games, how much would this number move?"</p>
+<ul>
+<li><strong>Paired beats unpaired.</strong> To compare two models, resample the same games for both and bootstrap the <em>difference</em>. Game difficulty cancels out, so the difference interval (&plusmn;0.007 here) is much narrower than either model's own interval (&plusmn;0.009).</li>
+<li><strong>Scale.</strong> With about 1,400 games, a log-loss difference needs to be around 0.007 before it clears noise. The whole modelled signal is about 0.005 nats. This is the evaluation cap: the season is too short to separate these models, and a better model won't fix that.</li>
+<li><strong>What the bootstrap can't see.</strong> It treats games as independent draws from one stable process. It doesn't cover a mid-season drift, or the choices you made after looking at the data (section 11).</li>
+</ul>
+
+<h2 id="selection">11. Selection bias</h2>
+<p>If you look at many numbers and report the best one, the best one is biased upward. The bias grows with the number of looks, not with anything real. This audit has three places where that applies:</p>
+<ul>
+<li><strong>The 64% threshold</strong> was chosen after V10 was seen doing well there. So the fresh window matters: it's the only test of that claim on games that didn't shape it. The claim held in direction (71.4% on 42 games) and stayed inside noise.</li>
+<li><strong>Model search.</strong> 450 earlier trials converged on the 3-feature model. Its walk-forward score is a slightly optimistic estimate of its future, because the winner of a search is favoured by luck. Earlier holdout work measured that search gap as negative (&minus;0.0066), because three parameters leave little room to overfit.</li>
+<li><strong>This audit's own choices.</strong> I ran 8 model variants and 3 windows and reported all of them, including the ones that went against the fixes. Showing every row, not just the flattering ones, is the defence.</li>
+</ul>
+
+<h2 id="defend">12. How to defend this</h2>
+<details><summary>"You fixed bugs and accuracy didn't improve. So what was the point?"</summary>
+<p>Two points. First, the served model was receiving inputs that contradicted its training: a flipped sign, a shifted weekday and a frozen season clock. That it happened not to cost much is luck plus a weak signal, not safety. The next retrain on 2026 data would have learned the wrong sign. Second, the audit found that the headline "158 features" was really 73, and that the 2025 validation score was computed on frozen inputs. Knowing what the model actually is has value by itself.</p></details>
+<details><summary>"The 3-feature model has better log loss. Why not switch?"</summary>
+<p>It's better on the full walk-forward span by 0.0027 (CI &minus;0.0100 to +0.0048), and worse on the last 400 games and the fresh window by about 0.009 (CIs cross zero). That is a tie. When models tie, you don't pay the switching cost: a new artifact, new confidence tiers, and a product that suddenly shows almost no strong picks.</p></details>
+<details><summary>"V10 hits 65&ndash;71% on its confident picks. Isn't that the edge?"</summary>
+<p>It's the strongest thing V10 has going for it, and its direction held on 220 games nobody had looked at. But on the same games, the 3-feature model gets 62.7% to 66.7%. The difference is +4.7pp with an interval of &minus;3.1 to +12.8. Say "plausible, not proven", and plan to re-measure after a full season of fresh games.</p></details>
+<details><summary>"Why not just implement real xFIP and Statcast team metrics?"</summary>
+<p>I did, from 772k pitches, strictly before each game. Team xFIP is the best single feature in the set (AUC 0.565). Added to the 3-feature model, all seven moved log loss by +0.0002. The signal is already carried by Elo and Pythagorean. Adding columns costs estimation variance, and the sample is already the binding constraint.</p></details>
+<details><summary>"Collinearity is bad, so why not deduplicate V10?"</summary>
+<p>Trees are nearly indifferent to duplicates when it comes to predictions: an exact copy still gave 0.974 prediction correlation. Deduplicating matters for <em>interpreting</em> the model (importances, coefficient signs), not for accuracy. The season-fit XGBoost on deduplicated features was the worst model here (0.757), because the problem was sample size, not redundancy.</p></details>
+<details><summary>"How do you know the evaluation isn't contaminated?"</summary>
+<p>Every feature row was computed before first pitch, every served prediction was made before first pitch, and the guard runs inside the dedupe. Season-fit models only predict games after their training data. The fresh window postdates every earlier study. The served predictions reproduce from the stored features at a correlation of 0.992, which confirms the stored inputs are the ones that were served.</p></details>
+
+<h2 id="gloss">13. Glossary</h2>
+<dl>
+<dt>Log loss</dt><dd>Average of &minus;ln(p assigned to what actually happened). A constant 50/50 guess scores 0.693. Lower is better. It's a proper scoring rule.</dd>
+<dt>Walk-forward</dt><dd>Train on the past, predict the next block, add that block to training, repeat. Mimics production and never uses the future.</dd>
+<dt>Holdout</dt><dd>Games held back from every modelling decision, scored once at the end.</dd>
+<dt>Train/serve skew</dt><dd>A feature computed differently at training time and at prediction time.</dd>
+<dt>Placeholder feature</dt><dd>A column filled with a constant or with a copy of another column because the real data was missing.</dd>
+<dt>Collinearity</dt><dd>Some features are (nearly) linear combinations of others.</dd>
+<dt>VIF</dt><dd>Variance inflation factor, 1/(1&minus;R&sup2;) from regressing one feature on all the others. Above 5&ndash;10 is a concern; infinite means an exact dependency.</dd>
+<dt>Matrix rank</dt><dd>The number of linearly independent columns. Columns minus rank equals the number of exact dependencies.</dd>
+<dt>Eigenvalue (of the correlation matrix)</dt><dd>The variance along one principal direction. Near zero means a direction the data barely moves in, where coefficients can't be estimated.</dd>
+<dt>Condition number</dt><dd>Largest eigenvalue divided by smallest. Huge values mean small data changes cause large coefficient swings.</dd>
+<dt>Feature importance (gain)</dt><dd>How much a tree model's loss improved on splits using that column. It gets split arbitrarily among duplicates.</dd>
+<dt>Bootstrap CI</dt><dd>The 2.5th to 97.5th percentile of a metric recomputed on resamples of the games.</dd>
+<dt>Paired comparison</dt><dd>Scoring two models on the same resampled games, so that shared difficulty cancels.</dd>
+<dt>Sharp end / confidence threshold</dt><dd>The subset of games a model is most confident on. Compare models at equal counts, not at equal probability cut-offs.</dd>
+<dt>Calibration</dt><dd>Whether stated probabilities match observed frequencies.</dd>
+<dt>Selection bias</dt><dd>Upward bias from reporting the best of many looks, or from choosing a subset after seeing it perform.</dd>
+<dt>Backfill contamination</dt><dd>Rows written after the outcome was known, which silently inflate evaluation if they aren't filtered.</dd>
+</dl>
+
+<p class="small" style="margin-top:3em">Sources: the audit&rsquo;s evaluation scripts, <code>eval_v10_fixes.py</code>, <code>fetch_inputs.py</code> and <code>team_statcast.sql</code>. The inputs were read-only BigQuery pulls on 2026-09-25, plus a read-only copy of the production V10 artifact.</p>
+</main>
+<script>
+(function(){
+  var D={
+   wf:[["V10 as served",.6880,.6790,.6973,"+0.0000",54.5,"185 @ 64.9%"],
+       ["V10 fixed inputs",.6888,.6790,.6988,"+0.0008 [-0.0014, +0.0031]",55.4,"183 @ 62.3%"],
+       ["V10 retrained 2015-24, fixed",.6884,.6786,.6981,"+0.0004 [-0.0033, +0.0045]",55.0,"213 @ 63.8%"],
+       ["3-feature L1 logistic",.6853,.6806,.6899,"-0.0027 [-0.0100, +0.0048]",55.6,"5 @ 60.0%"],
+       ["3-feature + real team Statcast",.6855,.6792,.6918,"-0.0025 [-0.0102, +0.0057]",55.8,"41 @ 56.1%"],
+       ["Season-fit XGB, deduped diffs",.7572,.7356,.7787,"+0.0692 [+0.0472, +0.0914]",52.2,"684 @ 52.3%"]],
+   ho:[["V10 as served",.6705,.6528,.6886,"+0.0000",58.0,"71 @ 67.6%"],
+       ["V10 fixed inputs",.6720,.6542,.6903,"+0.0015 [-0.0011, +0.0043]",57.0,"63 @ 66.7%"],
+       ["V10 retrained 2015-24, fixed",.6742,.6542,.6935,"+0.0037 [-0.0026, +0.0097]",58.0,"68 @ 69.1%"],
+       ["3-feature L1 logistic",.6793,.6693,.6898,"+0.0088 [-0.0070, +0.0231]",59.0,"4 @ -"],
+       ["3-feature + real team Statcast",.6795,.6662,.6932,"+0.0090 [-0.0058, +0.0241]",58.2,"18 @ 66.7%"],
+       ["Season-fit XGB, deduped diffs",.7102,.6722,.7479,"+0.0397 [+0.0072, +0.0758]",55.8,"168 @ 57.7%"]],
+   fr:[["V10 as served",.6690,.6426,.6942,"+0.0000",56.4,"42 @ 71.4%"],
+       ["V10 fixed inputs",.6688,.6446,.6949,"-0.0003 [-0.0038, +0.0033]",56.8,"41 @ 68.3%"],
+       ["V10 retrained 2015-24, fixed",.6724,.6463,.6982,"+0.0034 [-0.0064, +0.0127]",57.3,"38 @ 73.7%"],
+       ["3-feature L1 logistic",.6779,.6618,.6939,"+0.0089 [-0.0094, +0.0278]",59.1,"4 @ -"],
+       ["3-feature + real team Statcast",.6769,.6577,.6963,"+0.0078 [-0.0116, +0.0253]",57.3,"13 @ 69.2%"],
+       ["Season-fit XGB, deduped diffs",.7004,.6493,.7514,"+0.0314 [-0.0097, +0.0744]",56.8,"96 @ 59.4%"]]
+  };
+  var HOME={wf:.6918,ho:.6914,fr:.6914};
+  var NS="http://www.w3.org/2000/svg";
+  function el(t,a,txt){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;return e;}
+  function draw(w){
+    var svg=document.getElementById("chart");while(svg.firstChild)svg.removeChild(svg.firstChild);
+    var lo=.635,hi=.715,x0=230,x1=620,rowH=34,top=18;
+    var sx=function(v){return x0+(Math.min(Math.max(v,lo),hi)-lo)/(hi-lo)*(x1-x0);};
+    for(var t=.64;t<=.7101;t+=.01){var x=sx(t);svg.appendChild(el("line",{x1:x,x2:x,y1:top-6,y2:top+rowH*6,stroke:"currentColor","stroke-opacity":.12}));svg.appendChild(el("text",{x:x,y:top+rowH*6+14,"text-anchor":"middle","class":"mut"},t.toFixed(2)));}
+    var hx=sx(HOME[w]);svg.appendChild(el("line",{x1:hx,x2:hx,y1:top-6,y2:top+rowH*6,stroke:"currentColor","stroke-dasharray":"4 3","stroke-opacity":.6}));
+    svg.appendChild(el("text",{x:hx+3,y:top-8,"class":"mut"},"always home"));
+    D[w].forEach(function(r,i){
+      var y=top+i*rowH+rowH/2;
+      svg.appendChild(el("text",{x:x0-8,y:y+4,"text-anchor":"end"},r[0]));
+      var off=r[1]>hi;
+      svg.appendChild(el("line",{x1:sx(r[2]),x2:sx(r[3]),y1:y,y2:y,stroke:"var(--bar)","stroke-width":3,"stroke-linecap":"round","stroke-opacity":.55}));
+      svg.appendChild(el("circle",{cx:sx(r[1]),cy:y,r:5,fill:i===0?"var(--bar)":"var(--card)",stroke:"var(--bar)","stroke-width":2}));
+      svg.appendChild(el("text",{x:off?x1-4:sx(r[3])+6,y:y+4,"text-anchor":off?"end":"start","class":"mut"},(off?"→ ":"")+r[1].toFixed(4)));
+    });
+    var tb=document.getElementById("rtable");
+    var h="<tr><th>Model</th><th>Log loss [95% CI]</th><th>Δ vs served [95% CI]</th><th>Accuracy</th><th>≥64% picks</th></tr>";
+    D[w].forEach(function(r,i){h+="<tr"+(i===0?' class="hl"':"")+"><td>"+r[0]+"</td><td>"+r[1].toFixed(4)+" ["+r[2].toFixed(4)+", "+r[3].toFixed(4)+"]</td><td>"+r[4]+"</td><td>"+r[5].toFixed(1)+"%</td><td>"+r[6]+"</td></tr>";});
+    h+="<tr><td>Always home</td><td>"+HOME[w].toFixed(4)+"</td><td></td><td></td><td>0</td></tr>";
+    tb.innerHTML=h;
+  }
+  var btns=document.querySelectorAll(".tabs button");
+  btns.forEach(function(b){b.addEventListener("click",function(){btns.forEach(function(x){x.setAttribute("aria-pressed","false");});b.setAttribute("aria-pressed","true");draw(b.dataset.w);});});
+  draw("wf");
+})();
+</script>
+<script>/* Theme toggle for the learn pages; shares the site's stored choice. */
+(function(){var b=document.getElementById('lh-theme');if(!b)return;var r=document.documentElement;
+function cur(){var t=r.getAttribute('data-theme');if(t)return t;return window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+function lab(){var n=cur()==='dark'?'light':'dark';b.textContent=n==='light'?'\u2600':'\u263E';b.setAttribute('aria-label','Switch to '+n+' theme');b.title='Switch to '+n+' theme';}
+lab();b.addEventListener('click',function(){var n=cur()==='dark'?'light':'dark';try{localStorage.setItem('ht-theme',n);}catch(e){}
+r.setAttribute('data-theme',n);location.reload();});})();
+</script>
+</body>
+</html>

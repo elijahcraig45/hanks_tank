@@ -15,8 +15,16 @@ describe('buildPicksBoard', () => {
 
     const board = buildPicksBoard(mlb, football);
 
-    expect(board.filter((p) => p.sport === 'football')).toHaveLength(4);
-    expect(board.filter((p) => p.sport === 'mlb')).toHaveLength(4);
+    expect(board.filter((p) => p.sport === 'football')).toHaveLength(3);
+    expect(board.filter((p) => p.sport === 'mlb')).toHaveLength(3);
+  });
+
+  test('caps NFL and college separately, so each football sport gets its own slots', () => {
+    const nfl = Array.from({ length: 5 }, (_, i) => pick({ sport: 'nfl', tier: 'high', key: `n${i}` }));
+    const cfb = Array.from({ length: 5 }, (_, i) => pick({ sport: 'cfb', tier: 'high', key: `c${i}` }));
+    const board = buildPicksBoard([], [...nfl, ...cfb]);
+    expect(board.filter((p) => p.sport === 'nfl')).toHaveLength(3);
+    expect(board.filter((p) => p.sport === 'cfb')).toHaveLength(3);
   });
 
   test('drops cross-division blowouts', () => {

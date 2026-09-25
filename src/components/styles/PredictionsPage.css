@@ -2,7 +2,7 @@
 
 .predictions-page {
   min-height: 100vh;
-  background: #f8f9fa;
+  background: var(--surface-2);
 }
 
 /* Date navigation */
@@ -14,27 +14,27 @@
 }
 
 .pred-date-nav {
-  background: #fff;
-  border: 1px solid #dee2e6;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 6px;
   width: 36px;
   height: 36px;
   font-size: 1.2rem;
   line-height: 1;
   cursor: pointer;
-  color: #495057;
+  color: var(--text-2);
   transition: background 0.15s;
 }
-.pred-date-nav:hover:not(:disabled) { background: #e9ecef; }
+.pred-date-nav:hover:not(:disabled) { background: var(--surface-3); }
 .pred-date-nav:disabled { opacity: 0.35; cursor: default; }
 
 .pred-date-input {
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0.35rem 0.6rem;
   font-size: 0.9rem;
-  color: #212529;
-  background: #fff;
+  color: var(--text);
+  background: var(--surface);
   height: 36px;
 }
 
@@ -58,7 +58,7 @@
 .pred-toolbar-label {
   font-size: 0.72rem;
   font-weight: 700;
-  color: #6c757d;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin-bottom: 0.3rem;
@@ -85,9 +85,9 @@
 }
 
 .pred-favorite-chip {
-  border: 1px solid #dee2e6;
-  background: #fff;
-  color: #495057;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
   border-radius: 999px;
   padding: 0.24rem 0.7rem;
   font-size: 0.74rem;
@@ -114,8 +114,8 @@
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 600;
-  background: #e9ecef;
-  color: #495057;
+  background: var(--surface-3);
+  color: var(--text-2);
 }
 .pred-chip--high   { background: #d1e7dd; color: #0f5132; }
 .pred-chip--med    { background: #fff3cd; color: #664d03; }
@@ -127,7 +127,7 @@
   align-items: center;
   margin-bottom: 0.75rem;
   padding-bottom: 0.4rem;
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid var(--border);
 }
 
 .pred-conf-badge {
@@ -199,13 +199,13 @@
 
 .pred-team-record {
   font-size: 0.72rem;
-  color: #6c757d;
+  color: var(--text-muted);
 }
 
 .pred-favorite-btn {
   border: none;
   background: transparent;
-  color: #adb5bd;
+  color: var(--text-faint);
   padding: 0;
   font-size: 0.9rem;
   line-height: 1;
@@ -230,7 +230,7 @@
   height: 22px;
   border-radius: 5px;
   overflow: hidden;
-  background: #e9ecef;
+  background: var(--surface-3);
 }
 
 .pred-prob-segment {
@@ -260,7 +260,7 @@
 /* Starters line */
 .pred-starters {
   font-size: 0.76rem;
-  color: #6c757d;
+  color: var(--text-muted);
 }
 
 /* Why toggle */
@@ -268,7 +268,7 @@
   background: none;
   border: none;
   padding: 0;
-  color: #0d6efd;
+  color: var(--accent);
   font-size: 0.78rem;
   cursor: pointer;
   text-decoration: none;
@@ -277,7 +277,7 @@
 
 /* Why body */
 .pred-why-body {
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid var(--border);
   padding-top: 0.6rem;
 }
 
@@ -285,30 +285,30 @@
   padding: 0.5rem 0.6rem;
   border-radius: 5px;
   margin-bottom: 0.4rem;
-  background: #f8f9fa;
-  border-left: 3px solid #dee2e6;
+  background: var(--surface-2);
+  border-left: 3px solid var(--border);
 }
 
 .pred-reason--positive { border-left-color: #198754; background: #f0fdf4; }
 .pred-reason--negative { border-left-color: #dc3545; background: #fff5f5; }
-.pred-reason--neutral  { border-left-color: #adb5bd; background: #f8f9fa; }
+.pred-reason--neutral  { border-left-color: var(--border-strong); background: var(--surface-2); }
 
 .pred-reason-title {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #212529;
+  color: var(--text);
   margin-bottom: 0.2rem;
 }
 
 .pred-reason-detail {
   font-size: 0.75rem;
-  color: #495057;
+  color: var(--text-2);
   line-height: 1.5;
 }
 
 .pred-game-link {
   font-size: 0.78rem;
-  color: #0d6efd;
+  color: var(--accent);
   text-decoration: none;
 }
 .pred-game-link:hover { text-decoration: underline; }
@@ -328,4 +328,118 @@
   .pred-toolbar-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ─── Filters on phones ─────────────────────────────────────────────────
+   Search, confidence, sort and the two switches used to fill the first
+   phone screen. Below 768px they sit in a panel behind a "Filters" button
+   with an active-filter count; at 768px and up the panel is always shown
+   and the button bar is hidden, so the desktop toolbar is unchanged. The
+   form controls are the same elements in both layouts, so every filter
+   keeps its behaviour. */
+.pred-filterbar { display: none; }
+
+@media (max-width: 767.98px) {
+  .pred-toolbar-card .pred-toolbar { gap: 0; padding: 0.6rem 0.75rem; }
+  .pred-filterbar {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 0;
+  }
+  .pred-toolbar-card:not(.pred-toolbar-card--open) .pred-toolbar-panel { display: none; }
+  .pred-toolbar-card--open .pred-toolbar-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+  }
+  /* The bar already shows the update time. */
+  .pred-toolbar-updated { display: none; }
+
+  .pred-filter-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+    min-height: 36px;
+    padding: 0.3rem 0.75rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .pred-toolbar-card--open .pred-filter-toggle {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .pred-filter-icon { font-size: 0.8rem; }
+  .pred-filter-caret { font-size: 0.7rem; color: var(--text-muted); }
+  .pred-filter-count {
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    display: inline-grid;
+    place-items: center;
+    background: var(--accent);
+    color: var(--text-on-accent);
+    font-size: 0.72rem;
+    font-weight: 800;
+  }
+  .pred-filterbar-summary {
+    flex: 1;
+    min-width: 0;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pred-filter-clear {
+    flex-shrink: 0;
+    border: 0;
+    background: none;
+    padding: 0.3rem 0.2rem;
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+}
+
+/* Long team names ellipsize instead of running into the other team: the
+   name's wrapper is a flex child and needs min-width: 0 to be allowed to
+   shrink. */
+.pred-team-cell > div { min-width: 0; }
+.pred-team-link { display: block; min-width: 0; }
+.pred-winner-crown { flex-shrink: 0; }
+
+/* Phones: the page actions sit on one compact row, and the long date label
+   (the date input already shows the date) gives its line back to games. */
+@media (max-width: 767.98px) {
+  .pred-head-actions {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    scrollbar-width: none;
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+  .pred-head-actions::-webkit-scrollbar { display: none; }
+  .pred-head-actions .btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-height: 32px;
+    padding: 0.2rem 0.65rem;
+    font-size: 0.8rem;
+  }
+  .predictions-page .pred-date-row { margin-bottom: 0.75rem !important; }
+}
+@media (max-width: 480px) {
+  .pred-date-label { display: none; }
 }
