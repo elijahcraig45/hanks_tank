@@ -1,0 +1,155 @@
+/* Shared chrome for the /learn write-ups.
+   Each page keeps its own palette and light/dark rules; this file only
+   (1) adds the site bar, (2) swaps headings and UI text onto the site's
+   sans stack, and (3) moves the page and card surfaces onto the site's
+   tokens (see src/index.css), in both themes. It is linked after each
+   page's own <style>, so equal-specificity rules here win. */
+
+:root {
+  --lh-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --lh-mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
+  --lh-chrome: #0b1220;
+  --lh-chrome-text: #e5e9f0;
+  --lh-chrome-muted: #a3aec0;
+  --lh-chrome-border: rgba(255, 255, 255, .09);
+
+  /* Page fonts: display and UI text follow the site; body text keeps each
+     page's own reading face. */
+  --sans: var(--lh-sans);
+  --f-display: var(--lh-sans);
+  --f-sans: var(--lh-sans);
+  --mono: var(--lh-mono);
+  --f-mono: var(--lh-mono);
+}
+
+/* Dark surfaces from the site tokens. Both selectors mirror the pages'
+   own: the OS setting unless the visitor picked light, or an explicit dark. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #0b1020; --surface: #131a2b; --surface-2: #1a2236;
+    --rule: #263049; --rule-2: #34405c;
+    --bg: #0b1020; --card: #131a2b; --line: #263049; --code: #1a2236;
+    --lh-chrome: #070b16;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #0b1020; --surface: #131a2b; --surface-2: #1a2236;
+  --rule: #263049; --rule-2: #34405c;
+  --bg: #0b1020; --card: #131a2b; --line: #263049; --code: #1a2236;
+  --lh-chrome: #070b16;
+}
+
+body { margin: 0; }
+
+.lh-bar {
+  background: var(--lh-chrome);
+  border-bottom: 1px solid var(--lh-chrome-border);
+  font-family: var(--lh-sans);
+  font-size: 14px;
+  line-height: 1.2;
+}
+.lh-bar .lh-in {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 16px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.lh-bar a.lh-brand,
+.lh-bar a.lh-learn {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  white-space: nowrap;
+}
+.lh-bar a.lh-learn { color: var(--lh-chrome-text); font-weight: 650; }
+.lh-bar a.lh-brand:hover .lh-name,
+.lh-bar a.lh-learn:hover { text-decoration: underline; }
+.lh-bar .lh-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #1d4ed8 0 33%, #6d28d9 33% 66%, #b93c0a 66% 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18);
+}
+.lh-bar .lh-sep { color: var(--lh-chrome-muted); }
+.lh-bar .lh-topic {
+  color: var(--lh-chrome-muted);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.lh-bar button.lh-theme {
+  all: unset;
+  box-sizing: border-box;
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--lh-chrome-border);
+  color: var(--lh-chrome-text);
+  font-size: 16px;
+  cursor: pointer;
+}
+.lh-bar button.lh-theme:hover { background: rgba(255, 255, 255, .08); color: #fff; }
+.lh-bar button.lh-theme:focus-visible,
+.lh-bar a:focus-visible { outline: 2px solid #8ab8ff; outline-offset: 2px; }
+
+@media (max-width: 380px) {
+  .lh-bar .lh-name { display: none; }
+}
+@media print {
+  .lh-bar { display: none; }
+}
+
+/* ── Fixes for the source pages, applied here so they survive a re-copy ── */
+
+/* football-models and power-rankings mark up the contents as <ul class="toc">
+   but style nav.toc, so the list rendered as plain bullets. */
+ul.toc {
+  font-family: var(--f-display, var(--lh-sans));
+  font-size: 14px;
+  columns: 2;
+  column-gap: 28px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+ul.toc li { margin: 0 0 4px; break-inside: avoid; }
+
+/* Tables that sit directly in the text column scroll inside themselves
+   rather than widening the page. */
+.wrap > table, main > table, section > table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+@media (max-width: 600px) {
+  ul.toc { columns: 1; }
+  /* The site's 16px phone gutter, instead of the pages' 28px. */
+  .wrap { padding-left: 16px; padding-right: 16px; }
+  /* Guard against sub-pixel overflow from chart text, as the site does. */
+  html, body { overflow-x: clip; }
+  .fn { white-space: normal; }
+  figure, .yours, .evidence, .pitfall, .concept, .gotcha, .note, .col, .tblwrap, .tw, .tablewrap, .chart {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
