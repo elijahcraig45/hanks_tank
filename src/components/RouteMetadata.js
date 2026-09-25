@@ -32,6 +32,12 @@ const ROUTE_METADATA = [
   },
   {
     path: '/mlb/models',
+    title: 'MLB Model Scoreboard',
+    description:
+      'Every MLB model side by side — V10, a 3-feature logistic, the plate-appearance simulator blend, Elo and the market — scored only on pregame predictions, with confidence intervals and calibration.',
+  },
+  {
+    path: '/mlb/models/diagnostics',
     title: 'Prediction Diagnostics',
     description:
       'Audit MLB model performance with calibration, rolling diagnostics, confidence-tier results, and exportable postgame review.',

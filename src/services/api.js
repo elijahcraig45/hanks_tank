@@ -396,6 +396,27 @@ class ApiService {
    * predictions written before kickoff (experiment). `week` omitted = the backend's
    * default: the earliest week with an unplayed game.
    */
+  /**
+   * Models section, any sport (mlb | nfl | cfb): every model's pregame predictions,
+   * a scoreboard with 95% CIs, the same-games head-to-head, reliability bins, per-game
+   * rows and the stored research backtest (a separate block).
+   */
+  async getModelsCompare(sport, { season, division, week, date, days } = {}) {
+    const qs = new URLSearchParams();
+    if (season) qs.set('season', String(season));
+    if (division) qs.set('division', division);
+    if (week) qs.set('week', String(week));
+    if (date) qs.set('date', date);
+    if (days) qs.set('days', String(days));
+    return unwrapApiEnvelope(await this.get(`/models/${sport}/compare?${qs.toString()}`, { cacheTTL: 10 }));
+  }
+
+  /** MLB simulator run totals and starter strikeouts for one date (shadow). */
+  async getMlbTotalsProps(date) {
+    const qs = date ? `?date=${date}` : '';
+    return unwrapApiEnvelope(await this.get(`/models/mlb/totals-props${qs}`, { cacheTTL: 10 }));
+  }
+
   async getFootballModelComparison(sport, { season, week, division } = {}) {
     const qs = new URLSearchParams();
     if (season) qs.set('season', String(season));

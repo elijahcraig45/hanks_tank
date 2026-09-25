@@ -4,7 +4,7 @@ import ApiService from '../services/api';
 import ScoreboardSection from './football/ScoreboardSection';
 import RankingsBoard from './RankingsBoard';
 import FootballDiagnostics from './FootballDiagnostics';
-import ModelComparison from './football/ModelComparison';
+import ModelsPage from './models/ModelsPage';
 import './styles/FootballPage.css';
 
 /**
@@ -32,9 +32,9 @@ export const SECTIONS = [
   // College only for now: the live feed behind it publishes no NFL data.
   { key: 'scoreboard', label: 'Scores', availableFor: (l) => l.sport === 'cfb' },
   { key: 'rankings', label: 'Power Rankings' },
+  // Every model's pregame call side by side, with an honest scoreboard (Models section).
+  { key: 'models', label: 'Models' },
   { key: 'diagnostics', label: 'Diagnostics' },
-  // Experiment: every model's pregame call side by side, with an honest scoreboard.
-  { key: 'models', label: 'Model Comparison' },
   { key: 'leaders', label: 'Leaders' },
   { key: 'players', label: 'Players' },
   { key: 'stats', label: 'Team Stats' },
@@ -1129,7 +1129,13 @@ export default function FootballPage() {
           />
         )}
         {section === 'models' && (
-          <ModelComparison key={`${league.key}-${season}`} league={league} season={season} />
+          <ModelsPage
+            key={`${league.key}-${season}`}
+            sport={league.sport}
+            division={league.division}
+            season={season}
+            embedded
+          />
         )}
         {section === 'rankings' && (
           <RankingsBoard
