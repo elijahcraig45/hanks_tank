@@ -770,7 +770,7 @@ const PredictionsPage = () => {
             </p>
           </div>
           <div className="d-flex flex-wrap gap-2 pred-head-actions">
-            <Link to="/mlb/models" className="btn btn-outline-primary btn-sm">
+            <Link to="/mlb/models/diagnostics" className="btn btn-outline-primary btn-sm">
               Open diagnostics
             </Link>
             <Link to="/mlb/models/scenario-simulator" className="btn btn-outline-secondary btn-sm">
