@@ -654,3 +654,6 @@
   .sc-stats { grid-template-columns: 1fr 1fr; }
   .sc-leader { grid-column: 1 / -1; }
 }
+
+/* A second line under a sport card's headline number (the CFB pooled figure). */
+.sc-secondary { margin-top: 2px; line-height: 1.3; }
