@@ -3,7 +3,7 @@
    ----------------------------------------------------------------------- */
 
 .game-page {
-  background: #f8f9fa;
+  background: var(--surface-2);
   min-height: 100vh;
 }
 
@@ -11,20 +11,20 @@
 .game-title {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #212529;
+  color: var(--text);
 }
 
 .game-team-link {
-  color: #0d6efd;
+  color: var(--accent);
   text-decoration: none;
 }
 
 .game-team-link:hover {
-  color: #0b5ed7;
+  color: var(--accent);
 }
 
 .game-team-link--muted {
-  color: #6c757d;
+  color: var(--text-muted);
 }
 
 .game-header-links {
@@ -39,7 +39,7 @@
   border-radius: 999px;
   border: 1px solid rgba(13, 110, 253, 0.16);
   background: rgba(13, 110, 253, 0.06);
-  color: #0d6efd;
+  color: var(--accent);
   font-size: 0.76rem;
   font-weight: 700;
   line-height: 1;
@@ -48,7 +48,7 @@
 }
 
 .game-header-pill:hover {
-  color: #0b5ed7;
+  color: var(--accent);
   background: rgba(13, 110, 253, 0.1);
 }
 
@@ -66,11 +66,11 @@
 .game-flow-summary {
   font-size: 0.74rem;
   font-weight: 700;
-  color: #495057;
+  color: var(--text-2);
 }
 
 .game-pulse-card .card-body {
-  background: linear-gradient(180deg, rgba(248, 249, 250, 0.92) 0%, #ffffff 100%);
+  background: linear-gradient(180deg, rgba(248, 249, 250, 0.92) 0%, var(--surface) 100%);
 }
 
 .game-pulse-layout {
@@ -82,7 +82,7 @@
 
 .game-pulse-chart-wrap {
   border: 1px solid rgba(13, 110, 253, 0.08);
-  background: #fff;
+  background: var(--surface);
   border-radius: 12px;
   padding: 0.8rem 0.85rem 0.55rem;
   max-width: 260px;
@@ -101,13 +101,13 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #6c757d;
+  color: var(--text-muted);
 }
 
 .game-flow-top-meta {
   font-size: 0.74rem;
   font-weight: 600;
-  color: #495057;
+  color: var(--text-2);
 }
 
 .game-flow-legend {
@@ -121,7 +121,7 @@
   align-items: center;
   gap: 0.35rem;
   font-size: 0.76rem;
-  color: #495057;
+  color: var(--text-2);
   font-weight: 600;
 }
 
@@ -135,17 +135,17 @@
 .game-flow-dot--away,
 .game-flow-line--away,
 .game-flow-point--away {
-  color: #6c757d;
+  color: var(--text-muted);
   stroke: #6c757d;
-  fill: #6c757d;
+  fill: var(--text-muted);
 }
 
 .game-flow-dot--home,
 .game-flow-line--home,
 .game-flow-point--home {
-  color: #0d6efd;
+  color: var(--accent);
   stroke: #0d6efd;
-  fill: #0d6efd;
+  fill: var(--accent);
 }
 
 .game-flow-chart {
@@ -172,7 +172,7 @@
 
 .game-flow-axis-label {
   font-size: 8px;
-  fill: #6c757d;
+  fill: var(--text-muted);
 }
 
 .game-pulse-stats {
@@ -184,7 +184,7 @@
 .pulse-stat {
   border-radius: 12px;
   padding: 0.72rem 0.78rem;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(0,0,0,.06);
   min-height: 96px;
 }
@@ -194,7 +194,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #6c757d;
+  color: var(--text-muted);
   margin-bottom: 0.4rem;
 }
 
@@ -202,14 +202,14 @@
   font-size: 0.88rem;
   line-height: 1.2;
   font-weight: 700;
-  color: #212529;
+  color: var(--text);
 }
 
 .pulse-stat-meta {
   margin-top: 0.3rem;
   font-size: 0.71rem;
   line-height: 1.3;
-  color: #6c757d;
+  color: var(--text-muted);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -218,32 +218,32 @@
 
 .pulse-stat--gold {
   border-color: rgba(255, 193, 7, 0.18);
-  background: linear-gradient(180deg, rgba(255, 248, 225, 0.8) 0%, #ffffff 100%);
+  background: linear-gradient(180deg, rgba(255, 248, 225, 0.8) 0%, var(--surface) 100%);
 }
 
 .pulse-stat--blue {
   border-color: rgba(13, 110, 253, 0.14);
-  background: linear-gradient(180deg, rgba(231, 243, 255, 0.85) 0%, #ffffff 100%);
+  background: linear-gradient(180deg, rgba(231, 243, 255, 0.85) 0%, var(--surface) 100%);
 }
 
 .pulse-stat--green {
   border-color: rgba(25, 135, 84, 0.16);
-  background: linear-gradient(180deg, rgba(232, 245, 233, 0.85) 0%, #ffffff 100%);
+  background: linear-gradient(180deg, rgba(232, 245, 233, 0.85) 0%, var(--surface) 100%);
 }
 
 .pulse-stat--red {
   border-color: rgba(220, 53, 69, 0.14);
-  background: linear-gradient(180deg, rgba(255, 245, 245, 0.85) 0%, #ffffff 100%);
+  background: linear-gradient(180deg, rgba(255, 245, 245, 0.85) 0%, var(--surface) 100%);
 }
 
 .pulse-stat--purple {
   border-color: rgba(111, 66, 193, 0.16);
-  background: linear-gradient(180deg, rgba(245, 240, 255, 0.88) 0%, #ffffff 100%);
+  background: linear-gradient(180deg, rgba(245, 240, 255, 0.88) 0%, var(--surface) 100%);
 }
 
 .pulse-stat--slate {
   border-color: rgba(108, 117, 125, 0.16);
-  background: linear-gradient(180deg, rgba(248, 249, 250, 0.95) 0%, #ffffff 100%);
+  background: linear-gradient(180deg, rgba(248, 249, 250, 0.95) 0%, var(--surface) 100%);
 }
 
 @media (max-width: 1199.98px) {
@@ -269,13 +269,13 @@
   gap: 0.3rem;
   padding: 0.15rem;
   border-radius: 999px;
-  background: #f1f3f5;
+  background: var(--surface-2);
 }
 
 .pbp-filter-btn {
   border: none;
   background: transparent;
-  color: #6c757d;
+  color: var(--text-muted);
   border-radius: 999px;
   padding: 0.25rem 0.6rem;
   font-size: 0.72rem;
@@ -284,19 +284,19 @@
 }
 
 .pbp-filter-btn--active {
-  background: #ffffff;
-  color: #212529;
+  background: var(--surface);
+  color: var(--text);
   box-shadow: 0 1px 2px rgba(0,0,0,.08);
 }
 
 .pbp-item {
-  border-bottom: 1px solid #f0f0f0 !important;
+  border-bottom: 1px solid var(--border) !important;
   transition: background 0.1s;
   line-height: 1.3;
 }
 
 .pbp-item:hover {
-  background: #f8f9fa !important;
+  background: var(--surface-2) !important;
 }
 
 .pbp-item--selected {
@@ -320,12 +320,12 @@
 .pbp-batter {
   font-size: 0.82rem;
   font-weight: 600;
-  color: #212529;
+  color: var(--text);
   text-decoration: none;
 }
 
 .pbp-batter:hover {
-  color: #0d6efd;
+  color: var(--accent);
 }
 
 .pbp-desc {
@@ -369,7 +369,7 @@
 .game-table th {
   font-weight: 600;
   font-size: 0.75rem;
-  color: #495057;
+  color: var(--text-2);
   white-space: nowrap;
   padding: 0.4rem 0.5rem;
 }
@@ -387,14 +387,14 @@
 .game-player-link,
 .game-inline-link,
 .game-team-card-link {
-  color: #0d6efd;
+  color: var(--accent);
   text-decoration: none;
 }
 
 .game-player-link:hover,
 .game-inline-link:hover,
 .game-team-card-link:hover {
-  color: #0b5ed7;
+  color: var(--accent);
 }
 
 /* Cards */
@@ -403,7 +403,7 @@
 }
 
 .game-page .card-header {
-  background: #fff;
+  background: var(--surface);
   border-bottom: 1px solid rgba(0,0,0,.08);
   font-size: 0.9rem;
 }
@@ -414,7 +414,7 @@
   height: 18px;
   border-radius: 4px;
   overflow: hidden;
-  background: #e9ecef;
+  background: var(--surface-3);
 }
 .scout-prob-away { background: #6c757d; transition: width 0.4s; }
 .scout-prob-home { background: #0d6efd; transition: width 0.4s; }
@@ -422,8 +422,8 @@
 .scout-prob-winner.scout-prob-home { background: #198754; }
 
 .scout-section {
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: 6px;
   padding: 10px 12px;
   height: 100%;
@@ -434,7 +434,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #6c757d;
+  color: var(--text-muted);
   margin-bottom: 8px;
 }
 
@@ -443,21 +443,21 @@
   justify-content: space-between;
   align-items: baseline;
   padding: 2px 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border);
   font-size: 0.78rem;
   gap: 8px;
 }
 .scout-row:last-child { border-bottom: none; }
 
 .scout-label {
-  color: #6c757d;
+  color: var(--text-muted);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .scout-val {
   font-weight: 600;
-  color: #212529;
+  color: var(--text);
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
@@ -472,20 +472,20 @@
 
 .scout-pitcher-abbr {
   font-weight: 700;
-  color: #495057;
+  color: var(--text-2);
   min-width: 28px;
   font-size: 0.72rem;
 }
 
 .scout-pitcher-name {
   flex: 1;
-  color: #212529;
+  color: var(--text);
 }
 
 .scout-hand-badge {
   font-size: 0.66rem;
-  background: #e9ecef;
-  color: #495057;
+  background: var(--surface-3);
+  color: var(--text-2);
   padding: 1px 6px;
   border-radius: 8px;
   font-weight: 600;

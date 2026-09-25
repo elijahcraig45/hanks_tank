@@ -2,7 +2,7 @@
 
 .predictions-page {
   min-height: 100vh;
-  background: #f8f9fa;
+  background: var(--surface-2);
 }
 
 /* Date navigation */
@@ -14,27 +14,27 @@
 }
 
 .pred-date-nav {
-  background: #fff;
-  border: 1px solid #dee2e6;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 6px;
   width: 36px;
   height: 36px;
   font-size: 1.2rem;
   line-height: 1;
   cursor: pointer;
-  color: #495057;
+  color: var(--text-2);
   transition: background 0.15s;
 }
-.pred-date-nav:hover:not(:disabled) { background: #e9ecef; }
+.pred-date-nav:hover:not(:disabled) { background: var(--surface-3); }
 .pred-date-nav:disabled { opacity: 0.35; cursor: default; }
 
 .pred-date-input {
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0.35rem 0.6rem;
   font-size: 0.9rem;
-  color: #212529;
-  background: #fff;
+  color: var(--text);
+  background: var(--surface);
   height: 36px;
 }
 
@@ -58,7 +58,7 @@
 .pred-toolbar-label {
   font-size: 0.72rem;
   font-weight: 700;
-  color: #6c757d;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin-bottom: 0.3rem;
@@ -85,9 +85,9 @@
 }
 
 .pred-favorite-chip {
-  border: 1px solid #dee2e6;
-  background: #fff;
-  color: #495057;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
   border-radius: 999px;
   padding: 0.24rem 0.7rem;
   font-size: 0.74rem;
@@ -114,8 +114,8 @@
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 600;
-  background: #e9ecef;
-  color: #495057;
+  background: var(--surface-3);
+  color: var(--text-2);
 }
 .pred-chip--high   { background: #d1e7dd; color: #0f5132; }
 .pred-chip--med    { background: #fff3cd; color: #664d03; }
@@ -127,7 +127,7 @@
   align-items: center;
   margin-bottom: 0.75rem;
   padding-bottom: 0.4rem;
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid var(--border);
 }
 
 .pred-conf-badge {
@@ -199,13 +199,13 @@
 
 .pred-team-record {
   font-size: 0.72rem;
-  color: #6c757d;
+  color: var(--text-muted);
 }
 
 .pred-favorite-btn {
   border: none;
   background: transparent;
-  color: #adb5bd;
+  color: var(--text-faint);
   padding: 0;
   font-size: 0.9rem;
   line-height: 1;
@@ -230,7 +230,7 @@
   height: 22px;
   border-radius: 5px;
   overflow: hidden;
-  background: #e9ecef;
+  background: var(--surface-3);
 }
 
 .pred-prob-segment {
@@ -260,7 +260,7 @@
 /* Starters line */
 .pred-starters {
   font-size: 0.76rem;
-  color: #6c757d;
+  color: var(--text-muted);
 }
 
 /* Why toggle */
@@ -268,7 +268,7 @@
   background: none;
   border: none;
   padding: 0;
-  color: #0d6efd;
+  color: var(--accent);
   font-size: 0.78rem;
   cursor: pointer;
   text-decoration: none;
@@ -277,7 +277,7 @@
 
 /* Why body */
 .pred-why-body {
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid var(--border);
   padding-top: 0.6rem;
 }
 
@@ -285,30 +285,30 @@
   padding: 0.5rem 0.6rem;
   border-radius: 5px;
   margin-bottom: 0.4rem;
-  background: #f8f9fa;
-  border-left: 3px solid #dee2e6;
+  background: var(--surface-2);
+  border-left: 3px solid var(--border);
 }
 
 .pred-reason--positive { border-left-color: #198754; background: #f0fdf4; }
 .pred-reason--negative { border-left-color: #dc3545; background: #fff5f5; }
-.pred-reason--neutral  { border-left-color: #adb5bd; background: #f8f9fa; }
+.pred-reason--neutral  { border-left-color: var(--border-strong); background: var(--surface-2); }
 
 .pred-reason-title {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #212529;
+  color: var(--text);
   margin-bottom: 0.2rem;
 }
 
 .pred-reason-detail {
   font-size: 0.75rem;
-  color: #495057;
+  color: var(--text-2);
   line-height: 1.5;
 }
 
 .pred-game-link {
   font-size: 0.78rem;
-  color: #0d6efd;
+  color: var(--accent);
   text-decoration: none;
 }
 .pred-game-link:hover { text-decoration: underline; }

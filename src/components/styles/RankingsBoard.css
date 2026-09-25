@@ -1,7 +1,7 @@
 /* ─── Power rankings board (shared by every sport) ───────────────────────── */
 
 .rb {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--ht-gray-200);
   border-radius: var(--ht-radius);
   box-shadow: var(--ht-shadow-sm);
@@ -151,7 +151,7 @@
 .rb-state--error { color: var(--ht-red); }
 
 .rb-empty {
-  background: #fff;
+  background: var(--surface);
   border: 1px dashed var(--ht-gray-200);
   border-radius: var(--ht-radius);
   padding: 2.25rem 1.5rem;
@@ -225,7 +225,7 @@
   font-family: var(--ht-font-mono);
   cursor: pointer;
 }
-.rank-season option { color: #0f172a; }
+.rank-season option { color: var(--text); }
 
 .rank-body {
   max-width: 1240px;
@@ -269,8 +269,8 @@
   font-family: inherit;
   letter-spacing: 0;
   text-transform: none;
-  color: #0f172a;
-  background: #fff;
+  color: var(--text);
+  background: var(--surface);
   cursor: pointer;
 }
 .rb-filter select:focus { outline: none; border-color: var(--ht-gray-400); }

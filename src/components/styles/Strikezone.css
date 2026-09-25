@@ -33,7 +33,7 @@
   max-width: 100%;
   aspect-ratio: 1;
   border-radius: 8px;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--border);
 }
 
 /* ── Legend ── */
@@ -49,7 +49,7 @@
   align-items: center;
   gap: 5px;
   font-size: 0.78rem;
-  color: #495057;
+  color: var(--text-2);
 }
 
 .sz-legend-dot {
@@ -70,15 +70,15 @@
 
 /* ── Pitch detail card ── */
 .sz-detail-card {
-  background: #fff;
-  border: 1px solid #e9ecef;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
 }
 
 .sz-detail-header {
-  background: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
   padding: 10px 14px;
   font-size: 0.88rem;
   min-height: 42px;
@@ -98,7 +98,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #6c757d;
+  color: var(--text-muted);
   margin-bottom: 6px;
 }
 
@@ -112,14 +112,14 @@
 .sz-stat-item {
   display: flex;
   flex-direction: column;
-  background: #f8f9fa;
+  background: var(--surface-2);
   border-radius: 6px;
   padding: 6px 8px;
 }
 
 .sz-stat-label {
   font-size: 0.68rem;
-  color: #6c757d;
+  color: var(--text-muted);
   line-height: 1;
   margin-bottom: 2px;
 }
@@ -127,20 +127,20 @@
 .sz-stat-value {
   font-size: 0.88rem;
   font-weight: 600;
-  color: #212529;
+  color: var(--text);
 }
 
 .sz-desc {
   margin: 6px 0 0;
   font-size: 0.8rem;
-  color: #495057;
+  color: var(--text-2);
   line-height: 1.4;
 }
 
 /* ── Event summary ── */
 .sz-event-summary {
-  background: #fff;
-  border: 1px solid #e9ecef;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 12px 14px;
 }
@@ -165,18 +165,18 @@
 
 .sz-event-name {
   flex: 1;
-  color: #212529;
+  color: var(--text);
 }
 
 .sz-event-count {
   font-weight: 600;
-  color: #212529;
+  color: var(--text);
   min-width: 28px;
   text-align: right;
 }
 
 .sz-event-pct {
-  color: #6c757d;
+  color: var(--text-muted);
   min-width: 40px;
   text-align: right;
 }
@@ -211,9 +211,9 @@
 }
 
 .live-sz-view-btn {
-  border: 1px solid #dee2e6;
-  background: #fff;
-  color: #6c757d;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
   padding: 3px 11px;
   border-radius: 4px;
   font-size: 0.78rem;
@@ -221,7 +221,7 @@
   transition: background 0.12s, color 0.12s;
   outline: none;
 }
-.live-sz-view-btn:hover { background: #f1f3f5; }
+.live-sz-view-btn:hover { background: var(--surface-2); }
 .live-sz-view-btn.active {
   background: #212529;
   color: #fff;
@@ -231,8 +231,8 @@
 .live-sz-side-badge {
   font-size: 0.72rem;
   font-weight: 600;
-  color: #495057;
-  background: #e9ecef;
+  color: var(--text-2);
+  background: var(--surface-3);
   padding: 2px 9px;
   border-radius: 10px;
 }
@@ -269,7 +269,7 @@
   align-items: center;
   gap: 4px;
   font-size: 0.7rem;
-  color: #495057;
+  color: var(--text-2);
 }
 .live-sz-legend-dot {
   width: 8px;
@@ -296,7 +296,7 @@
   text-align: left;
   border: 0;
   background: transparent;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border);
   cursor: pointer;
   transition: background 0.1s;
   font-size: 0.75rem;
@@ -308,7 +308,7 @@
 .live-sz-pitch-num {
   width: 15px;
   font-size: 0.65rem;
-  color: #adb5bd;
+  color: var(--text-faint);
   text-align: center;
   flex-shrink: 0;
 }
@@ -321,20 +321,20 @@
 .live-sz-pitch-type {
   min-width: 72px;
   font-weight: 600;
-  color: #343a40;
+  color: var(--text);
   font-size: 0.71rem;
 }
 .live-sz-pitch-speed {
   min-width: 28px;
   font-size: 0.71rem;
-  color: #6c757d;
+  color: var(--text-muted);
   text-align: right;
   flex-shrink: 0;
 }
 .live-sz-pitch-desc {
   flex: 1;
   font-size: 0.69rem;
-  color: #6c757d;
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -349,8 +349,8 @@
 .live-sz-detail {
   margin-top: 10px;
   padding: 10px 12px;
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: 6px;
 }
 .live-sz-detail-header {
@@ -374,10 +374,10 @@
 .live-sz-detail-stat {
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--surface);
   border-radius: 4px;
   padding: 5px 7px;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--border);
 }
 .live-sz-detail-label {
   font-size: 0.63rem;
@@ -388,7 +388,7 @@
 .live-sz-detail-val {
   font-size: 0.82rem;
   font-weight: 600;
-  color: #212529;
+  color: var(--text);
 }
 
 @media (max-width: 520px) {

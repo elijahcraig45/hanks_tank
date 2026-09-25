@@ -1,7 +1,7 @@
 /* Player Page Styles */
 
 .player-page {
-  background-color: #f8f9fa;
+  background-color: var(--surface-2);
   min-height: 100vh;
 }
 
@@ -83,7 +83,7 @@
 
 .player-info-label {
   font-size: 0.72rem;
-  color: #64748b;
+  color: var(--text-muted);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -91,7 +91,7 @@
 
 .player-info-value {
   font-size: 0.95rem;
-  color: #0f172a;
+  color: var(--text);
   font-weight: 700;
   line-height: 1.4;
   margin-top: 0.18rem;
@@ -100,16 +100,16 @@
 /* Tabs */
 .player-tabs .nav-link {
   font-weight: 600;
-  color: #495057;
+  color: var(--text-2);
 }
 .player-tabs .nav-link.active {
-  color: #0d6efd;
+  color: var(--accent);
   border-bottom: 2px solid #0d6efd;
 }
 
 /* Header alias for legacy code */
 .player-header h1 {
-  color: #212529 !important;
+  color: var(--text) !important;
   font-weight: 700 !important;
   font-size: 2.5rem !important;
 }
@@ -119,20 +119,20 @@
 
 /* Tab styling */
 .player-page .nav-tabs {
-  border-bottom: 2px solid #dee2e6;
+  border-bottom: 2px solid var(--border);
 }
 
 .player-page .nav-tabs .nav-link {
-  color: #495057 !important;
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
+  color: var(--text-2) !important;
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
   font-weight: 600;
   margin-right: 4px;
 }
 
 .player-page .nav-tabs .nav-link:hover {
-  color: #212529 !important;
-  background-color: #e9ecef;
+  color: var(--text) !important;
+  background-color: var(--surface-3);
 }
 
 .player-page .nav-tabs .nav-link.active {
@@ -143,19 +143,19 @@
 
 /* Card styling */
 .player-page .card:not(.player-header-card) {
-  background-color: #ffffff !important;
-  border: 1px solid #dee2e6 !important;
-  color: #212529 !important;
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
 }
 
 .player-page .card:not(.player-header-card) .card-header {
-  background-color: #f8f9fa !important;
-  border-bottom: 1px solid #dee2e6 !important;
-  color: #212529 !important;
+  background-color: var(--surface-2) !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text) !important;
 }
 
 .player-page .card:not(.player-header-card) .card-header h5 {
-  color: #212529 !important;
+  color: var(--text) !important;
   font-weight: 600 !important;
   font-size: 1.3rem !important;
 }
@@ -179,20 +179,20 @@
 }
 
 .player-page .spinner-border {
-  color: #007bff !important;
+  color: var(--accent) !important;
 }
 
 /* Stats display styling */
 .player-stats {
-  background-color: #f8f9fa;
+  background-color: var(--surface-2);
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1rem;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--border);
 }
 
 .player-stats h6 {
-  color: #495057 !important;
+  color: var(--text-2) !important;
   font-weight: 600 !important;
   font-size: 1.1rem !important;
   margin-bottom: 0.5rem;
@@ -204,7 +204,7 @@
   display: flex;
   justify-content: space-between;
   padding: 0.5rem 0;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--border);
 }
 
 .player-stats .stat-row:last-child {
@@ -212,13 +212,13 @@
 }
 
 .player-stats .stat-label {
-  color: #495057 !important;
+  color: var(--text-2) !important;
   font-weight: 500 !important;
   font-size: 1rem !important;
 }
 
 .player-stats .stat-value {
-  color: #212529 !important;
+  color: var(--text) !important;
   font-weight: 600 !important;
   font-size: 1rem !important;
 }
@@ -229,7 +229,7 @@
 }
 
 .player-page .btn-outline-secondary {
-  color: #6c757d !important;
+  color: var(--text-muted) !important;
   border-color: #6c757d !important;
 }
 
@@ -240,7 +240,7 @@
 }
 
 .player-trend-highlight-label {
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -248,7 +248,7 @@
 }
 
 .player-trend-highlight-value {
-  color: #0f172a;
+  color: var(--text);
   font-size: 1rem;
   font-weight: 700;
   margin-top: 0.35rem;

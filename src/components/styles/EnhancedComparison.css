@@ -19,12 +19,12 @@
 .player-summary-card {
   transition: all 0.2s ease;
   border-right: none;
-  border-top: 1px solid #dee2e6;
-  border-bottom: 1px solid #dee2e6;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .player-summary-card:hover {
-  background-color: #f8f9fa;
+  background-color: var(--surface-2);
   transform: translateX(4px);
 }
 
@@ -40,8 +40,8 @@
 .enhanced-comparison-widget .table th {
   padding: 0.5rem 0.25rem;
   font-weight: 600;
-  background-color: #f8f9fa;
-  border-bottom: 2px solid #dee2e6;
+  background-color: var(--surface-2);
+  border-bottom: 2px solid var(--border);
 }
 
 .enhanced-comparison-widget .table td {
@@ -59,7 +59,7 @@
 }
 
 .comparison-players::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--surface-2);
   border-radius: 3px;
 }
 

@@ -1,41 +1,41 @@
 .analytics-summary-card {
   height: 100%;
   border-radius: 16px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(15, 23, 42, 0.08);
   padding: 1rem 1.05rem;
 }
 
 .analytics-summary-card--blue {
-  background: linear-gradient(180deg, rgba(231, 243, 255, 0.72) 0%, #ffffff 100%);
+  background: linear-gradient(180deg, rgba(231, 243, 255, 0.72) 0%, var(--surface) 100%);
 }
 
 .analytics-summary-card--green {
-  background: linear-gradient(180deg, rgba(232, 245, 233, 0.76) 0%, #ffffff 100%);
+  background: linear-gradient(180deg, rgba(232, 245, 233, 0.76) 0%, var(--surface) 100%);
 }
 
 .analytics-summary-card--gold {
-  background: linear-gradient(180deg, rgba(255, 248, 225, 0.76) 0%, #ffffff 100%);
+  background: linear-gradient(180deg, rgba(255, 248, 225, 0.76) 0%, var(--surface) 100%);
 }
 
 .analytics-summary-card--purple {
-  background: linear-gradient(180deg, rgba(245, 240, 255, 0.8) 0%, #ffffff 100%);
+  background: linear-gradient(180deg, rgba(245, 240, 255, 0.8) 0%, var(--surface) 100%);
 }
 
 .analytics-summary-card--slate {
-  background: linear-gradient(180deg, rgba(248, 249, 250, 0.96) 0%, #ffffff 100%);
+  background: linear-gradient(180deg, rgba(248, 249, 250, 0.96) 0%, var(--surface) 100%);
 }
 
 .analytics-summary-label {
   font-size: 0.72rem;
-  color: #64748b;
+  color: var(--text-muted);
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
 .analytics-summary-value {
-  color: #0f172a;
+  color: var(--text);
   font-size: clamp(1.3rem, 3vw, 2rem);
   font-weight: 800;
   line-height: 1.1;
@@ -43,7 +43,7 @@
 }
 
 .analytics-summary-meta {
-  color: #475569;
+  color: var(--text-2);
   font-size: 0.78rem;
   margin-top: 0.35rem;
 }
@@ -61,13 +61,13 @@
 }
 
 .analytics-panel-title {
-  color: #0f172a;
+  color: var(--text);
   font-size: 0.96rem;
   font-weight: 800;
 }
 
 .analytics-panel-subtitle {
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.8rem;
   margin-top: 0.15rem;
 }
