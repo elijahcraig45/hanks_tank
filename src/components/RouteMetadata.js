@@ -194,6 +194,12 @@ const ROUTE_METADATA = [
     title: 'Team Transactions',
     description: 'Follow recent roster movement and transactions for a specific MLB club.',
   },
+  {
+    path: '/learn',
+    title: 'Learn',
+    description:
+      'How the Hank’s Tank models work, with the measured results: machine-learning foundations, the MLB models and simulator, the football models, and the power rankings.',
+  },
 ];
 
 const NOT_FOUND_METADATA = {

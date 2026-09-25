@@ -391,3 +391,27 @@
   .ht-page-head h1 { font-size: var(--text-xl); }
   .ht-page-head-inner { padding-top: var(--space-4); padding-bottom: var(--space-3); }
 }
+
+/* ── Learn ──────────────────────────────────────────────────────────────
+   A plain text link in the top bar at every width (the phone bottom bar
+   is kept to the sports), and a trailing entry in each sport's section
+   strip that jumps to that sport's write-ups. */
+.ht-learn {
+  color: var(--chrome-muted);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  font-weight: 650;
+  padding: 6px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.ht-learn:hover { color: #fff; background: rgba(255, 255, 255, .06); }
+.ht-learn--active { color: #fff; background: rgba(255, 255, 255, .1); }
+.ht-section--learn { color: var(--text-faint); }
+.ht-section--learn::before {
+  content: '';
+  width: 1px;
+  height: 16px;
+  margin-right: 12px;
+  background: var(--border-strong);
+}

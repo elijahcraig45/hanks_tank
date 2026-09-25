@@ -32,6 +32,15 @@ handlers:
   upload: build/.*\.(ico|png|json|txt)$
   secure: always
 
+# The /learn write-ups are standalone HTML pages copied from public/learn/.
+# Without this rule the catch-all below would answer them with the SPA shell.
+# (/learn itself, with no .html, is the React index page.)
+- url: /learn/(.+\.(html|css))$
+  static_files: build/learn/\1
+  upload: build/learn/.+\.(html|css)$
+  secure: always
+  expiration: 1h
+
 # Handle all other requests with index.html (for React Router)
 - url: /.*
   static_files: build/index.html
