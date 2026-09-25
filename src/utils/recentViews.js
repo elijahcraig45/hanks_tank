@@ -3,7 +3,8 @@ const MAX_RECENT_VIEWS = 6;
 
 const STATIC_VIEWS = {
   "/mlb/predictions": { label: "MLB Predictions", hint: "Daily model board", icon: "🔮" },
-  "/mlb/models": { label: "Prediction Diagnostics", hint: "Model audit view", icon: "📊" },
+  "/mlb/models": { label: "MLB Model Scoreboard", hint: "Every model, scored pregame", icon: "📈" },
+  "/mlb/models/diagnostics": { label: "Prediction Diagnostics", hint: "Model audit view", icon: "📊" },
   "/mlb/lab/split-explorer": { label: "Split Explorer", hint: "Context splits", icon: "🧭" },
   "/mlb/lab/statcast-lab": { label: "Statcast Lab", hint: "Pitch and contact lab", icon: "🎯" },
   "/mlb/lab/comparison-workbench": { label: "Comparison Workbench", hint: "League-relative comps", icon: "🧰" },

@@ -72,6 +72,7 @@ const FOOTBALL_CHILD_LABEL = {
   rankings: 'Power rankings',
   stats: 'Team stats',
   diagnostics: 'Diagnostics',
+  models: 'Model scoreboard',
 };
 
 /**
@@ -127,7 +128,8 @@ export const MLB = {
   teamTransactions: (abbr) => `/mlb/transactions/${abbr}`,
   team: (abbr) => `/mlb/team/${abbr}`,
   player: (id) => `/mlb/player/${id}`,
-  diagnostics: '/mlb/models',
+  models: '/mlb/models',
+  diagnostics: '/mlb/models/diagnostics',
   scenarioSimulator: '/mlb/models/scenario-simulator',
   splitExplorer: '/mlb/lab/split-explorer',
   statcastLab: '/mlb/lab/statcast-lab',
@@ -160,9 +162,10 @@ export const MLB_NAV = [
   {
     key: 'models',
     label: 'Models',
-    to: MLB.diagnostics,
+    to: MLB.models,
     children: [
-      { key: 'diagnostics', label: 'Diagnostics', to: MLB.diagnostics, exact: true },
+      { key: 'scoreboard', label: 'Model scoreboard', to: MLB.models, exact: true },
+      { key: 'diagnostics', label: 'Diagnostics', to: MLB.diagnostics },
       { key: 'scenario-simulator', label: 'Scenario simulator', to: MLB.scenarioSimulator },
     ],
   },

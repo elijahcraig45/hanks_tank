@@ -680,7 +680,7 @@ function HomePage() {
         { to: MLB.predictions, label: "Predictions" },
         { to: MLB.games, label: "Scores" },
         { to: MLB.rankings, label: "Rankings" },
-        { to: MLB.diagnostics, label: "Models" },
+        { to: MLB.models, label: "Models" },
       ],
     },
     {

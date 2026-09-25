@@ -84,7 +84,7 @@ test.each([
   ['/game/824776', '/mlb/game/824776'],
   ['/predictions', '/mlb/predictions'],
   ['/rankings', '/mlb/rankings'],
-  ['/prediction-diagnostics', '/mlb/models'],
+  ['/prediction-diagnostics', '/mlb/models/diagnostics'],
   ['/TeamBatting', '/mlb/stats/team-batting'],
   ['/PlayerPitching', '/mlb/stats/player-pitching'],
   ['/team/ATL', '/mlb/team/ATL'],
