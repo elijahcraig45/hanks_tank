@@ -4,6 +4,7 @@ import ApiService from '../services/api';
 import ScoreboardSection from './football/ScoreboardSection';
 import RankingsBoard from './RankingsBoard';
 import FootballDiagnostics from './FootballDiagnostics';
+import ModelComparison from './football/ModelComparison';
 import './styles/FootballPage.css';
 
 /**
@@ -32,6 +33,8 @@ const SECTIONS = [
   { key: 'scoreboard', label: 'Scores', availableFor: (l) => l.sport === 'cfb' },
   { key: 'rankings', label: 'Power Rankings' },
   { key: 'diagnostics', label: 'Diagnostics' },
+  // Experiment: every model's pregame call side by side, with an honest scoreboard.
+  { key: 'models', label: 'Model Comparison' },
   { key: 'leaders', label: 'Leaders' },
   { key: 'players', label: 'Players' },
   { key: 'stats', label: 'Team Stats' },
@@ -1151,6 +1154,9 @@ export default function FootballPage() {
             conferenceOf={confOf}
             conferences={allConferences}
           />
+        )}
+        {section === 'models' && (
+          <ModelComparison key={`${league.key}-${season}`} league={league} season={season} />
         )}
         {section === 'rankings' && (
           <RankingsBoard

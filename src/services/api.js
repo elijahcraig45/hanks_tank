@@ -391,6 +391,19 @@ class ApiService {
     });
   }
 
+  /**
+   * Every model's prediction per game plus a season scoreboard scored only on
+   * predictions written before kickoff (experiment). `week` omitted = the backend's
+   * default: the earliest week with an unplayed game.
+   */
+  async getFootballModelComparison(sport, { season, week, division } = {}) {
+    const qs = new URLSearchParams();
+    if (season) qs.set('season', String(season));
+    if (week) qs.set('week', String(week));
+    if (division) qs.set('division', division);
+    return this.get(`/football/${sport}/models/compare?${qs.toString()}`, { cacheTTL: 15 });
+  }
+
   /** League leaders, long-form: one row per (category, rank). */
   async getFootballLeaders(sport, { season, category, limit } = {}) {
     const qs = new URLSearchParams({ season: String(season) });
