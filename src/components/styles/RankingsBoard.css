@@ -314,3 +314,28 @@
 @media (max-width: 640px) {
   .rank-band { width: 64px; margin-left: 6px; }
 }
+
+/* ─── Phones: keep the rank range on screen ──────────────────────────────
+   The range is the column that matters most, so on a phone the strength
+   bar goes, team names wrap, and the band stacks over its numbers — the
+   whole row fits without scrolling sideways. */
+.rb-filter label { max-width: 100%; min-width: 0; }
+.rb-filter select { max-width: 100%; min-width: 0; }
+.rb-table th, .rb-num, .rb-tier-name { color: var(--text-muted); }
+@media (max-width: 640px) {
+  .rb-filter label { flex-wrap: wrap; }
+  .rb-table { font-size: 0.78rem; }
+  .rb-table th, .rb-table td { padding: 6px 6px; }
+  .rb-team { min-width: 0; white-space: normal !important; }
+  .rb-name { display: block; line-height: 1.25; }
+  .rb-strength { display: none; }
+  .rb-range .rb-range-text { display: block; min-width: 0; font-size: 0.7rem; }
+  .rb-range .rank-band { width: 52px; margin-left: 0; }
+  .rb-tier td { white-space: normal; }
+  .rb-tier-desc { display: block; margin-left: 0; }
+}
+@media (max-width: 400px) {
+  /* The rating is the least readable number on the board; the range and
+     record carry the story. */
+  .rb-table tr > :nth-child(4):not([colspan]) { display: none; }
+}

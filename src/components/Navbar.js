@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { SEASONS } from '../config/constants';
 import {
@@ -76,6 +76,15 @@ const SWITCHER = [
 
 function SportBar({ ctx, nav, pathname }) {
   const sport = SPORTS.find((s) => s.key === ctx.sport);
+  const sectionsRef = useRef(null);
+
+  // On a phone the section strip scrolls; keep the current section in view.
+  useEffect(() => {
+    const active = sectionsRef.current?.querySelector('.ht-section--active');
+    if (active && typeof active.scrollIntoView === 'function') {
+      active.scrollIntoView({ block: 'nearest', inline: 'center' });
+    }
+  }, [pathname]);
   const activeGroup = nav.find((i) => i.active && i.children);
   const currentSection = footballSectionOf(pathname, ctx.pickem);
 
@@ -87,7 +96,7 @@ function SportBar({ ctx, nav, pathname }) {
           <span className="ht-sportbar-full">{sport.name}</span>
         </Link>
 
-        <nav className="ht-sections" aria-label={`${sport.label} sections`}>
+        <nav ref={sectionsRef} className="ht-sections" aria-label={`${sport.label} sections`}>
           {nav.map((item) => (
             <Link
               key={item.key}
