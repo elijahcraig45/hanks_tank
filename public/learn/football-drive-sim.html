@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>/* Follow the theme chosen on the main site (same origin). */(function(){try{var t=localStorage.getItem('ht-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Football Drive Simulator</title>
+<style>
+:root{color-scheme:light;
+ --ground:#f6f7f9;--surface:#fff;--surface-2:#eef1f5;
+ --ink:#111620;--ink-2:#4b5566;--ink-3:#7d8798;
+ --rule:#dee2e9;--accent:#2a78d6;--warn:#b4541f;--ok:#157a55;
+ --warn-bg:#fdf1ea;--ok-bg:#e7f4ee;--acc-bg:#dbe8f9;
+ --s1:#2a78d6;--s2:#eb6834;--bar:#b9c1cc;
+ --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+ --serif:Georgia,"Times New Roman",serif;
+ --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+ --ground:#13161b;--surface:#1a1e25;--surface-2:#21262e;
+ --ink:#eef1f5;--ink-2:#aeb8c6;--ink-3:#78828f;
+ --rule:#2c323c;--accent:#5b9ff0;--warn:#e58a5a;--ok:#4cc79a;
+ --warn-bg:#2a1f19;--ok-bg:#152620;--acc-bg:#1d2c40;
+ --s1:#3987e5;--s2:#d95926;--bar:#4a525e}}
+:root[data-theme="dark"]{color-scheme:dark;
+ --ground:#13161b;--surface:#1a1e25;--surface-2:#21262e;
+ --ink:#eef1f5;--ink-2:#aeb8c6;--ink-3:#78828f;
+ --rule:#2c323c;--accent:#5b9ff0;--warn:#e58a5a;--ok:#4cc79a;
+ --warn-bg:#2a1f19;--ok-bg:#152620;--acc-bg:#1d2c40;
+ --s1:#3987e5;--s2:#d95926;--bar:#4a525e}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--serif);font-size:17px;line-height:1.65}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px 80px}
+h1,h2,h3{font-family:var(--sans);line-height:1.2;margin:0}
+h1{font-size:clamp(28px,5vw,40px);letter-spacing:-.02em}
+h2{font-size:clamp(21px,3.2vw,27px);margin-top:48px;padding-top:28px;border-top:1px solid var(--rule)}
+h3{font-size:17px;margin-top:24px;margin-bottom:6px}
+p{margin:0 0 1em}
+a{color:var(--accent)}
+header{padding:48px 0 20px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px}
+.lede{font-size:19px;color:var(--ink-2);margin-top:16px}
+.box{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:16px 18px;margin:18px 0}
+.verdict{border-left:4px solid var(--warn);background:var(--warn-bg)}
+.good{border-left:4px solid var(--ok);background:var(--ok-bg)}
+.note{border-left:4px solid var(--accent);background:var(--acc-bg)}
+.tag{font-family:var(--mono);font-size:11px;padding:2px 6px;border-radius:4px;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+.m{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok)}
+.i{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn)}
+code,.mono{font-family:var(--mono);font-size:.88em}
+pre{font-family:var(--mono);font-size:13px;background:var(--surface-2);padding:12px;border-radius:8px;overflow-x:auto;line-height:1.5}
+.tw{overflow-x:auto;margin:14px 0;border:1px solid var(--rule);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--rule);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+thead th{background:var(--surface-2);font-weight:600}
+tr.base td{font-weight:600}
+td.w{color:var(--warn)} td.b{color:var(--ok)}
+details{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:10px 14px;margin:10px 0}
+summary{font-family:var(--sans);font-weight:600;cursor:pointer}
+dl{margin:0}dt{font-family:var(--sans);font-weight:600;margin-top:12px}dd{margin:2px 0 0 0;color:var(--ink-2)}
+.small{font-size:14px;color:var(--ink-2)}
+figure{margin:18px 0;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:12px 12px 8px}
+figcaption{font-family:var(--sans);font-size:13px;color:var(--ink-2);margin-top:6px}
+.legend{font-family:var(--sans);font-size:13px;color:var(--ink-2);display:flex;flex-wrap:wrap;gap:14px;margin-bottom:6px}
+.sw{display:inline-block;width:14px;height:4px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto}
+.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:6px 8px;font-family:var(--sans);font-size:12px;color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.12);display:none;white-space:nowrap;z-index:2}
+.demo{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:620px){.demo{grid-template-columns:1fr}}
+.demo fieldset{border:1px solid var(--rule);border-radius:8px;padding:8px 12px;margin:0;font-family:var(--sans);font-size:14px}
+.demo legend{font-weight:600;padding:0 4px}
+.demo label{display:grid;grid-template-columns:1fr 56px;gap:2px 8px;align-items:center;margin:4px 0}
+.demo input[type=range]{grid-column:1/3;width:100%}
+.ctl{font-family:var(--sans);font-size:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0}
+button{font-family:var(--sans);font-size:14px;padding:6px 14px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+select{font-family:var(--sans);font-size:14px;padding:4px;border-radius:6px;border:1px solid var(--rule);background:var(--surface);color:var(--ink)}
+.out{font-family:var(--mono);font-size:14px;background:var(--surface-2);border-radius:8px;padding:10px 12px}
+.flow{font-family:var(--sans);font-size:12px}
+</style>
+<link rel="stylesheet" href="learn.css">
+</head>
+<body>
+<nav class="lh-bar" aria-label="Site">
+ <div class="lh-in">
+  <a class="lh-brand" href="/"><span class="lh-mark" aria-hidden="true">HT</span><span class="lh-name">Hank&rsquo;s Tank</span></a>
+  <span class="lh-sep" aria-hidden="true">/</span>
+  <a class="lh-learn" href="/learn">Learn</a>
+  <span class="lh-sep" aria-hidden="true">/</span>
+  <span class="lh-topic">Football</span>
+  <button type="button" class="lh-theme" id="lh-theme" aria-label="Switch theme" title="Switch theme">&#9790;</button>
+ </div>
+</nav>
+<div class="wrap">
+<header>
+<div class="eyebrow">Hank's Tank, football experiment, 2026-09-25, not in production</div>
+<h1>Simulating NFL games one drive at a time</h1>
+<p class="lede">We built a Monte Carlo simulator that plays each NFL game thousands of times, drive by drive. It is the football version of our MLB plate-appearance simulator. Then we checked it against the margin ridge, a points ridge, and the betting market. It picks winners about as well as the ridge, no better. What it does do better is describe the <i>shape</i> of the result: how likely a 3-point game is, and how spread out the total score will be. This page explains how the simulator works, what we measured, and how to defend these results.</p>
+</header>
+
+<div class="box verdict">
+<p><b>The verdict.</b> <span class="tag m">measured</span> On 2,202 NFL games from 2017 to 2024, scored walk-forward using only information available before each game, the best simulator configuration had a winner log loss of 0.6335. The margin ridge scored 0.6342. The difference is −0.0008, with a 95% CI of [−0.0051, +0.0032], so the two are tied. Vegas scored 0.6086, far ahead. On the frozen 2025 holdout the simulator scored 0.6360 and the ridge 0.6339, again a tie.</p>
+<p><b>Where it wins.</b> <span class="tag m">measured</span> Center the simulator's margin distribution on the market spread, and it scores the <i>exact final margin</i> better than a normal curve around the spread. The log score gain is 0.061 nats in 2017–24 and 0.107 in 2025. It also beats a stronger baseline, the league-wide lumpy margin distribution centered the same way: −0.029 nats, which survives a 25-way Bonferroni correction. For totals the gain is smaller. It shows up in log score (−0.013 in 2017–24) but not in CRPS, and it is not significant in 2025.</p>
+<p style="margin:0"><b>Where it doesn't.</b> <span class="tag m">measured</span> The simulator's own totals are no more accurate than a simple points ridge (MAE 10.85 vs 10.89) and clearly worse than the market total (10.53). Adding the simulator to the market line leaves totals MAE unchanged. Against the spread and on over/unders it hit 49–51%. Breakeven is 52.4%.</p>
+</div>
+
+<h2>1. What a drive-based simulator is</h2>
+<p>A rating model like the margin ridge predicts one number, the expected margin, and then assumes the result is spread around it like a bell curve. A simulator predicts the <i>game process</i> instead. Each drive ends one of nine ways. The simulator estimates the probability of each ending for this offense against this defense, from this field position, at this point in the game. It rolls the dice, adds any points, hands the ball to the other team where the drive ended, runs the clock, and repeats until time expires. Do that 4,000 times and you have 4,000 final scores. Win probability, the margin distribution, the totals distribution, and cover probabilities all come from that one pile of results.</p>
+
+<figure>
+<svg viewBox="0 0 820 150" role="img" aria-label="Flow diagram of one simulated drive" class="flow">
+ <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10z" fill="currentColor"/></marker></defs>
+ <g style="color:var(--ink-3)" fill="none" stroke="currentColor" stroke-width="1.5">
+  <path d="M150,45 H200" marker-end="url(#ar)"/><path d="M350,45 H400" marker-end="url(#ar)"/><path d="M550,45 H600" marker-end="url(#ar)"/>
+  <path d="M700,70 V110 H75 V72" marker-end="url(#ar)"/>
+ </g>
+ <g font-family="system-ui,sans-serif" font-size="13">
+  <rect x="5" y="20" width="145" height="50" rx="8" fill="var(--acc-bg)" stroke="var(--accent)"/>
+  <text x="77" y="41" text-anchor="middle" fill="var(--ink)">state</text><text x="77" y="59" text-anchor="middle" fill="var(--ink-2)" font-size="11">who has it, yardline, clock, score</text>
+  <rect x="200" y="20" width="150" height="50" rx="8" fill="var(--surface-2)" stroke="var(--rule)"/>
+  <text x="275" y="41" text-anchor="middle" fill="var(--ink)">multinomial</text><text x="275" y="59" text-anchor="middle" fill="var(--ink-2)" font-size="11">P(TD, FG, punt, ... | state)</text>
+  <rect x="400" y="20" width="150" height="50" rx="8" fill="var(--surface-2)" stroke="var(--rule)"/>
+  <text x="475" y="41" text-anchor="middle" fill="var(--ink)">roll + score</text><text x="475" y="59" text-anchor="middle" fill="var(--ink-2)" font-size="11">TD = 6/7/8, FG = 3, safety = 2</text>
+  <rect x="600" y="20" width="210" height="50" rx="8" fill="var(--surface-2)" stroke="var(--rule)"/>
+  <text x="705" y="41" text-anchor="middle" fill="var(--ink)">chain + clock</text><text x="705" y="59" text-anchor="middle" fill="var(--ink-2)" font-size="11">next start yardline, duration × pace</text>
+  <text x="400" y="132" text-anchor="middle" fill="var(--ink-3)" font-size="12">repeat until the half's clock hits 0; then overtime rules for the season</text>
+ </g>
+</svg>
+<figcaption>One drive of the simulation. The loop runs about 22 times per game, and the whole game is repeated 4,000 times.</figcaption>
+</figure>
+
+<h2>2. Multinomial drive outcomes</h2>
+<p>Every NFL drive from 2008 to 2025 (111,627 of them, taken from nflverse play-by-play) is labelled with one of nine outcomes. The league mix in 2018–19 was punt 39%, touchdown 21%, field goal 14%, turnover 10%, end of half 7%, turnover on downs 4%, missed field goal 3%, defensive touchdown 1.4%, and safety 0.2%.</p>
+<p>A <b>multinomial logistic regression</b> is the many-outcome version of logistic regression. It gives each outcome <i>k</i> a score, and the scores become probabilities through a softmax:</p>
+<pre>score_k = off_team[k] + def_team[k] + home[k] + f_k(start yardline) + clock_bucket[k] + script_k(score, period)
+P(outcome = k) = exp(score_k) / Σ_j exp(score_j)</pre>
+<p>Offense and defense enter the <i>same</i> regression. That makes the ratings <b>opponent-adjusted</b> for free: a team that scored touchdowns against weak defenses gets less credit, because the weak-defense terms absorb some of it. We compared three structures:</p>
+<ul>
+<li><b>(a) team rates only:</b> team offense and defense, home field, and a clock bucket. The clock bucket has to be there, or "end of half" makes no sense.</li>
+<li><b>(b) + field position:</b> a cubic in starting yardline, plus flags for starting in field-goal range and in the red zone, and a late-clock × field-position term.</li>
+<li><b>(c) + game script:</b> score-differential bucket (9 buckets) × period (first half, Q3, early Q4, last 5 minutes). This lets a team down 10 late throw more, turn it over more, and go for it more often, and lets a leading team run the clock.</li>
+</ul>
+
+<h2>3. Field-position chaining</h2>
+<p>Where the next drive starts depends on how this one ended. After a touchdown or field goal there is a kickoff. After a punt, the start depends on where the punt came from. After a turnover, the other team gets the ball where it happened. We don't write these rules by hand. We use an <b>empirical kernel</b>: for each outcome and starting-yardline bin, it stores the recency-weighted distribution of where the <i>next</i> drive actually started. After a defensive touchdown, the team that lost the ball receives the kickoff. After a safety, the scoring team receives the free kick.</p>
+<p>Kickoff rules changed in 2011, 2016, 2023, 2024 and 2025, so the kernel uses a short 6-week half-life. When a rule changes, the first few weeks of a new season still use last year's touchback spot. That is a real limitation of using pregame information only.</p>
+
+<h2>4. Pace and the clock</h2>
+<p>Scoring depends on how many possessions there are, and that depends on the clock. Each simulated drive takes a duration drawn from the real durations for its outcome and clock bucket (plus score state, in variant c). That duration is multiplied by a team <b>pace factor</b>. We get the pace factor from a ridge regression of log drive duration on offense and defense. The ridge shrinks it heavily toward 1, because pace is noisy. The simulator averages 22.5 drives per game. The real 2018–19 figure was 22.6. Overtime follows the rules of the season: sudden death before 2012, the modified rule from 2012, both teams guaranteed a possession in the playoffs from 2022 and in the regular season from 2025, and a 10-minute period from 2017. Ties are excluded, as in the baselines.</p>
+
+<h2>5. Shrinkage, and the trap we fell into first</h2>
+<p>A team's rating is estimated from about 700 drives spread over two seasons. Each drive is a very noisy observation, so the regression needs an L2 penalty. The penalty pulls every team toward average. We also down-weight old drives with an exponential decay whose half-life is τ weeks.</p>
+<p><b>First attempt:</b> we tuned the penalty and τ on how well the model predicted <i>next week's drive outcomes</i>, using 2010–16 only. That picked heavy shrinkage (C = 0.01) and slow decay (τ = 64 weeks). It looks reasonable, but at the game level it was badly over-shrunk. When we regressed the actual margin on the simulator's predicted margin, the slope came out at 1.68, which means the predictions were far too timid. Winner log loss was 0.6498 in 2017–24, 0.016 worse than the ridge, with a CI clear of zero.</p>
+<p><b>Why:</b> the drive-level objective is dominated by per-drive noise, and a small per-drive shrinkage error compounds over the 11 drives each team gets. We retuned at the level we actually care about, on 2010–16 games only:</p>
+<div class="tw"><table>
+<thead><tr><th>config (variant c), 2010–16 only</th><th>winner log loss</th><th>margin slope</th><th>total slope</th><th>total CRPS</th><th>margin CRPS</th></tr></thead>
+<tbody>
+<tr><td>C 0.01, τ 64 (drive-tuned)</td><td>0.6480</td><td class="w">1.68</td><td>1.14</td><td>7.528</td><td>7.812</td></tr>
+<tr><td>C 0.03, τ 64</td><td>0.6387</td><td>1.13</td><td>0.85</td><td>7.503</td><td>7.714</td></tr>
+<tr class="base"><td>C 0.03, τ 16 (frozen)</td><td>0.6325</td><td>1.13</td><td>0.82</td><td class="b">7.475</td><td class="b">7.660</td></tr>
+<tr><td>C 0.1, τ 16</td><td class="b">0.6307</td><td>0.85</td><td>0.64</td><td>7.553</td><td>7.661</td></tr>
+<tr><td>C 0.1, τ 64</td><td>0.6375</td><td>0.86</td><td>0.69</td><td>7.537</td><td>7.719</td></tr>
+<tr><td>C 0.3, τ 32</td><td>0.6358</td><td>0.79</td><td>0.64</td><td>7.561</td><td>7.709</td></tr>
+</tbody></table></div>
+<p class="small">A slope of 1 is ideal. Above 1 means the predictions are too timid (over-shrunk); below 1 means they are too bold. Margins and totals prefer different amounts of shrinkage. Totals want more, because the <i>sum</i> of two team ratings carries less real signal than their difference. We froze C = 0.03, τ = 16, the best on both CRPS columns, before any 2017+ score was examined for this choice.</p>
+
+<h2>6. Monte Carlo error vs model error</h2>
+<p>A simulator adds its own noise: run it again with a different random seed and the numbers move. <span class="tag m">measured</span> With N = 4,000 simulations per game, two seeds gave win probabilities differing by a standard deviation of 0.0078 per run. That matches the textbook √(p(1−p)/N) exactly. The mean margin moves by 0.22 points and the mean total by 0.21. Log loss changed by 0.0004 between seeds, while the model gaps we care about are around 0.01. The <i>model's</i> disagreement with the ridge is far bigger: SD of (p_sim − p_ridge) = 0.104, 13 times the MC noise. Going to N = 16,000 costs 139 ms per game instead of 49 ms and changes nothing we can measure. Fitting takes about 4 s per week. <b>Rule of thumb:</b> MC error in log loss is about 1/(2N), which is 0.000125 at N = 4,000. It is not what limits us.</p>
+
+<h2>7. The scoreboard</h2>
+<p>Every number below comes from the same protocol. Each week's games are predicted from a model fit only on earlier weeks, over a 2-season window. Differences come with paired bootstrap CIs, resampling whole (season, week) clusters 4,000 times. Brackets are 95% CIs. The "Bonf-25" column widens them to 99.8%, because we compared about 25 variant × metric pairs on the test years. The 2025 holdout was scored once, after writing the frozen config to <code>frozen.json</code>.</p>
+<h3>Winners (log loss; lower is better)</h3>
+<div class="tw"><table>
+<thead><tr><th>model</th><th>acc 17–24</th><th>LL 17–24</th><th>Δ vs ridge [95%]</th><th>Bonf-25</th><th>LL 2025</th></tr></thead>
+<tbody>
+<tr class="base"><td>margin ridge</td><td>0.638</td><td>0.6342</td><td>—</td><td>—</td><td>0.6339</td></tr>
+<tr><td>Vegas spread</td><td>0.666</td><td class="b">0.6086</td><td>−0.0256 [−0.033, −0.018]</td><td>[−0.039, −0.014]</td><td class="b">0.6093</td></tr>
+<tr><td>sim (a) team rates</td><td>0.647</td><td>0.6354</td><td>+0.0012 [−0.002, +0.005]</td><td>[−0.005, +0.007]</td><td>0.6376</td></tr>
+<tr><td>sim (b) + field position</td><td>0.643</td><td>0.6370</td><td>+0.0028 [−0.002, +0.008]</td><td>[−0.005, +0.010]</td><td>0.6408</td></tr>
+<tr><td>sim (c) + game script</td><td>0.639</td><td>0.6335</td><td>−0.0008 [−0.005, +0.003]</td><td>[−0.007, +0.005]</td><td>0.6360</td></tr>
+<tr><td>sim (c), Platt-calibrated</td><td>0.639</td><td>0.6331</td><td>−0.0011 [−0.006, +0.003]</td><td>[−0.008, +0.006]</td><td>0.6369</td></tr>
+<tr><td>(d) stack: sim (c) + ridge</td><td>0.639</td><td>0.6341</td><td>−0.0001 [−0.001, +0.001]</td><td>[−0.001, +0.001]</td><td>0.6337</td></tr>
+<tr><td>sim (c), drive-tuned (over-shrunk)</td><td>0.636</td><td class="w">0.6498</td><td>+0.0156 [+0.007, +0.024]</td><td>[+0.003, +0.028]</td><td class="w">0.6653</td></tr>
+</tbody></table></div>
+<p class="small">The stack's logistic weights were trained only on earlier seasons. It collapses onto the ridge, which is a sign that the simulator carries no winner information the ridge lacks.</p>
+
+<h3>Margins</h3>
+<div class="tw"><table>
+<thead><tr><th>model</th><th>MAE 17–24</th><th>log score</th><th>CRPS</th><th>MAE 2025</th><th>log score 2025</th></tr></thead>
+<tbody>
+<tr><td>spread, normal (σ 13.4)</td><td class="b">9.90</td><td>3.976</td><td>7.185</td><td class="b">9.68</td><td>3.932</td></tr>
+<tr><td>league margin pmf, tilted to spread</td><td>9.90</td><td>3.943</td><td>7.221</td><td>9.68</td><td>3.863</td></tr>
+<tr><td>margin ridge, normal</td><td>10.25</td><td>4.004</td><td>7.409</td><td>10.18</td><td>3.980</td></tr>
+<tr><td>sim (c), own center</td><td>10.29</td><td>3.944</td><td>7.417</td><td>10.20</td><td>3.886</td></tr>
+<tr class="base"><td>sim (c) shape, tilted to spread</td><td>9.90</td><td class="b">3.915</td><td class="b">7.177</td><td>9.68</td><td class="b">3.826</td></tr>
+</tbody></table></div>
+<p class="small">Sim shape at spread minus normal at spread, log score: 2017–24 −0.061 [−0.076, −0.046]; 2025 −0.107 [−0.143, −0.070]. Minus league pmf at spread: 2017–24 −0.029 [−0.046, −0.010] (Bonf-25 [−0.055, −0.002]); 2025 −0.037 [−0.072, +0.000]. The CRPS gain over the normal is −0.0075, and its CI crosses 0. The simulator's margin MAE is tied with the ridge (+0.04 [−0.02, +0.10]).</p>
+
+<h3>Totals (the place a simulator was supposed to earn its keep)</h3>
+<div class="tw"><table>
+<thead><tr><th>model</th><th>MAE 17–24</th><th>log score</th><th>CRPS</th><th>MAE 2025</th><th>CRPS 2025</th></tr></thead>
+<tbody>
+<tr><td>naive (trailing 2-season mean)</td><td>11.09</td><td>4.060</td><td>7.872</td><td>10.93</td><td>7.763</td></tr>
+<tr><td>points ridge, normal</td><td>10.89</td><td>4.043</td><td>7.729</td><td>10.54</td><td>7.507</td></tr>
+<tr><td>market total_line, normal (σ 13.1)</td><td class="b">10.53</td><td>4.011</td><td class="b">7.474</td><td class="b">10.35</td><td class="b">7.397</td></tr>
+<tr><td>league totals pmf, tilted to market</td><td>10.53</td><td>4.014</td><td>7.485</td><td>10.35</td><td>7.435</td></tr>
+<tr><td>sim (c), own center</td><td>10.85</td><td>4.031</td><td>7.715</td><td>10.45</td><td>7.447</td></tr>
+<tr><td>sim (c), linear-calibrated</td><td>10.83</td><td>4.027</td><td>7.683</td><td>10.47</td><td>7.460</td></tr>
+<tr class="base"><td>sim (c) shape, tilted to market</td><td>10.53</td><td class="b">3.998</td><td>7.470</td><td>10.35</td><td>7.411</td></tr>
+<tr><td>(d) sim + market, linear stack</td><td>10.55</td><td>3.997</td><td>7.466</td><td>10.37</td><td>7.418</td></tr>
+</tbody></table></div>
+<p class="small">Sim own-center minus naive, CRPS: −0.16 [−0.26, −0.06]. Minus points ridge: −0.014 [−0.062, +0.035], a tie. The market beats the simulator's own center by 0.24 CRPS. Sim shape at market minus market normal: log score −0.013 [−0.024, −0.002], CRPS −0.004 [−0.017, +0.008]. In 2025: log score −0.015 [−0.046, +0.017], CRPS +0.014 [−0.018, +0.046]. <b>The simulator's total adds nothing to the market's center.</b></p>
+
+<h3>Betting (secondary only)</h3>
+<p>The simulator went 50.7% ATS and 49.4% on over/unders in 2017–24, and 48.8% and 53.5% on 284 games in 2025. The ridge went 50.5% ATS. Breakeven at −110 is 52.4%. The 2025 over/under figure is a single-season number from one of about a dozen comparisons, and its binomial SE is ±3 points. It is not evidence of an edge.</p>
+
+<h2>8. Why winners and totals behave differently</h2>
+<p><b>Winners:</b> the simulator's mean margin correlates <b>0.958</b> with the ridge margin. Both are built from the same thing, team strength estimated from recent results. The simulator measures it in drive outcomes, the ridge in points, so it adds a lot of machinery and almost no new information. We saw the same thing in MLB, where the PA simulator and the 3-feature logistic were largely collinear. Winning depends on the <i>difference</i> between two teams, and one opponent-adjusted rating already captures most of that difference.</p>
+<p><b>Totals:</b> the total depends on the <i>sum</i> of the two ratings plus pace, and the sum is much noisier. Our predictions correlate with the actual total at 0.21 for the simulator, 0.19 for the points ridge, and 0.31 for the market. The market knows things our drive table doesn't: weather, injuries, coordinators, and the weekly information flow. Faster or slower play in the simulator does not close that gap.</p>
+<p><b>Shape:</b> what the simulator does know, and a normal curve doesn't, is how football scores are built. Scores come in 3s and 7s. Higher totals have wider spreads (the simulator's SD runs from 12.3 in low-total games to 13.2 in high-total ones; the actual figures are 13.2 and 13.9). That structure varies game by game, and that is where the log-score gains come from.</p>
+
+<h2>9. Scoring whole distributions: log score, CRPS and key numbers</h2>
+<p><b>Log score</b> is −log of the probability you gave to the <i>exact</i> outcome. It rewards putting mass on 3 and 7 when games really do end there. <b>CRPS</b> (continuous ranked probability score) compares your whole cumulative distribution with a step function at the outcome. It works like MAE for distributions: it is in points, and it doesn't care much about exact values. That is why the simulator can win on log score and tie on CRPS. It is better on the fine structure and no better on location.</p>
+<p>To center the simulator's shape on the market we use an <b>exponential tilt</b>: p′(k) ∝ p(k)·e<sup>λk</sup>, with λ chosen so the mean equals the spread. A plain shift would move the spike at 3 to wherever the spread happened to be. The tilt keeps the spikes at 3 and 7 and only reweights them.</p>
+<figure>
+<div class="legend"><span><span class="sw" style="background:var(--bar);height:10px"></span>actual games</span><span><span class="sw" style="background:var(--s1)"></span>simulator (avg)</span><span><span class="sw" style="background:var(--s2)"></span>normal around spread</span></div>
+<div class="chart" id="keyChart"></div>
+<figcaption>How often NFL games end with each absolute margin, 2017–24 (2,202 games, ties excluded). <span class="tag m">measured</span> 14.9% of games end at exactly 3 points. The normal curve gives 5.3% and the simulator 9.7%. The simulator captures about half of the key-number excess. It misses the rest because it doesn't model end-game decisions such as kicking the go-ahead field goal, and it puts too much mass on 1, 2 and 4. Hover for values.</figcaption>
+</figure>
+
+<h2>10. Calibration</h2>
+<figure>
+<div class="legend"><span><span class="sw" style="background:var(--s1)"></span>simulator (c), deciles</span><span><span class="sw" style="background:var(--ink-3)"></span>perfect calibration</span></div>
+<div class="chart" id="relChart"></div>
+<figcaption>Predicted home win probability vs observed home win rate, 2017–24, by decile. Before retuning, the over-shrunk model's top quintile said 0.667 while the home team actually won 0.764 of those games. After retuning, the points sit close to the diagonal. The totals distribution is also honest: 48.0% of 2017–24 outcomes fell inside the central 50% interval and 78.2% inside the central 80%, slightly too narrow.</figcaption>
+</figure>
+
+<h2>11. Compared with the MLB plate-appearance simulator</h2>
+<div class="tw"><table>
+<thead><tr><th></th><th>MLB PA sim</th><th>NFL drive sim</th></tr></thead>
+<tbody>
+<tr><td>unit of play</td><td>plate appearance (~76/game)</td><td>drive (~22/game)</td></tr>
+<tr><td>state</td><td>24 base-out states</td><td>yardline × clock × score × period</td></tr>
+<tr><td>rates</td><td>log5 + beta-binomial shrinkage</td><td>penalized multinomial logistic</td></tr>
+<tr><td>vs best simple model (winners)</td><td>ties / edges the 3-feature logistic</td><td>ties the margin ridge</td></tr>
+<tr><td>collinearity with rating model</td><td>high</td><td>r = 0.958 with ridge margin</td></tr>
+<tr><td>needed calibration?</td><td>yes (no home edge raw)</td><td>yes: shrinkage had to be tuned at game level</td></tr>
+<tr><td>runtime</td><td>~10 ms/game</td><td>~50 ms/game at N = 4,000, plus ~4 s fit per week</td></tr>
+</tbody></table></div>
+<p>The lesson is the same in both sports. A simulator is a different <i>parameterization</i> of team strength, not a new source of information. It pays off when you need a full distribution: exact margins, alternative lines, derived markets. It does not pay off when all you need is P(win).</p>
+
+<h2>12. Try it: a two-team drive simulator</h2>
+<p>Set each team's drive outcome rates. Any probability not assigned becomes a punt. Turnovers give the other team a short field, which multiplies its next-drive touchdown rate by the "short field" factor. Watch how the margin distribution grows spikes at 3 and 7, and how the ± Monte Carlo error shrinks as N grows, roughly as 1/√N.</p>
+<div class="demo">
+<fieldset><legend>Home team</legend>
+<label>TD % <span class="mono" id="hTDv"></span><input type="range" id="hTD" min="5" max="45" value="24"></label>
+<label>FG % <span class="mono" id="hFGv"></span><input type="range" id="hFG" min="0" max="30" value="15"></label>
+<label>Turnover % <span class="mono" id="hTOv"></span><input type="range" id="hTO" min="0" max="25" value="11"></label>
+</fieldset>
+<fieldset><legend>Away team</legend>
+<label>TD % <span class="mono" id="aTDv"></span><input type="range" id="aTD" min="5" max="45" value="20"></label>
+<label>FG % <span class="mono" id="aFGv"></span><input type="range" id="aFG" min="0" max="30" value="14"></label>
+<label>Turnover % <span class="mono" id="aTOv"></span><input type="range" id="aTO" min="0" max="25" value="12"></label>
+</fieldset>
+</div>
+<div class="ctl">
+<label>drives per team <select id="nd"><option>9</option><option>10</option><option selected>11</option><option>12</option><option>13</option></select></label>
+<label>short-field TD × <select id="sf"><option value="1">1.0 (off)</option><option value="1.5" selected>1.5</option><option value="2">2.0</option></select></label>
+<label>N <select id="nsim"><option>100</option><option>1000</option><option selected>4000</option><option>20000</option></select></label>
+<button id="go">Simulate</button>
+</div>
+<div class="out" id="res">…</div>
+<figure>
+<div class="legend"><span><span class="sw" style="background:var(--s1);height:10px"></span>home margin (home − away)</span></div>
+<div class="chart" id="demoM"></div>
+<figcaption>Simulated final margin, from −35 to +35. The dashed line marks 0.</figcaption>
+</figure>
+<figure>
+<div class="legend"><span><span class="sw" style="background:var(--s2);height:10px"></span>total points</span></div>
+<div class="chart" id="demoT"></div>
+<figcaption>Simulated total points.</figcaption>
+</figure>
+
+<h2>13. How to defend this</h2>
+<details><summary>"You built a much more detailed model. Why doesn't it pick winners better?"</summary><p>Detail isn't information. The simulator's margin correlates 0.958 with the ridge because both rest on the same recent results. It spreads team strength over nine drive outcomes, and that adds parameters to estimate without adding new signal. The stack, trained only on earlier seasons, gives the simulator almost zero weight, and its CI is ±0.001. That is the data's answer.</p></details>
+<details><summary>"Isn't the log-score win on margins just because the normal is continuous and scores are discrete?"</summary><p>That was the first thing we checked. We added a stronger baseline: the league-wide empirical margin distribution, which also has the spikes at 3 and 7, tilted to the same spread. The simulator beats it by 0.029 nats in 2017–24 (CI [−0.046, −0.010], still clear of 0 at Bonferroni-25). In 2025 it wins by −0.037, and the CI just touches 0. So the gain is <i>game-specific</i> shape, not just discreteness.</p></details>
+<details><summary>"Did you tune on the test set?"</summary><p>No. The drive-level grid (12 + 9 configs) and the game-level grid (6 configs) used only 2010–16. Then 2017–24 compared the structures, and the config was written to <code>frozen.json</code> before 2025 was scored once. We tried about 25 variant × metric comparisons on the test years, which is why every headline CI also has a Bonferroni-25 version. One caveat is honest to state: the stacker for 2011–16 was trained on simulator runs whose config was chosen on those same years. That only affects the stack, and the stack found nothing anyway.</p></details>
+<details><summary>"Couldn't Monte Carlo noise explain the differences?"</summary><p>No. The per-game MC SD is 0.0078 in probability, which works out to about 0.0004 in log loss between seeds. The quantities we report differ by 0.001 to 0.1. Running 4× more simulations changed nothing we could measure.</p></details>
+<details><summary>"The simulator lost to the market on totals. So it's useless for totals?"</summary><p>Its <i>center</i> is: stacking it with the line leaves MAE flat (10.55 vs 10.53). Its <i>shape</i> around the market center is modestly better on log score (−0.013 nats, 2017–24). It is not better on CRPS, and 2025 is inconclusive. If you need a totals distribution, for example the probability of over 47.5 against over 44.5, use the market's number with the simulator's shape.</p></details>
+<details><summary>"Why not CFB?"</summary><p>CFB drives come from CFBD's <code>/drives</code> endpoint, which needs an API key. We did not have the key for this experiment, and our cached data hold only game-level advanced stats, not drives. So everything here is NFL only. With the key, one call per season (or per week) would make the same experiment possible for FBS.</p></details>
+
+<h2>14. Recommendation and confidence</h2>
+<div class="box good">
+<p><b>Do not replace the margin ridge</b> with the simulator for win probabilities. <span class="tag m">measured</span> It ties the ridge and costs about 4 s of fitting per week plus 50 ms per game.</p>
+<p><b>Worth a shadow run</b> only if we want <i>distributional</i> outputs: exact margins, alternate spreads and totals, teaser-style questions. For those, tilt the simulator's shape to the market's number. <span class="tag i">inferred</span> That is the only use case where it measurably beats a simpler alternative.</p>
+<p style="margin:0"><b>Confidence:</b> high that it doesn't help winners (three independent views agree: raw, calibrated, and stacked). Moderate that it helps margin shape (the result is strong in 2017–24 and 2025 agrees in direction, but the league-pmf CI in 2025 touches 0). Low for totals shape. <b>What would raise it:</b> scoring 2026 weeks as they happen, without refitting; modeling end-game decisions (the missing mass at 3); and adding QB-out and weather to the drive rates, since those are the market's advantages.</p>
+</div>
+
+<h2>Glossary</h2>
+<dl>
+<dt>Drive outcome</dt><dd>How a possession ends: TD, FG, missed FG, punt, turnover, defensive TD, turnover on downs, safety, end of half.</dd>
+<dt>Multinomial logistic regression</dt><dd>Logistic regression with more than two outcomes. Each outcome gets a linear score, and a softmax turns the scores into probabilities.</dd>
+<dt>Shrinkage (L2 penalty)</dt><dd>Pulling estimates toward average to trade a little bias for much less noise. C is the inverse strength: smaller C means more shrinkage.</dd>
+<dt>Time decay (τ)</dt><dd>Older games are weighted by e<sup>−age/τ</sup>, so recent form counts more.</dd>
+<dt>Kernel</dt><dd>An empirical lookup table of where the next drive starts, given how the last one ended.</dd>
+<dt>Monte Carlo error</dt><dd>Noise from using a finite number of simulations. For a probability it is √(p(1−p)/N).</dd>
+<dt>Log loss / log score</dt><dd>−log of the probability assigned to what happened. Lower is better. Measured in nats.</dd>
+<dt>CRPS</dt><dd>Continuous ranked probability score: the squared distance between your predicted CDF and the outcome's step function, summed over the grid. It is in points and works like MAE for distributions.</dd>
+<dt>Exponential tilt</dt><dd>Reweighting a distribution by e<sup>λk</sup> to move its mean without moving its spikes.</dd>
+<dt>Calibration / PIT</dt><dd>Whether predicted probabilities come true at the stated rate. PIT checks whether outcomes land inside central intervals as often as those intervals claim.</dd>
+<dt>Walk-forward</dt><dd>Each week is predicted only from data before it, just as it would be live.</dd>
+<dt>Paired cluster bootstrap</dt><dd>Resampling whole weeks, scoring both models on the same resample, to get a CI for their difference.</dd>
+<dt>Bonferroni</dt><dd>Widening CIs when you run many comparisons, so that one lucky result doesn't pass as real.</dd>
+</dl>
+
+<h2>Related pages</h2>
+<ul>
+<li><a href="football-models.html">Football models: why the margin ridge beat XGBoost</a></li>
+<li><a href="football-matchups.html">Football matchups and injuries, measured</a></li>
+<li><a href="ml-course.html">ML course (Hank's Tank)</a></li>
+</ul>
+<p class="small">Scripts (experiment code, not part of the production pipeline): <code>nfl_drives.py</code> (drive extraction), <code>sim_core.py</code> (model + simulator), <code>tune.py</code> / <code>tune_game.py</code> (2010–16 tuning), <code>run_sim.py</code> (walk-forward), <code>eval_sim.py</code> (scoring), <code>mc_error.py</code>, <code>frozen.json</code>.</p>
+</div>
+
+<script>
+(function(){
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const NS="http://www.w3.org/2000/svg";
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+// generic chart: x categories, bars (optional) + lines; tooltips per x
+function chart(host,{xs,bars,lines,ymax,xlab,fmt,diag,points,xTicks,zeroLine}){
+  host.innerHTML="";const W=800,H=260,L=46,R=10,T=10,B=34;
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,role:"img"},host);
+  const tip=document.createElement("div");tip.className="tip";host.appendChild(tip);
+  const n=xs.length,bw=(W-L-R)/n,xp=i=>L+bw*(i+.5),yp=v=>T+(H-T-B)*(1-v/ymax);
+  const ink3=css("--ink-3"),rule=css("--rule");
+  for(let k=0;k<=4;k++){const v=ymax*k/4;el("line",{x1:L,x2:W-R,y1:yp(v),y2:yp(v),stroke:rule,"stroke-width":1},svg);
+    const t=el("text",{x:L-6,y:yp(v)+4,"text-anchor":"end","font-size":11,fill:ink3,"font-family":"system-ui"},svg);t.textContent=fmt(v);}
+  xs.forEach((x,i)=>{if(xTicks(x,i)){const t=el("text",{x:xp(i),y:H-B+16,"text-anchor":"middle","font-size":11,fill:ink3,"font-family":"system-ui"},svg);t.textContent=x;}});
+  const lt=el("text",{x:(L+W-R)/2,y:H-4,"text-anchor":"middle","font-size":11,fill:ink3,"font-family":"system-ui"},svg);lt.textContent=xlab;
+  if(zeroLine!==undefined){el("line",{x1:xp(zeroLine),x2:xp(zeroLine),y1:T,y2:H-B,stroke:ink3,"stroke-dasharray":"4 3"},svg);}
+  if(bars){bars.data.forEach((v,i)=>{const h=Math.max(0,yp(0)-yp(v));const g=Math.max(1,bw-2);
+    el("path",{d:`M${xp(i)-g/2},${yp(0)} v${-Math.max(0,h-3)} q0,-3 3,-3 h${g-6} q3,0 3,3 v${Math.max(0,h-3)} z`,fill:bars.color},svg);});}
+  if(diag){el("line",{x1:L,y1:yp(0),x2:W-R,y2:yp(ymax),stroke:ink3,"stroke-width":1.5,"stroke-dasharray":"5 4"},svg);}
+  (lines||[]).forEach(l=>{el("path",{d:l.data.map((v,i)=>(i?"L":"M")+xp(i)+","+yp(v)).join(""),fill:"none",stroke:l.color,"stroke-width":2,"stroke-linejoin":"round"},svg);});
+  if(points){points.data.forEach(([px,py])=>{const cx=L+(W-L-R)*px/ymax,cy=yp(py);el("circle",{cx,cy,r:5,fill:points.color,stroke:css("--surface"),"stroke-width":2},svg);});}
+  // hover
+  const hit=el("rect",{x:L,y:T,width:W-L-R,height:H-T-B,fill:"transparent"},svg);
+  const cross=el("line",{y1:T,y2:H-B,stroke:ink3,"stroke-width":1,opacity:0},svg);
+  function move(ev){const r=svg.getBoundingClientRect();const sx=(ev.clientX-r.left)*W/r.width;
+    if(points){let best=0,bd=1e9;points.data.forEach(([px],j)=>{const d=Math.abs(L+(W-L-R)*px/ymax-sx);if(d<bd){bd=d;best=j;}});
+      const [px,py]=points.data[best];tip.innerHTML=`decile ${best+1}<br>predicted ${px.toFixed(3)}<br>observed ${py.toFixed(3)}`;cross.setAttribute("opacity",0);}
+    else{const i=Math.min(n-1,Math.max(0,Math.floor((sx-L)/bw)));cross.setAttribute("x1",xp(i));cross.setAttribute("x2",xp(i));cross.setAttribute("opacity",.6);
+      let h=`<b>${xlab.split(" ")[0]} ${xs[i]}</b>`;if(bars)h+=`<br>${bars.name}: ${fmt(bars.data[i])}`;(lines||[]).forEach(l=>h+=`<br>${l.name}: ${fmt(l.data[i])}`);tip.innerHTML=h;}
+    tip.style.display="block";const hx=(ev.clientX-r.left);tip.style.left=Math.min(hx+12,r.width-150)+"px";tip.style.top="8px";}
+  hit.addEventListener("mousemove",move);hit.addEventListener("mouseleave",()=>{tip.style.display="none";cross.setAttribute("opacity",0);});
+  hit.addEventListener("touchstart",e=>move(e.touches[0]),{passive:true});
+}
+const D={"ah":[0.0,0.0436,0.0459,0.1485,0.0441,0.0454,0.0699,0.0817,0.0454,0.0177,0.0509,0.0204,0.02,0.0177,0.0536,0.0163,0.0245,0.0345,0.0227,0.0114,0.0218,0.0218,0.0091,0.0163,0.0191,0.0118,0.0118,0.0077,0.0118,0.0041,0.0041],
+"sh":[0.0042,0.0626,0.0571,0.0971,0.0587,0.0409,0.0568,0.0871,0.0394,0.038,0.0507,0.0397,0.0273,0.0354,0.0319,0.0202,0.0205,0.0335,0.0234,0.0175,0.0217,0.0193,0.0119,0.0129,0.0147,0.0096,0.0075,0.0096,0.008,0.0049,0.0055],
+"nh":[0.0269,0.0536,0.0532,0.0526,0.0518,0.0508,0.0495,0.0481,0.0465,0.0447,0.0428,0.0409,0.0388,0.0366,0.0345,0.0323,0.0301,0.0279,0.0258,0.0237,0.0217,0.0198,0.0179,0.0162,0.0146,0.013,0.0116,0.0103,0.0091,0.008,0.007],
+"rel":[[0.281,0.276],[0.381,0.318],[0.441,0.414],[0.489,0.527],[0.531,0.477],[0.569,0.568],[0.61,0.686],[0.653,0.723],[0.707,0.709],[0.787,0.783]]};
+const pct=v=>(100*v).toFixed(1)+"%";
+function drawStatic(){
+  chart(document.getElementById("keyChart"),{xs:[...Array(31).keys()],bars:{name:"actual",data:D.ah,color:css("--bar")},
+    lines:[{name:"simulator",data:D.sh,color:css("--s1")},{name:"normal",data:D.nh,color:css("--s2")}],ymax:.16,xlab:"margin (absolute points)",fmt:pct,xTicks:x=>(x%3===0&&x!==15)||x===7||x===14});
+  // reliability: x axis continuous 0..1 mapped via ymax=1
+  chart(document.getElementById("relChart"),{xs:["0",".2",".4",".6",".8","1"],ymax:1,xlab:"predicted home win probability",fmt:v=>v.toFixed(1),diag:true,
+    points:{data:D.rel,color:css("--s1")},xTicks:()=>false});
+  const svg=document.querySelector("#relChart svg");// x tick labels
+  [0,.2,.4,.6,.8,1].forEach(v=>{const t=document.createElementNS(NS,"text");t.setAttribute("x",46+(800-56)*v);t.setAttribute("y",242);t.setAttribute("text-anchor","middle");t.setAttribute("font-size",11);t.setAttribute("fill",css("--ink-3"));t.setAttribute("font-family","system-ui");t.textContent=v.toFixed(1);svg.insertBefore(t,svg.lastChild.previousSibling);});
+}
+// ------------- demo
+const ids=["hTD","hFG","hTO","aTD","aFG","aTO"];
+function rates(p){return {td:+document.getElementById(p+"TD").value/100,fg:+document.getElementById(p+"FG").value/100,to:+document.getElementById(p+"TO").value/100};}
+function sync(){ids.forEach(i=>document.getElementById(i+"v").textContent=document.getElementById(i).value);}
+function sim(){
+  const H=rates("h"),A=rates("a"),nd=+document.getElementById("nd").value,sf=+document.getElementById("sf").value,N=+document.getElementById("nsim").value;
+  const mh=new Array(71).fill(0),th=new Array(101).fill(0);let hw=0,aw=0,sumM=0,sumT=0;
+  const xp=()=>{const u=Math.random();return u<0.06?6:(u<0.97?7:8);};
+  for(let s=0;s<N;s++){let sc=[0,0],short=[false,false];let pos=Math.random()<.5?0:1;
+    for(let d=0;d<2*nd;d++){const r=pos===0?H:A;let td=r.td*(short[pos]?sf:1);td=Math.min(td,.9);
+      const fg=Math.min(r.fg,1-td),to=Math.min(r.to,1-td-fg);const u=Math.random();short[pos]=false;
+      if(u<td)sc[pos]+=xp();else if(u<td+fg)sc[pos]+=3;else if(u<td+fg+to)short[1-pos]=true;
+      pos=1-pos;}
+    // overtime: alternate until someone scores (simplified sudden death)
+    let g=0;while(sc[0]===sc[1]&&g<20){const r=pos===0?H:A;const u=Math.random();if(u<r.td)sc[pos]+=6;else if(u<r.td+r.fg)sc[pos]+=3;pos=1-pos;g++;}
+    const m=sc[0]-sc[1],t=sc[0]+sc[1];if(m>0)hw++;else if(m<0)aw++;sumM+=m;sumT+=t;
+    mh[Math.max(-35,Math.min(35,m))+35]++;th[Math.min(100,t)]++;}
+  const p=hw/(hw+aw),se=Math.sqrt(p*(1-p)/N),p3=(mh[38]+mh[32])/N,p7=(mh[42]+mh[28])/N;
+  document.getElementById("res").innerHTML=`home win ${pct(p)} ± ${pct(1.96*se)} (95% MC)  ·  mean margin ${(sumM/N).toFixed(1)}  ·  mean total ${(sumT/N).toFixed(1)}<br>P(|margin| = 3) ${pct(p3)}  ·  P(|margin| = 7) ${pct(p7)}  ·  N = ${N}`;
+  const mx=[...Array(71).keys()].map(i=>i-35);
+  chart(document.getElementById("demoM"),{xs:mx,bars:{name:"share",data:mh.map(v=>v/N),color:css("--s1")},ymax:Math.max(...mh)/N*1.1,xlab:"margin (home − away)",fmt:pct,xTicks:x=>x%7===0,zeroLine:35});
+  chart(document.getElementById("demoT"),{xs:[...Array(101).keys()],bars:{name:"share",data:th.map(v=>v/N),color:css("--s2")},ymax:Math.max(...th)/N*1.1,xlab:"total points",fmt:pct,xTicks:x=>x%10===0});
+}
+ids.forEach(i=>document.getElementById(i).addEventListener("input",sync));
+document.getElementById("go").addEventListener("click",sim);
+sync();drawStatic();sim();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{drawStatic();sim();});
+})();
+</script>
+<script>/* Theme toggle for the learn pages; shares the site's stored choice. */
+(function(){var b=document.getElementById('lh-theme');if(!b)return;var r=document.documentElement;
+function cur(){var t=r.getAttribute('data-theme');if(t)return t;return window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+function lab(){var n=cur()==='dark'?'light':'dark';b.textContent=n==='light'?'\u2600':'\u263E';b.setAttribute('aria-label','Switch to '+n+' theme');b.title='Switch to '+n+' theme';}
+lab();b.addEventListener('click',function(){var n=cur()==='dark'?'light':'dark';try{localStorage.setItem('ht-theme',n);}catch(e){}
+r.setAttribute('data-theme',n);location.reload();});})();
+</script>
+</body>
+</html>
