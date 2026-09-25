@@ -418,7 +418,7 @@ function PredictionCard({ pred, game, favoriteTeams, onToggleFavorite }) {
             )}
             <div>
               {awayAbbr ? (
-                <Link to={`/team/${awayAbbr}`} className="pred-team-link">
+                <Link to={`/mlb/team/${awayAbbr}`} className="pred-team-link">
                   <div className="pred-team-name" style={{ color: awayWins ? awayColor : undefined }}>
                     {pred.away_team_name}
                   </div>
@@ -444,7 +444,7 @@ function PredictionCard({ pred, game, favoriteTeams, onToggleFavorite }) {
             {homeWins && <span className="pred-winner-crown">👑</span>}
             <div className="text-end">
               {homeAbbr ? (
-                <Link to={`/team/${homeAbbr}`} className="pred-team-link">
+                <Link to={`/mlb/team/${homeAbbr}`} className="pred-team-link">
                   <div className="pred-team-name" style={{ color: homeWins ? homeColor : undefined }}>
                     {pred.home_team_name}
                   </div>
@@ -559,7 +559,7 @@ function PredictionCard({ pred, game, favoriteTeams, onToggleFavorite }) {
 
         {pred.game_pk && (
           <div className="mt-2 text-end">
-            <Link to={`/game/${pred.game_pk}`} className="pred-game-link">
+            <Link to={`/mlb/game/${pred.game_pk}`} className="pred-game-link">
               🔎 Open Game Center →
             </Link>
           </div>
@@ -734,10 +734,10 @@ const PredictionsPage = () => {
             </p>
           </div>
           <div className="d-flex flex-wrap gap-2">
-            <Link to="/prediction-diagnostics" className="btn btn-outline-primary btn-sm">
+            <Link to="/mlb/models" className="btn btn-outline-primary btn-sm">
               Open diagnostics
             </Link>
-            <Link to="/scenario-simulator" className="btn btn-outline-secondary btn-sm">
+            <Link to="/mlb/models/scenario-simulator" className="btn btn-outline-secondary btn-sm">
               Open simulator
             </Link>
             <SaveResearchViewButton

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import ApiService from '../services/api';
+import RankBand from './RankBand';
 import './styles/RankingsBoard.css';
 
 /**
@@ -193,7 +194,10 @@ export default function RankingsBoard({
       <td className="rb-mono">{r.record}</td>
       <td className="rb-mono rb-rating">{Math.round(r.rating)}</td>
       <td className="rb-mono rb-range">
-        {r.rank_p05 != null ? `${r.rank_p05}–${r.rank_p95}` : '—'}
+        <span className="rb-range-text">
+          {r.rank_p05 != null ? `${r.rank_p05}–${r.rank_p95}` : '—'}
+        </span>
+        <RankBand rank={r.rank} lo={r.rank_p05} hi={r.rank_p95} total={rows.length} />
       </td>
       {columns.map((c) => (
         <td key={c.key} className="rb-mono">{c.render(r)}</td>

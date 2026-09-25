@@ -1,5 +1,10 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams,
+} from 'react-router-dom';
+import {
+  CFB_DIVISIONS, LEGACY_MLB_REDIRECTS, LEGACY_PARAM_REDIRECTS, MLB,
+} from './config/sports';
 import HomePage from './components/HomePage';
 import TeamBatting from './components/TeamBatting';
 import PlayerBatting from './components/PlayerBatting';
@@ -32,51 +37,92 @@ import NotFoundPage from './components/NotFoundPage';
 import RouteMetadata from './components/RouteMetadata';
 import RecentViewTracker from './components/RecentViewTracker';
 
+/**
+ * Keeps an old URL working: renders a redirect to `build(params)`, carrying the query
+ * string and hash so a shared link with filters lands on the same view.
+ */
+function LegacyRedirect({ build }) {
+  const params = useParams();
+  const location = useLocation();
+  return <Navigate to={`${build(params)}${location.search}${location.hash}`} replace />;
+}
+
+/** `/cfb/<x>` where x is not a division is a section: `/cfb/rankings` means FBS rankings. */
+function CfbRoute({ children }) {
+  const { league, section } = useParams();
+  const location = useLocation();
+  if (!CFB_DIVISIONS.includes(league)) {
+    const rest = [league, section].filter(Boolean).join('/');
+    return <Navigate to={`/cfb/fbs/${rest}${location.search}`} replace />;
+  }
+  return children;
+}
+
 function AppShell() {
   return (
     <>
       <RouteMetadata />
       <RecentViewTracker />
       <Navbar />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/TeamBatting" element={<TeamBatting />} />
-        <Route path="/TeamPitching" element={<TeamPitching />} />
-        <Route path="/PlayerBatting" element={<PlayerBatting />} />
-        <Route path="/PlayerPitching" element={<PlayerPitching />} />
-        <Route path="/AssistedAnalysis" element={<AssistedAnalysis />} />
-        <Route path="/season-comparison" element={<SeasonComparison />} />
-        <Route path="/player-comparison" element={<PlayerComparison />} />
-        <Route path="/team-comparison" element={<TeamComparison />} />
-        <Route path="/advanced-analysis" element={<AdvancedPlayerAnalysis />} />
-        <Route path="/team/:teamAbbr" element={<TeamPage />} />
-        <Route path="/player/:playerId" element={<PlayerPage />} />
-        <Route path="/games" element={<TodaysGames />} />
-        <Route path="/game/:gamePk" element={<GameDetailsPage />} />
-        <Route path="/transactions" element={<Transactions />} />
-        <Route path="/transactions/:teamAbbr" element={<TeamTransactions />} />
-        <Route path="/predictions" element={<PredictionsPage />} />
-        <Route path="/rankings" element={<BaseballRankingsPage />} />
-        <Route path="/football" element={<FootballPage />} />
-        <Route path="/football/:league" element={<FootballPage />} />
-        {/* Declared before the :section route so "game" is not captured as a
-            section name. React Router ranks static segments above dynamic ones,
-            but the intent should not depend on knowing that. */}
-        <Route path="/football/:league/game/:gameId" element={<FootballGamePage />} />
-        <Route path="/pickem" element={<PickemPage />} />
-        <Route path="/pickem/:sport" element={<PickemPage />} />
-        <Route path="/pickem/:sport/:section" element={<PickemPage />} />
-        <Route path="/football/:league/:section" element={<FootballPage />} />
-        {/* Legacy NFL paths predate the shared football tab. */}
-        <Route path="/nfl/predictions" element={<Navigate to="/football/nfl/picks" replace />} />
-        <Route path="/prediction-diagnostics" element={<PredictionDiagnosticsPage />} />
-        <Route path="/split-explorer" element={<SplitExplorerPage />} />
-        <Route path="/statcast-lab" element={<StatcastLabPage />} />
-        <Route path="/comparison-workbench" element={<ComparisonWorkbenchPage />} />
-        <Route path="/scenario-simulator" element={<ScenarioSimulatorPage />} />
-        <Route path="/research-workflow" element={<ResearchWorkflowPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+      <main id="main" className="ht-main">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+
+          {/* ── MLB ── */}
+          <Route path="/mlb" element={<Navigate to={MLB.predictions} replace />} />
+          <Route path={MLB.predictions} element={<PredictionsPage />} />
+          <Route path={MLB.games} element={<TodaysGames />} />
+          <Route path="/mlb/game/:gamePk" element={<GameDetailsPage />} />
+          <Route path={MLB.rankings} element={<BaseballRankingsPage />} />
+          <Route path="/mlb/stats" element={<Navigate to={MLB.teamBatting} replace />} />
+          <Route path={MLB.teamBatting} element={<TeamBatting />} />
+          <Route path={MLB.teamPitching} element={<TeamPitching />} />
+          <Route path={MLB.playerBatting} element={<PlayerBatting />} />
+          <Route path={MLB.playerPitching} element={<PlayerPitching />} />
+          <Route path={MLB.transactions} element={<Transactions />} />
+          <Route path="/mlb/transactions/:teamAbbr" element={<TeamTransactions />} />
+          <Route path="/mlb/team/:teamAbbr" element={<TeamPage />} />
+          <Route path="/mlb/player/:playerId" element={<PlayerPage />} />
+          <Route path={MLB.diagnostics} element={<PredictionDiagnosticsPage />} />
+          <Route path={MLB.scenarioSimulator} element={<ScenarioSimulatorPage />} />
+          <Route path="/mlb/lab" element={<Navigate to={MLB.splitExplorer} replace />} />
+          <Route path={MLB.splitExplorer} element={<SplitExplorerPage />} />
+          <Route path={MLB.statcastLab} element={<StatcastLabPage />} />
+          <Route path={MLB.comparisonWorkbench} element={<ComparisonWorkbenchPage />} />
+          <Route path={MLB.teamComparison} element={<TeamComparison />} />
+          <Route path={MLB.playerComparison} element={<PlayerComparison />} />
+          <Route path={MLB.seasonComparison} element={<SeasonComparison />} />
+          <Route path={MLB.advancedAnalysis} element={<AdvancedPlayerAnalysis />} />
+          <Route path={MLB.researchWorkflow} element={<ResearchWorkflowPage />} />
+          <Route path={MLB.assistedAnalysis} element={<AssistedAnalysis />} />
+
+          {/* ── NFL ── FootballPage falls back to the NFL league when no :league. */}
+          <Route path="/nfl" element={<FootballPage />} />
+          <Route path="/nfl/game/:gameId" element={<FootballGamePage league="nfl" />} />
+          <Route path="/nfl/:section" element={<FootballPage />} />
+
+          {/* ── College ── */}
+          <Route path="/cfb" element={<Navigate to="/cfb/fbs" replace />} />
+          <Route path="/cfb/:league" element={<CfbRoute><FootballPage /></CfbRoute>} />
+          <Route path="/cfb/:league/game/:gameId" element={<CfbRoute><FootballGamePage /></CfbRoute>} />
+          <Route path="/cfb/:league/:section" element={<CfbRoute><FootballPage /></CfbRoute>} />
+
+          {/* ── Pick'em ── kept at its own path: these links are shared off-site. */}
+          <Route path="/pickem" element={<PickemPage />} />
+          <Route path="/pickem/:sport" element={<PickemPage />} />
+          <Route path="/pickem/:sport/:section" element={<PickemPage />} />
+
+          {/* ── Pre-redesign URLs ── */}
+          {LEGACY_MLB_REDIRECTS.map(([from, to]) => (
+            <Route key={from} path={from} element={<LegacyRedirect build={() => to} />} />
+          ))}
+          {LEGACY_PARAM_REDIRECTS.map(([from, build]) => (
+            <Route key={from} path={from} element={<LegacyRedirect build={build} />} />
+          ))}
+
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </main>
     </>
   );
 }

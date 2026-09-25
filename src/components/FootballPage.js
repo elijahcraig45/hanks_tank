@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import ApiService from '../services/api';
 import ScoreboardSection from './football/ScoreboardSection';
 import RankingsBoard from './RankingsBoard';
@@ -26,7 +26,7 @@ export const LEAGUES = [
   { key: 'fcs', sport: 'cfb', division: 'fcs', label: 'College FCS', short: 'FCS' },
 ];
 
-const SECTIONS = [
+export const SECTIONS = [
   { key: 'picks', label: 'Picks' },
   // College only for now: the live feed behind it publishes no NFL data.
   { key: 'scoreboard', label: 'Scores', availableFor: (l) => l.sport === 'cfb' },
@@ -988,7 +988,6 @@ function PicksSection({ league, season, week, setWeek, weeks, predictions,
 /* ── Page ───────────────────────────────────────────────────────────────── */
 export default function FootballPage() {
   const { league: leagueParam, section: sectionParam } = useParams();
-  const navigate = useNavigate();
 
   const league = useMemo(
     () => LEAGUES.find((l) => l.key === leagueParam) || LEAGUES[0],
@@ -1084,54 +1083,28 @@ export default function FootballPage() {
     [seasonPreds, week]
   );
 
-  const go = (l, s) => navigate(`/football/${l}/${s}`);
-
   return (
     <div className="ft-page">
-      <header className="ft-hero">
-        <div className="ft-hero-inner">
-          <div className="ft-hero-top">
-            <h1>Football</h1>
+      {/* League and section switching live in the site shell's sport bar (Navbar),
+          which reads SECTIONS from this module, so the page carries only its title and
+          the season. */}
+      <header className="ht-page-head">
+        <div className="ht-page-head-inner">
+          <div>
+            <p className="ht-eyebrow">{league.sport === 'nfl' ? 'NFL' : `College football · ${league.short}`}</p>
+            <h1>{SECTIONS.find((s) => s.key === section)?.label}</h1>
+          </div>
+          <label className="ht-season">
+            <span>Season</span>
             <select
-              className="ft-season"
               value={season}
               onChange={(e) => setSeason(Number(e.target.value))}
               aria-label="Season"
             >
               {SEASONS.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
-          </div>
-
-          <div className="ft-leagues" role="tablist" aria-label="League">
-            {LEAGUES.map((l) => (
-              <button
-                key={l.key}
-                role="tab"
-                aria-selected={l.key === league.key}
-                className={`ft-league${l.key === league.key ? ' ft-league--active' : ''}`}
-                onClick={() => go(l.key, section)}
-              >
-                {l.label}
-              </button>
-            ))}
-          </div>
+          </label>
         </div>
-
-        <nav className="ft-sections" aria-label="Section">
-          {/* A section a league genuinely cannot serve is not shown at all. Sections
-              whose data merely is not built yet DO show, and say so — the difference
-              between "this sport has no such feed" and "not loaded yet" is worth
-              keeping visible. */}
-          {SECTIONS.filter((s) => !s.availableFor || s.availableFor(league)).map((s) => (
-            <button
-              key={s.key}
-              className={`ft-section${s.key === section ? ' ft-section--active' : ''}`}
-              onClick={() => go(league.key, s.key)}
-            >
-              {s.label}
-            </button>
-          ))}
-        </nav>
       </header>
 
       <div className="ft-body">
@@ -1174,7 +1147,7 @@ export default function FootballPage() {
 
         <p className="ft-foot">
           Ratings are fit over every game since 1999 (NFL) or 2014 (college).{' '}
-          <Link to="/">Back to the scoreboard</Link>
+          <Link to="/">All sports today</Link>
         </p>
       </div>
     </div>

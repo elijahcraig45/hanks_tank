@@ -199,7 +199,7 @@ function PredictionDiagnosticsPage() {
           </p>
         </div>
         <div className="prediction-diagnostics-header-actions">
-          <Button as={Link} to="/predictions" variant="outline-secondary" size="sm">
+          <Button as={Link} to="/mlb/predictions" variant="outline-secondary" size="sm">
             Back to Predictions
           </Button>
           <SaveResearchViewButton
@@ -483,7 +483,7 @@ function PredictionDiagnosticsPage() {
                               <td className="text-nowrap">{formatDiagnosticsDate(row.gameDate)}</td>
                               <td>
                                 <div className="fw-semibold">
-                                  <Link to={`/game/${row.gamePk}`} className="prediction-diagnostics-link">
+                                  <Link to={`/mlb/game/${row.gamePk}`} className="prediction-diagnostics-link">
                                     {row.awayTeamName} @ {row.homeTeamName}
                                   </Link>
                                 </div>

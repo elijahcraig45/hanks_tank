@@ -71,7 +71,7 @@ describe('PredictionsPage', () => {
     expect(screen.getByText('1 confirmed lineup')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /open game center/i })).toHaveAttribute(
       'href',
-      '/game/824776'
+      '/mlb/game/824776'
     );
   });
 });

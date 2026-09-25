@@ -484,7 +484,7 @@ function ScenarioSimulatorPage() {
           </p>
         </div>
         <div className="scenario-simulator-actions">
-          <Button as={Link} to="/comparison-workbench" variant="outline-secondary" size="sm">
+          <Button as={Link} to="/mlb/lab/comparison-workbench" variant="outline-secondary" size="sm">
             Back to Workbench
           </Button>
           <SaveResearchViewButton

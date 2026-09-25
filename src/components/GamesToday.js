@@ -407,27 +407,27 @@ const TodaysGames = () => {
           className={`game-card shadow-sm${inProgress ? " game-card--live" : ""}`}
           role="button"
           tabIndex={0}
-          onClick={() => navigate(`/game/${game.gamePk}`)}
+          onClick={() => navigate(`/mlb/game/${game.gamePk}`)}
           onKeyDown={(event) => {
             if (event.key === "Enter" || event.key === " ") {
               event.preventDefault();
-              navigate(`/game/${game.gamePk}`);
+              navigate(`/mlb/game/${game.gamePk}`);
             }
           }}
         >
           <Card.Body className="p-3">
               <div className="game-card-actions mb-2" onClick={(event) => event.stopPropagation()}>
                 {awayTeamAbbr && (
-                  <Link to={`/team/${awayTeamAbbr}`} className="game-quick-link">
+                  <Link to={`/mlb/team/${awayTeamAbbr}`} className="game-quick-link">
                     {awayTeamAbbr} hub
                   </Link>
                 )}
                 {homeTeamAbbr && (
-                  <Link to={`/team/${homeTeamAbbr}`} className="game-quick-link">
+                  <Link to={`/mlb/team/${homeTeamAbbr}`} className="game-quick-link">
                     {homeTeamAbbr} hub
                   </Link>
                 )}
-                <Link to={`/game/${game.gamePk}`} className="game-quick-link game-quick-link--primary">
+                <Link to={`/mlb/game/${game.gamePk}`} className="game-quick-link game-quick-link--primary">
                   Open Game Center
                 </Link>
               </div>

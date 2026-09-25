@@ -48,7 +48,7 @@ function ResearchWorkflowPage() {
           id: `player:${player.playerId}`,
           label: player.Name,
           subtitle: player.Team,
-          path: `/player/${player.playerId}`,
+          path: `/mlb/player/${player.playerId}`,
           type: 'player',
         });
       });
@@ -71,7 +71,7 @@ function ResearchWorkflowPage() {
         id: `team:${team.abbreviation}`,
         label: team.name,
         subtitle: team.abbreviation,
-        path: `/team/${team.abbreviation}`,
+        path: `/mlb/team/${team.abbreviation}`,
         type: 'team',
       })),
     []
@@ -132,7 +132,7 @@ function ResearchWorkflowPage() {
           </p>
         </div>
         <div className="research-workflow-actions">
-          <Button as={Link} to="/scenario-simulator" variant="outline-secondary" size="sm">
+          <Button as={Link} to="/mlb/models/scenario-simulator" variant="outline-secondary" size="sm">
             Back to Simulator
           </Button>
           <Button variant="outline-secondary" size="sm" onClick={() => downloadJson('research-saved-views.json', savedViews)}>
