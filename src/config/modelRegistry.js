@@ -76,8 +76,8 @@ const MLB_CARDS = {
     ],
     caveats: [
       'Three inputs are served differently than in training (season progress pinned at 1.0, '
-        + 'day-of-week numbering, a flipped luck sign). Fixed on a branch, not deployed; the '
-        + 'fix moves log loss by about 0.001.',
+        + 'day-of-week numbering, a flipped luck sign). A fix is '
+        + 'measured to move log loss by only about 0.001.',
       'The table also holds 418 post-game backfill rows; the scoreboard ignores anything '
         + 'written after first pitch.',
       'The "61.48%" in the old V10 write-up was 283 early games scored with features rebuilt '
@@ -100,7 +100,7 @@ const MLB_CARDS = {
       + 'probability. An L1 penalty (C = 0.557) keeps the weights small. It is refit on this '
       + 'season\'s completed games only, because training on 2015-2025 measured worse.',
     record: {
-      live: 'Shadow writer built, not deployed: no live rows yet.',
+      live: 'Not live yet: no pregame predictions recorded so far.',
       backtest: 'On the untouched 400-game holdout (2026-08-08 to 09-07) it scored log loss '
         + '0.6821 and 56.75% accuracy vs V10\'s 0.6859 and 57.50%. 450 search trials across '
         + '7 model families and 161 features rediscovered it; nothing beat it in both the '
@@ -139,8 +139,8 @@ const MLB_CARDS = {
       + 'of simulated games give a raw win rate. A logistic regression fit on earlier seasons '
       + 'then combines logit(sim) with logit(strength) into the final probability.',
     record: {
-      live: 'Shadow writer built, not deployed: it needs 1.3-2.2 GB of memory and the live '
-        + 'Cloud Function has 1 GB.',
+      live: 'Not live yet: no pregame predictions recorded so far. It needs 1.3-2.2 GB '
+        + 'of memory to run.',
       backtest: 'Config frozen on 2016-19, then scored once on 15,000 games from 2020-26: the '
         + 'blend beat strength alone by 0.0021 log loss (95% CI 0.0010 to 0.0032). The '
         + 'simulator alone only ties it. It still loses to the closing line.',
@@ -244,8 +244,8 @@ const FPI = {
   strengths: ['Strong early in the college season, from priors we do not use.'],
   weaknesses: ['A black box: nothing to learn from its errors.'],
   caveats: [
-    'We never tune toward FPI. Its snapshot table is built but not deployed, so live FPI '
-      + 'rows may be missing.',
+    'We never tune toward FPI. Live FPI rows are '
+      + 'pregame snapshots, so a game appears only once one was taken before kickoff.',
   ],
   learn: [LEARN.footballCompare],
 };
@@ -298,7 +298,7 @@ const NFL_CARDS = {
     strengths: ['Can use many signals at once.'],
     weaknesses: ['90 features, 38 of them exact linear duplicates; about 3 real signals. A '
       + '4-feature logistic beat it.'],
-    caveats: ['The EPA fix is on a branch and not deployed.', 'No margin, so no spread error.'],
+    caveats: ['2025-26 live predictions ran without their EPA inputs because of a data-loading bug.', 'No margin, so no spread error.'],
     learn: [LEARN.footballModels, LEARN.footballCompare],
   },
   fpi: {
@@ -374,7 +374,7 @@ const CFB_CARDS = {
     how: 'Retrained weekly on college games since 2021; the trees output a probability.',
     record: {
       live: 'All 382 predictions for 2026 weeks 2-4 were made with last-3-games point '
-        + 'differential = 0 (a cold-start bug), fixed on a branch, not deployed.',
+        + 'differential = 0 (a cold-start bug).',
       backtest: 'FBS 2025 log loss 0.5318 — clearly behind the ridge (0.4823), FPI and the market.',
     },
     strengths: ['Already running every week.'],
