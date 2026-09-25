@@ -233,7 +233,7 @@ html[data-theme] {
   --bs-tertiary-bg: var(--surface-2);
   --bs-border-color: var(--border);
   --bs-border-color-translucent: var(--border);
-  --bs-heading-color: var(--text);
+  --bs-heading-color: inherit;
   --bs-link-color: var(--mlb);
   --bs-link-color-rgb: 29, 78, 216;
   --bs-link-hover-color: var(--ht-blue-dark);
@@ -285,3 +285,24 @@ html[data-theme='dark'] .text-dark { color: var(--text) !important; }
 .recharts-legend-item-text { color: var(--text-2) !important; }
 .recharts-responsive-container { max-width: 100%; }
 svg { max-width: 100%; }
+
+/* Team colours are brand primaries picked for a white page; many (navy,
+   black) vanish on a dark surface and some (gold) vanish on white. In dark
+   mode text falls back to the theme colour; the probability bars keep the
+   team colours, so the identity cue is not lost. */
+html[data-theme='dark'] .pred-team-name[style*='color'],
+html[data-theme='dark'] .pred-bar-labels span[style*='color'],
+html[data-theme='dark'] .fs-3.fw-bold[style*='color'] {
+  color: var(--text) !important;
+}
+
+/* Phones: a Bootstrap table that was not wrapped in .table-responsive would
+   push the page sideways. Let it scroll inside its own box instead. */
+@media (max-width: 700px) {
+  .ht-main :not(.table-responsive) > table.table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

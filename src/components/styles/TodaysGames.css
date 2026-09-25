@@ -30,7 +30,7 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  background: linear-gradient(180deg, rgba(248, 249, 250, 0.98) 0%, rgba(248, 249, 250, 0.94) 100%);
+  background: linear-gradient(180deg, var(--surface-2) 0%, var(--surface-2) 100%);
   backdrop-filter: blur(8px);
 }
 
@@ -243,7 +243,7 @@
 }
 
 .live-snapshot {
-  background: linear-gradient(135deg, rgba(25, 135, 84, 0.08) 0%, rgba(255, 255, 255, 0.95) 100%);
+  background: linear-gradient(135deg, rgba(25, 135, 84, 0.08) 0%, var(--surface) 100%);
   border: 1px solid rgba(25, 135, 84, 0.12);
   border-radius: 10px;
   padding: 0.55rem 0.65rem;

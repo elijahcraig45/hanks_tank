@@ -341,7 +341,7 @@
   font-size: 0.82rem;
   color: var(--text);
   padding: 0.45rem 0.75rem;
-  background: linear-gradient(135deg, #fff8e1 0%, var(--surface) 100%);
+  background: linear-gradient(135deg, var(--warn-soft) 0%, var(--surface) 100%);
   border-left: 3px solid #ffc107;
   border-radius: 0 6px 6px 0;
   line-height: 1.4;
