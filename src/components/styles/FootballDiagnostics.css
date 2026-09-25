@@ -31,7 +31,7 @@
 }
 
 .fd-export {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--ht-gray-200);
   border-radius: 6px;
   padding: 6px 14px;
@@ -63,7 +63,7 @@
 }
 .fd-chips { display: flex; gap: 3px; flex-wrap: wrap; }
 .fd-chip {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--ht-gray-200);
   border-radius: 6px;
   padding: 5px 11px;
@@ -84,8 +84,8 @@
   border-radius: 6px;
   padding: 5px 8px;
   font-size: 0.79rem;
-  background: #fff;
-  color: #0f172a;
+  background: var(--surface);
+  color: var(--text);
   min-width: 140px;
 }
 .fd-field select:focus, .fd-field input:focus {
@@ -109,7 +109,7 @@
   margin-bottom: 1.25rem;
 }
 .fd-tile {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--ht-gray-200);
   border-top: 2px solid var(--ht-gray-200);
   border-radius: var(--ht-radius);
@@ -134,7 +134,7 @@
 
 /* ── Panels ── */
 .fd-panel {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--ht-gray-200);
   border-radius: var(--ht-radius);
   box-shadow: var(--ht-shadow-sm);
@@ -226,8 +226,10 @@
   height: 110px;
   padding-top: 0.5rem;
 }
+.fd-spark { overflow-x: auto; overflow-y: hidden; }
 .fd-spark-col {
-  flex: 1;
+  flex: 1 0 12px;
+  min-width: 12px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -251,7 +253,7 @@
 /* ── States ── */
 .fd-state { padding: 2rem 1rem; text-align: center; font-size: 0.86rem; color: var(--ht-gray-600); }
 .fd-empty {
-  background: #fff;
+  background: var(--surface);
   border: 1px dashed var(--ht-gray-200);
   border-radius: var(--ht-radius);
   padding: 2.25rem 1.5rem;

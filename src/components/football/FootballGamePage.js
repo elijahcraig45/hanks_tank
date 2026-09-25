@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
+import { footballPath } from '../../config/sports';
 import ApiService from '../../services/api';
 import GameWinProbabilityChart from './GameWinProbabilityChart';
 import DriveChart from './DriveChart';
@@ -165,8 +166,10 @@ function ModelPick({ prediction, game }) {
   );
 }
 
-export default function FootballGamePage() {
-  const { league = 'fbs', gameId } = useParams();
+export default function FootballGamePage({ league: leagueProp }) {
+  const params = useParams();
+  const league = leagueProp || params.league || 'fbs';
+  const { gameId } = params;
   const [search] = useSearchParams();
   const sport = LEAGUE_TO_SPORT[league] || 'cfb';
 
@@ -209,7 +212,7 @@ export default function FootballGamePage() {
         <div className="ft-empty">
           <div className="ft-empty-title">Could not load this game</div>
           <p className="ft-empty-detail">{error || 'The game could not be found.'}</p>
-          <Link className="ft-empty-action" to={`/football/${league}/scoreboard`}>
+          <Link className="ft-empty-action" to={footballPath(league, 'scoreboard')}>
             Back to the scoreboard
           </Link>
         </div>
@@ -326,7 +329,7 @@ export default function FootballGamePage() {
       </section>
 
       <p className="ft-note">
-        <Link to={`/football/${league}/scoreboard`}>← All {league.toUpperCase()} games</Link>
+        <Link to={footballPath(league, 'scoreboard')}>← All {league.toUpperCase()} games</Link>
       </p>
     </div>
   );

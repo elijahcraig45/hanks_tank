@@ -240,7 +240,7 @@ function HomePage() {
       {/* Quick Links */}
       <Row className="mb-4 g-3">
         <Col xs={6} md={3}>
-          <Card className="h-100 text-center hover-shadow" as={Link} to="/TeamBatting" style={{ textDecoration: 'none', cursor: 'pointer' }}>
+          <Card className="h-100 text-center hover-shadow" as={Link} to="/mlb/stats/team-batting" style={{ textDecoration: 'none', cursor: 'pointer' }}>
             <Card.Body>
               <h3>🏏</h3>
               <h6 className="text-dark">Team Batting</h6>
@@ -248,7 +248,7 @@ function HomePage() {
           </Card>
         </Col>
         <Col xs={6} md={3}>
-          <Card className="h-100 text-center hover-shadow" as={Link} to="/TeamPitching" style={{ textDecoration: 'none', cursor: 'pointer' }}>
+          <Card className="h-100 text-center hover-shadow" as={Link} to="/mlb/stats/team-pitching" style={{ textDecoration: 'none', cursor: 'pointer' }}>
             <Card.Body>
               <h3>⚡</h3>
               <h6 className="text-dark">Team Pitching</h6>
@@ -256,7 +256,7 @@ function HomePage() {
           </Card>
         </Col>
         <Col xs={6} md={3}>
-          <Card className="h-100 text-center hover-shadow" as={Link} to="/PlayerBatting" style={{ textDecoration: 'none', cursor: 'pointer' }}>
+          <Card className="h-100 text-center hover-shadow" as={Link} to="/mlb/stats/player-batting" style={{ textDecoration: 'none', cursor: 'pointer' }}>
             <Card.Body>
               <h3>👤</h3>
               <h6 className="text-dark">Player Batting</h6>
@@ -264,7 +264,7 @@ function HomePage() {
           </Card>
         </Col>
         <Col xs={6} md={3}>
-          <Card className="h-100 text-center hover-shadow" as={Link} to="/games" style={{ textDecoration: 'none', cursor: 'pointer' }}>
+          <Card className="h-100 text-center hover-shadow" as={Link} to="/mlb/games" style={{ textDecoration: 'none', cursor: 'pointer' }}>
             <Card.Body>
               <h3>🎯</h3>
               <h6 className="text-dark">Today's Games</h6>
@@ -349,7 +349,7 @@ function HomePage() {
                           <tr key={idx}>
                             <td>
                               <Link 
-                                to={`/team/${getTeamAbbreviation(team.Tm)}`} 
+                                to={`/mlb/team/${getTeamAbbreviation(team.Tm)}`} 
                                 className="text-decoration-none text-dark fw-semibold"
                               >
                                 {getTeamAbbreviation(team.Tm)}

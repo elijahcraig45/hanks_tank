@@ -27,6 +27,9 @@ jest.mock('./components/ComparisonWorkbenchPage', () => () => <div>ComparisonWor
 jest.mock('./components/ScenarioSimulatorPage', () => () => <div>ScenarioSimulatorPage</div>);
 jest.mock('./components/ResearchWorkflowPage', () => () => <div>ResearchWorkflowPage</div>);
 jest.mock('./components/FootballPage', () => () => <div>FootballPage</div>);
+jest.mock('./components/football/FootballGamePage', () => () => <div>FootballGamePage</div>);
+jest.mock('./components/BaseballRankingsPage', () => () => <div>BaseballRankingsPage</div>);
+jest.mock('./components/pickem/PickemPage', () => () => <div>PickemPage</div>);
 jest.mock('./components/NotFoundPage', () => () => <div>NotFoundPage</div>);
 
 beforeEach(() => {
@@ -41,27 +44,67 @@ test('renders the app shell and default route', () => {
   expect(screen.getByText('HomePage')).toBeInTheDocument();
   expect(document.title).toBe("Hank's Tank");
   expect(document.head.querySelector('meta[name="description"]')?.getAttribute('content')).toContain(
-    'baseball and football analytics'
+    'MLB, NFL and college football'
   );
 });
 
-test('serves the football tab at every depth of its path', () => {
-  ['/football', '/football/fbs', '/football/fbs/rankings'].forEach((path) => {
+test('serves each football sport at every depth of its path', () => {
+  [
+    ['/nfl', "NFL | Hank's Tank"],
+    ['/nfl/rankings', "NFL | Hank's Tank"],
+    ['/cfb/fbs', "College Football | Hank's Tank"],
+    ['/cfb/fcs/rankings', "College Football | Hank's Tank"],
+  ].forEach(([path, title]) => {
     window.history.pushState({}, '', path);
     const { unmount } = render(<App />);
     expect(screen.getByText('FootballPage')).toBeInTheDocument();
-    expect(document.title).toBe("Football | Hank's Tank");
+    expect(document.title).toBe(title);
     unmount();
   });
 });
 
-test('redirects the legacy NFL predictions path onto the football tab', () => {
+test('redirects the legacy NFL predictions path onto the NFL picks', () => {
   window.history.pushState({}, '', '/nfl/predictions');
 
   render(<App />);
 
   expect(screen.getByText('FootballPage')).toBeInTheDocument();
-  expect(window.location.pathname).toBe('/football/nfl/picks');
+  expect(window.location.pathname).toBe('/nfl/picks');
+});
+
+test.each([
+  ['/football', '/nfl'],
+  ['/football/nfl/picks', '/nfl/picks'],
+  ['/football/fbs/rankings', '/cfb/fbs/rankings'],
+  ['/football/fcs/models', '/cfb/fcs/models'],
+  ['/football/fbs/game/401', '/cfb/fbs/game/401'],
+  ['/cfb', '/cfb/fbs'],
+  ['/cfb/rankings', '/cfb/fbs/rankings'],
+  ['/games', '/mlb/games'],
+  ['/game/824776', '/mlb/game/824776'],
+  ['/predictions', '/mlb/predictions'],
+  ['/rankings', '/mlb/rankings'],
+  ['/prediction-diagnostics', '/mlb/models/diagnostics'],
+  ['/TeamBatting', '/mlb/stats/team-batting'],
+  ['/PlayerPitching', '/mlb/stats/player-pitching'],
+  ['/team/ATL', '/mlb/team/ATL'],
+  ['/player/660670', '/mlb/player/660670'],
+  ['/transactions/ATL', '/mlb/transactions/ATL'],
+  ['/statcast-lab', '/mlb/lab/statcast-lab'],
+  ['/scenario-simulator', '/mlb/models/scenario-simulator'],
+  ['/mlb', '/mlb/predictions'],
+])('redirects %s to %s', (from, to) => {
+  window.history.pushState({}, '', from);
+  render(<App />);
+  expect(window.location.pathname).toBe(to);
+});
+
+test('a legacy redirect keeps the query string', () => {
+  window.history.pushState({}, '', '/statcast-lab?playerId=660670&season=2026');
+  render(<App />);
+  expect(window.location.pathname).toBe('/mlb/lab/statcast-lab');
+  expect(window.location.search).toBe('?playerId=660670&season=2026');
+  expect(screen.getByText('StatcastLabPage')).toBeInTheDocument();
 });
 
 test('renders the not found page for unknown routes', () => {
@@ -79,7 +122,7 @@ test('renders the not found page for unknown routes', () => {
 });
 
 test('tracks recently viewed routes for supported pages', () => {
-  window.history.pushState({}, '', '/predictions');
+  window.history.pushState({}, '', '/mlb/predictions');
 
   render(<App />);
 
@@ -89,7 +132,7 @@ test('tracks recently viewed routes for supported pages', () => {
   const recentViews = JSON.parse(window.localStorage.getItem(STORAGE_KEY));
   expect(recentViews).toHaveLength(1);
   expect(recentViews[0]).toMatchObject({
-    path: '/predictions',
-    label: 'Predictions',
+    path: '/mlb/predictions',
+    label: 'MLB Predictions',
   });
 });

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import ApiService from '../services/api';
+import RankBand from './RankBand';
 import './styles/RankingsBoard.css';
 
 /**
@@ -72,6 +73,25 @@ export function buildTiers(rows) {
 }
 
 const ord = (v) => (v == null ? '—' : `${v}`);
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** "2026-09-24" -> "Sep 24". Parsed by hand: `new Date('2026-09-24')` is UTC midnight,
+ * which renders as the previous day anywhere west of Greenwich. */
+export function shortDate(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || '');
+  return m ? `${MONTHS[Number(m[2]) - 1]} ${Number(m[3])}` : null;
+}
+
+/** Header freshness text. A date where the board has one — an MLB "week" is an
+ * internal index nobody counts in — falling back to the week for older tables. */
+export function asOfLabel(meta) {
+  if (!meta) return null;
+  const through = shortDate(meta.as_of_date);
+  const updated = shortDate(meta.computed_at);
+  if (through) return `through ${through}${updated ? ` · updated ${updated}` : ''}`;
+  return meta.as_of_week ? `through week ${meta.as_of_week}` : null;
+}
 const dec = (v, d = 1) => (v == null || Number.isNaN(v) ? '—' : Number(v).toFixed(d));
 
 /** Optional columns, rendered only where the sport actually supplies the data. */
@@ -80,7 +100,7 @@ const OPTIONAL_COLUMNS = [
   { key: 'ap_rank', label: 'AP', title: 'Associated Press poll', render: (r) => ord(r.ap_rank) },
   { key: 'coaches_rank', label: 'Coaches', title: 'AFCA Coaches poll', render: (r) => ord(r.coaches_rank) },
   { key: 'fcs_coaches_rank', label: 'Coaches', title: 'FCS Coaches poll', render: (r) => ord(r.fcs_coaches_rank) },
-  { key: 'sor_rank', label: 'SOR', title: 'Strength of record rank (ESPN FPI)', render: (r) => ord(r.sor_rank) },
+  { key: 'sor_rank', label: 'SOR', title: 'Strength of record rank: wins against this schedule relative to what an average team would expect (ESPN FPI for college; computed from these ratings where ESPN publishes none)', render: (r) => ord(r.sor_rank) },
   { key: 'sos_rank', label: 'SOS', title: 'Strength of schedule rank (ESPN FPI)', render: (r) => ord(r.sos_rank) },
   { key: 'fpi', label: 'FPI', title: "ESPN's Football Power Index", render: (r) => dec(r.fpi, 1) },
   { key: 'eff_offense', label: 'Off', title: 'Offensive efficiency (ESPN)', render: (r) => dec(r.eff_offense, 1) },
@@ -193,7 +213,10 @@ export default function RankingsBoard({
       <td className="rb-mono">{r.record}</td>
       <td className="rb-mono rb-rating">{Math.round(r.rating)}</td>
       <td className="rb-mono rb-range">
-        {r.rank_p05 != null ? `${r.rank_p05}–${r.rank_p95}` : '—'}
+        <span className="rb-range-text">
+          {r.rank_p05 != null ? `${r.rank_p05}–${r.rank_p95}` : '—'}
+        </span>
+        <RankBand rank={r.rank} lo={r.rank_p05} hi={r.rank_p95} total={rows.length} />
       </td>
       {columns.map((c) => (
         <td key={c.key} className="rb-mono">{c.render(r)}</td>
@@ -206,7 +229,7 @@ export default function RankingsBoard({
       <div className="rb-head">
         <h2>{title} — {season}</h2>
         <span className="rb-meta">
-          {meta?.as_of_week ? `through week ${meta.as_of_week}` : null}
+          {asOfLabel(meta)}
           {meta?.count ? ` · ${rows.length} teams` : null}
         </span>
       </div>
@@ -221,7 +244,9 @@ export default function RankingsBoard({
 
       <p className="rb-note">
         One global fit over every game rather than a week-by-week rating walk, so the
-        result does not depend on the order games were played. Home field is fit
+        result does not depend on the order games were played.
+        {meta?.model === 'margin' && ' Ratings are fitted on scoring margin, not just wins and losses.'}
+        {meta?.model === 'blend' && ' Ratings combine a win/loss fit with a scoring-margin fit.'} Home field is fit
         explicitly{meta?.home_field_points != null && ` (${Math.round(meta.home_field_points)} points)`}
         {meta?.prior_weight != null && !meta?.is_preseason
           && ` and last season carries in as a decaying prior, down to ${Math.round(meta.prior_weight * 100)}% weight by now`}.

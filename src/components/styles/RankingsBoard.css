@@ -1,7 +1,7 @@
 /* ─── Power rankings board (shared by every sport) ───────────────────────── */
 
 .rb {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--ht-gray-200);
   border-radius: var(--ht-radius);
   box-shadow: var(--ht-shadow-sm);
@@ -151,7 +151,7 @@
 .rb-state--error { color: var(--ht-red); }
 
 .rb-empty {
-  background: #fff;
+  background: var(--surface);
   border: 1px dashed var(--ht-gray-200);
   border-radius: var(--ht-radius);
   padding: 2.25rem 1.5rem;
@@ -225,7 +225,7 @@
   font-family: var(--ht-font-mono);
   cursor: pointer;
 }
-.rank-season option { color: #0f172a; }
+.rank-season option { color: var(--text); }
 
 .rank-body {
   max-width: 1240px;
@@ -269,11 +269,73 @@
   font-family: inherit;
   letter-spacing: 0;
   text-transform: none;
-  color: #0f172a;
-  background: #fff;
+  color: var(--text);
+  background: var(--surface);
   cursor: pointer;
 }
 .rb-filter select:focus { outline: none; border-color: var(--ht-gray-400); }
 .rb--ftbl .rb-filter select:focus { border-color: var(--sport-ftbl); }
 .rb--mlb  .rb-filter select:focus { border-color: var(--sport-mlb); }
 .rb-filter-note { font-size: 0.74rem; color: var(--ht-gray-400); }
+
+/* ─── Rank range band (RankBand.js) ──────────────────────────────────────
+   The uncertainty is the headline of these boards, so the range is drawn,
+   not just printed: bar = 5th–95th percentile rank, tick = point rank, on
+   the full board's scale so overlapping neighbours are visible. */
+.rb-range { color: var(--text-2); white-space: nowrap; }
+.rb-range-text { display: inline-block; min-width: 3.2em; }
+.rank-band {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  width: 96px;
+  height: 10px;
+  margin-left: 8px;
+  border-radius: 5px;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.rank-band-range {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent) 38%, transparent);
+}
+.rank-band-point {
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+@media (max-width: 640px) {
+  .rank-band { width: 64px; margin-left: 6px; }
+}
+
+/* ─── Phones: keep the rank range on screen ──────────────────────────────
+   The range is the column that matters most, so on a phone the strength
+   bar goes, team names wrap, and the band stacks over its numbers — the
+   whole row fits without scrolling sideways. */
+.rb-filter label { max-width: 100%; min-width: 0; }
+.rb-filter select { max-width: 100%; min-width: 0; }
+.rb-table th, .rb-num, .rb-tier-name { color: var(--text-muted); }
+@media (max-width: 640px) {
+  .rb-filter label { flex-wrap: wrap; }
+  .rb-table { font-size: 0.78rem; }
+  .rb-table th, .rb-table td { padding: 6px 6px; }
+  .rb-team { min-width: 0; white-space: normal !important; }
+  .rb-name { display: block; line-height: 1.25; }
+  .rb-strength { display: none; }
+  .rb-range .rb-range-text { display: block; min-width: 0; font-size: 0.7rem; }
+  .rb-range .rank-band { width: 52px; margin-left: 0; }
+  .rb-tier td { white-space: normal; }
+  .rb-tier-desc { display: block; margin-left: 0; }
+}
+@media (max-width: 400px) {
+  /* The rating is the least readable number on the board; the range and
+     record carry the story. */
+  .rb-table tr > :nth-child(4):not([colspan]) { display: none; }
+}

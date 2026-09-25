@@ -5,20 +5,20 @@
 .search-results {
   max-height: 300px;
   overflow-y: auto;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border);
   border-radius: 0.25rem;
-  background-color: #fff;
+  background-color: var(--surface);
 }
 
 .search-result-item {
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border);
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .search-result-item:hover {
-  background-color: #f8f9fa;
+  background-color: var(--surface-2);
 }
 
 .search-result-item:last-child {
@@ -27,7 +27,7 @@
 
 .selected-players {
   padding: 1rem;
-  background-color: #f8f9fa;
+  background-color: var(--surface-2);
   border-radius: 0.5rem;
 }
 
@@ -36,8 +36,8 @@
 }
 
 .player-comparison .card-header {
-  background-color: #f8f9fa;
-  border-bottom: 2px solid #dee2e6;
+  background-color: var(--surface-2);
+  border-bottom: 2px solid var(--border);
 }
 
 .player-comparison .table {
@@ -45,7 +45,7 @@
 }
 
 .player-comparison .table th {
-  background-color: #e9ecef;
+  background-color: var(--surface-3);
   font-weight: 600;
   text-align: center;
   vertical-align: middle;

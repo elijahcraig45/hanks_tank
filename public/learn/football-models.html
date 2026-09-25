@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>/* Follow the theme chosen on the main site (same origin). */(function(){try{var t=localStorage.getItem('ht-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Football Margin Ridge</title>
+<style>
+:root{color-scheme:light;
+ --ground:#f6f7f9;--surface:#fff;--surface-2:#eef1f5;
+ --ink:#111620;--ink-2:#4b5566;--ink-3:#7d8798;
+ --rule:#dee2e9;--rule-2:#c9d0da;
+ --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#8a63d2;
+ --warn-bg:#fdf1ea;--ok-bg:#e7f4ee;--note-bg:#e8eff9;
+ --f-display:"Helvetica Neue",Arial,system-ui,sans-serif;
+ --f-body:Georgia,"Times New Roman",serif;
+ --f-mono:ui-monospace,Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+ --ground:#13161b;--surface:#1a1e25;--surface-2:#21262e;
+ --ink:#eef1f5;--ink-2:#aeb8c6;--ink-3:#78828f;
+ --rule:#282e37;--rule-2:#39414c;
+ --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#9b7be0;
+ --warn-bg:#2a1f19;--ok-bg:#152620;--note-bg:#1b2533}}
+:root[data-theme="dark"]{color-scheme:dark;
+ --ground:#13161b;--surface:#1a1e25;--surface-2:#21262e;
+ --ink:#eef1f5;--ink-2:#aeb8c6;--ink-3:#78828f;
+ --rule:#282e37;--rule-2:#39414c;
+ --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#9b7be0;
+ --warn-bg:#2a1f19;--ok-bg:#152620;--note-bg:#1b2533}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{background:var(--ground);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.65;margin:0}
+.wrap{max-width:920px;margin:0 auto;padding:0 16px 80px}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance}
+h1{font-size:clamp(28px,5vw,40px);line-height:1.1;letter-spacing:-.02em}
+h2{font-size:clamp(21px,3vw,27px);line-height:1.2;margin-bottom:12px}
+h3{font-size:17px;margin:22px 0 8px}
+p{margin:0 0 1em}
+a{color:var(--s1)}
+code,.mono{font-family:var(--f-mono);font-size:.88em}
+header{border-bottom:1px solid var(--rule);padding:48px 0 26px;margin-bottom:10px}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.lede{font-size:18.5px;color:var(--ink-2);max-width:64ch;margin-top:16px}
+nav.toc{font-family:var(--f-display);font-size:14px;columns:2;column-gap:28px;margin:22px 0 0;padding:0;list-style:none}
+nav.toc li{margin:0 0 4px;break-inside:avoid}
+section{border-top:1px solid var(--rule);padding-top:30px;margin-top:36px}
+.col{max-width:66ch}
+.box{border-radius:0 4px 4px 0;padding:13px 16px;margin:18px 0;font-size:15.5px;line-height:1.55}
+.box p:last-child{margin:0}
+.box .eyebrow{display:block;margin-bottom:6px}
+.measured{background:var(--ok-bg);border-left:3px solid var(--s3)}
+.inferred{background:var(--note-bg);border-left:3px solid var(--s1)}
+.pitfall{background:var(--warn-bg);border-left:3px solid var(--s2)}
+.formula{font-family:var(--f-mono);background:var(--surface-2);padding:10px 14px;border-radius:4px;overflow-x:auto;font-size:14.5px;margin:14px 0}
+figure{margin:20px 0;background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:16px}
+figcaption{font-size:14px;color:var(--ink-2);border-top:1px solid var(--rule);margin-top:12px;padding-top:10px}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;font-family:var(--f-display)}
+th,td{padding:6px 8px;border-bottom:1px solid var(--rule);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--ink-3);font-weight:600;font-size:12.5px}
+tr.win td{font-weight:700}
+.bars .row{display:grid;grid-template-columns:minmax(120px,190px) 1fr 58px;gap:8px;align-items:center;font-family:var(--f-display);font-size:13.5px;margin:5px 0}
+.bars .track{background:var(--surface-2);height:16px;border-radius:2px;position:relative}
+.bars .fill{height:100%;border-radius:2px;background:var(--s1)}
+.bars .fill.prod{background:var(--ink-3)}.bars .fill.ridge{background:var(--s3)}.bars .fill.vegas{background:var(--s4)}
+.bars .v{text-align:right;font-family:var(--f-mono);font-size:12.5px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tabs button{font:inherit;font-family:var(--f-display);font-size:13px;border:1px solid var(--rule-2);background:var(--surface);color:var(--ink);padding:4px 10px;border-radius:3px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--s1);border-color:var(--s1);color:#fff}
+svg text{fill:var(--ink-2);font-family:var(--f-display);font-size:11px}
+svg .axis{stroke:var(--rule-2)}svg .zero{stroke:var(--ink-3);stroke-dasharray:3 3}
+details{border:1px solid var(--rule);border-radius:4px;padding:10px 14px;margin:10px 0;background:var(--surface)}
+summary{cursor:pointer;font-family:var(--f-display);font-weight:600;font-size:15.5px}
+details p{margin:10px 0 0;font-size:15.5px}
+dl.gloss dt{font-family:var(--f-display);font-weight:700;margin-top:12px}
+dl.gloss dd{margin:2px 0 0;color:var(--ink-2);font-size:15.5px}
+input[type=range]{width:100%}
+.slider{font-family:var(--f-display);font-size:14px}
+@media (max-width:560px){nav.toc{columns:1}.bars .row{grid-template-columns:110px 1fr 50px}}
+</style>
+<link rel="stylesheet" href="learn.css">
+</head>
+<body>
+<nav class="lh-bar" aria-label="Site">
+ <div class="lh-in">
+  <a class="lh-brand" href="/"><span class="lh-mark" aria-hidden="true">HT</span><span class="lh-name">Hank&rsquo;s Tank</span></a>
+  <span class="lh-sep" aria-hidden="true">/</span>
+  <a class="lh-learn" href="/learn">Learn</a>
+  <span class="lh-sep" aria-hidden="true">/</span>
+  <span class="lh-topic">Football</span>
+  <button type="button" class="lh-theme" id="lh-theme" aria-label="Switch theme" title="Switch theme">&#9790;</button>
+ </div>
+</nav>
+<div class="wrap">
+<header>
+<div class="eyebrow">Hank's Tank &middot; football models &middot; measured 2026-09-25</div>
+<h1>Why a 35-number ridge beats a 90-feature XGBoost at football</h1>
+<p class="lede">The football pipelines predicted NFL and college games with an XGBoost classifier on about ninety features. A margin ridge, which amounts to one power rating per team plus home field fitted to recent point margins, beat it out of sample in both sports. This page covers the principles you need to explain that result and defend it. Every number on the page comes from the walk-forward runs. Numbers are labelled <b>measured</b>, and anything I reasoned out without measuring is labelled <b>inferred</b>.</p>
+<p class="col" style="font-size:15px;color:var(--ink-2)">Prerequisites live elsewhere and are not repeated here. <a href="ml-course.html">ML_COURSE</a> covers logistic regression, L1/L2, trees and boosting, calibration and proper losses. <a href="ml-lessons.html">ML_LESSONS</a> covers bias-variance on the MLB models, leakage, splits, metrics and statistical power. The run/pass unit-matchup work is in <a href="football-matchups.html">football-matchups</a>.</p>
+<ul class="toc" role="list">
+<li><a href="#result">1. The result</a></li>
+<li><a href="#collinear">2. Collinearity, VIF, exact dependence</a></li>
+<li><a href="#bv">3. Why fewer parameters win here</a></li>
+<li><a href="#margin">4. Margin carries more than win/loss</a></li>
+<li><a href="#phi">5. Margin to probability: &Phi;(m/&sigma;)</a></li>
+<li><a href="#ridge">6. Ridge as shrinkage</a></li>
+<li><a href="#wf">7. Walk-forward and leakage</a></li>
+<li><a href="#ll">8. Log loss vs accuracy</a></li>
+<li><a href="#boot">9. Paired bootstrap CIs</a></li>
+<li><a href="#vegas">10. Vegas is a different bar</a></li>
+<li><a href="#skew">11. Train/serve skew: the EPA NULLs</a></li>
+<li><a href="#status">12. What is adopted (nothing yet)</a></li>
+<li><a href="#defend">13. How to defend this</a></li>
+<li><a href="#gloss">Glossary</a></li>
+</ul>
+</header>
+
+<section id="result">
+<h2>1. The result</h2>
+<p class="col">Log loss, lower is better. Each game's prediction was made using only games that came before its week. Pick a period below.</p>
+<figure>
+<div class="tabs" id="tabs"></div>
+<div class="bars" id="bars"></div>
+<figcaption id="barcap"></figcaption>
+</figure>
+<div class="box measured"><span class="eyebrow">Measured</span>
+<p><b>CFB FBS:</b> the ridge beats production XGBoost by 0.046 log loss on 2023-24, with a 95% CI of &minus;0.057 to &minus;0.034, and by 0.051 on the 2025 holdout (CI &minus;0.069 to &minus;0.034). Both intervals are clear of zero. <b>FCS:</b> the ridge wins 2023-24 by 0.024 (CI &minus;0.040 to &minus;0.008). On 2025 the gap is 0.010 and the CI (&minus;0.029 to +0.010) crosses zero. <b>NFL:</b> against production the ridge wins 2017-24 by 0.012 (CI &minus;0.019 to &minus;0.004), and on 2025 by 0.010 (CI crosses zero). Against XGBoost <i>with EPA repaired</i>, the ridge's 2017-24 edge is 0.008 (CI &minus;0.017 to +0.001), which is within noise.</p></div>
+</section>
+
+<section id="collinear">
+<h2>2. Collinearity, VIF and exact linear dependence</h2>
+<div class="col">
+<p>Two features are <b>collinear</b> when one can be predicted from the others. The variance inflation factor measures that directly. Regress feature <i>j</i> on all the other features and take the R&sup2;. Then VIF = 1/(1&minus;R&sup2;). VIF 10 means 90% of the feature is redundant. VIF of a million means the feature is an exact linear combination of the others, and the correlation matrix then has an eigenvalue of zero.</p>
+<p>The football feature builder generates this kind of dependence by construction. <code>net_epa_8g</code> is literally <code>(home_off &minus; home_def) &minus; (away_off &minus; away_def)</code>, all four of which are also features. Every <code>*_differential</code> is home minus away of two other columns.</p>
+</div>
+<div class="tbl"><table>
+<tr><th>Feature set (pre-2025 rows)</th><th>features</th><th>VIF &gt; 10</th><th>VIF &gt; 10&#8310; (exact)</th><th>zero eigenvalues</th><th>PCs for 95% variance</th></tr>
+<tr><td>NFL (with EPA)</td><td>90</td><td>71</td><td>38</td><td>15</td><td>33</td></tr>
+<tr><td>CFB FBS</td><td>47</td><td>18</td><td>&mdash;</td><td>9</td><td>22</td></tr>
+</table></div>
+<div class="col">
+<p><b>Why it hurts interpretability more than prediction, especially for trees.</b> For a linear model with exact dependence the coefficients are not identified. Infinitely many coefficient vectors give identical predictions, so any single coefficient means nothing. The predictions themselves are still fine within the range of the data. A tree has no coefficients. At each split it picks one of the redundant columns more or less arbitrarily, so the importance ends up spread across the copies. "Top features" then turns into a lottery between near-duplicates. For example, <code>home_point_diff_8g</code> and <code>home_pythag_season</code> correlate at r = 0.949. Prediction degrades much less, since the same information is available whichever copy gets split on.</p>
+<p>Collinearity does cost prediction indirectly. Ninety columns that hold about 33 dimensions of information still give the booster 90 places to fit noise, and that is where the next section starts.</p>
+</div>
+</section>
+
+<section id="bv">
+<h2>3. Bias, variance and sample size</h2>
+<div class="col">
+<p>ML_LESSONS walks through the bias-variance tradeoff on the MLB models. The football version is starker because the data is so much smaller.</p>
+</div>
+<div class="box measured"><span class="eyebrow">Measured</span>
+<p>NFL: the first walk-forward fold (2017) gives XGBoost <b>2,931</b> training rows for 90 features, and the booster fits 400 trees of depth 3. The ridge fits <b>about 33 parameters</b> (32 team ratings plus home field) to about <b>544</b> games in its two-season window, with weights that fall by a factor of e every 16 weeks. College has 404 teams, so its ridge has more parameters, but each one is still an estimate of a single quantity, "how many points is this team worth", backed by a dozen or more games a season.</p></div>
+<div class="col">
+<p>The ridge assumes a lot. Team strength adds up, it is the same against every opponent, and it drifts slowly. That is high bias, but in football those assumptions are close to true. The XGBoost classifier has low bias and very high variance. It has to rediscover "better teams win" from 90 noisy, redundant views of team quality, using only the win/loss bit. When the true structure is nearly additive and the sample is a few thousand games, the variance you save outweighs the bias you add. The ridge also gets to use margin information that the classifier never sees (section 4).</p>
+</div>
+<div class="box inferred"><span class="eyebrow">Inferred</span>
+<p>The gap is larger in college (0.05) than in the NFL (0.01). A plausible reason is that college mismatches are extreme and ratings are strongly transitive, which suits an additive model, while NFL parity leaves less systematic signal for either model to find. I have not tested that explanation.</p></div>
+</section>
+
+<section id="margin">
+<h2>4. Predicting margin vs win/loss</h2>
+<div class="col">
+<p>A 35-point win and a 1-point win are the same label to a classifier. A margin model can tell a dominant team from a lucky one after far fewer games. The test is to keep the ridge fixed and change only the target: real margins versus the sign of the margin (&plusmn;7 in the NFL, &plusmn;10 in CFB), with each variant re-tuned on the same pre-holdout seasons.</p>
+</div>
+<div class="tbl"><table>
+<tr><th>Same ridge, target =</th><th>NFL 2017-24</th><th>CFB FBS 2023-24</th></tr>
+<tr class="win"><td>point margin</td><td>0.6342</td><td>0.4948</td></tr>
+<tr><td>win/loss only</td><td>0.6408</td><td>0.5322</td></tr>
+<tr><td>information lost by dropping margin</td><td>+0.0066</td><td>+0.0374</td></tr>
+</table></div>
+<div class="box measured"><span class="eyebrow">Measured</span><p>In college, discarding the margin costs almost as much as the whole ridge-vs-XGBoost gap (0.037 of 0.046). So most of the ridge's advantage there comes from the target, and the model family matters much less.</p></div>
+<div class="pitfall"><span class="eyebrow">Pitfall</span><p>Blowouts carry diminishing information. A 70-0 game says little more than 45-0, and it lets one result dominate a rating. The CFB ridge clips margins at &plusmn;45 before fitting. That is the same idea as the MOV damping in the Elo.</p></div>
+</section>
+
+<section id="phi">
+<h2>5. From margin to probability: &Phi;(margin/&sigma;)</h2>
+<div class="col">
+<p>If the actual margin is the predicted margin <i>m</i> plus roughly normal noise with standard deviation &sigma;, then P(home wins) = P(m + noise &gt; 0) = &Phi;(m/&sigma;), where &Phi; is the standard normal CDF. &sigma; is fitted by minimising log loss on the tuning seasons. It is one number per sport, and it sets how quickly a point edge turns into certainty.</p>
+<div class="formula">NFL: &sigma; = 12.48 &nbsp;&middot;&nbsp; CFB: &sigma; = 15.55 &nbsp;&middot;&nbsp; (NFL ridge residual SD 2017-25: 13.25)</div>
+</div>
+<figure>
+<svg id="phi" viewBox="0 0 600 240" width="100%" role="img" aria-label="Win probability as a function of predicted margin for the NFL and CFB sigma"></svg>
+<div class="slider"><label for="m">Predicted home margin: <b id="mv">7</b> points &rarr; NFL <b id="pn"></b> &middot; CFB <b id="pc"></b></label>
+<input id="m" type="range" min="-28" max="28" step="0.5" value="7"></div>
+<figcaption>With the larger &sigma;, a college line of 7 points is worth less certainty than an NFL line of 7. The fitted &sigma; sits a little under the raw residual SD, probably because it absorbs calibration as well as noise (inferred).</figcaption>
+</figure>
+<div class="box measured"><span class="eyebrow">Measured &middot; NFL ridge calibration, 2017-25</span>
+<div class="tbl"><table><tr><th>bin</th><th>n</th><th>predicted</th><th>observed</th></tr>
+<tr><td>&le; 0.30</td><td>168</td><td>0.234</td><td>0.298</td></tr><tr><td>0.30-0.40</td><td>269</td><td>0.359</td><td>0.327</td></tr>
+<tr><td>0.40-0.50</td><td>397</td><td>0.453</td><td>0.453</td></tr><tr><td>0.50-0.60</td><td>470</td><td>0.550</td><td>0.519</td></tr>
+<tr><td>0.60-0.70</td><td>455</td><td>0.645</td><td>0.673</td></tr><tr><td>&gt; 0.70</td><td>443</td><td>0.773</td><td>0.765</td></tr></table></div>
+<p>Calibration is reasonable. The worst bin misses by 6 points (big road underdogs win a little more often than the model predicts), and none of that comes from the low-&sigma; tail being too sharp.</p></div>
+</section>
+
+<section id="ridge">
+<h2>6. Ridge as shrinkage</h2>
+<div class="col">
+<p>Ordinary least squares on team indicators is unstable early in a season, and a team with two lucky blowouts gets an extreme rating. Ridge adds &alpha;&middot;&Sigma;&beta;&sup2; to the loss, which pulls every rating toward 0, meaning "league average", by an amount that depends on how little data the team has. It is the regression analogue of the empirical-Bayes shrinkage in ML_COURSE. The penalty acts as a prior, and a team with few games stays near that prior.</p>
+<div class="formula">minimise &nbsp; &Sigma;<sub>g</sub> w<sub>g</sub> (margin<sub>g</sub> &minus; r<sub>home</sub> + r<sub>away</sub> &minus; hfa&middot;[not neutral] &minus; &Sigma;<sub>k</sub> &beta;<sub>k</sub>x<sub>gk</sub>)&sup2; + &alpha; &Sigma; &beta;&sup2;<br>w<sub>g</sub> = exp(&minus;weeks_ago / &tau;), &nbsp; window = 2 seasons</div>
+<p>Three knobs matter, and all were tuned only on seasons that are never scored: NFL 2010-16 (&alpha; = 3, &tau; = 16 weeks) and CFB 2022 FBS (&alpha; = 1, &tau; = 16). &alpha; sets the pull toward average, &tau; sets how fast last season fades, and &sigma; sets the probability scale. Ridge also fixes the identification problem from section 2. Ratings are only defined up to a constant (add 5 to every team and nothing changes), and the penalty picks the solution centred on zero. The home-field column is multiplied by 10 so its penalty is negligible, and it is fitted almost freely. Its current value is about 1.2 NFL points, down from about 2.5 at the start of 2025.</p>
+</div>
+</section>
+
+<section id="wf">
+<h2>7. Walk-forward validation and leakage</h2>
+<div class="col">
+<p>ML_LESSONS already covers the general leakage failures. Two points are specific to this work.</p>
+<p><b>Refit per week, not per season.</b> Every (season, week) block is predicted by a model fitted only to games with an earlier time index. Production does the same thing when it runs on Wednesday. The unit tests poison every game from the target week onward (margins set to 500) and assert that the predictions do not change. XGBoost was also retrained weekly in these runs, as its production backfill is. Retraining it once per season gave nearly identical numbers.</p>
+<p><b>Tuning is part of the model.</b> Picking &alpha;, &tau; and &sigma; on the seasons you then report is leakage, even when every individual prediction is causal. That is why the tuning seasons are disjoint from the scored ones, and why 2025 was scored once, after the choices were fixed. The three NFL "ridge + adjustment" variants were each tuned on 2010-16 and compared on 2017-24. 2025 did not decide anything.</p>
+</div>
+<div class="pitfall"><span class="eyebrow">Pitfall</span><p>Adding covariates means every row must carry its own pre-game value. The opponent-adjusted EPA rating is itself a walk-forward ridge, so each game's value comes from games before it. A test modifies future EPA and asserts that past values do not change.</p></div>
+</section>
+
+<section id="ll">
+<h2>8. Log loss vs accuracy</h2>
+<div class="col">
+<p>Accuracy only checks which side of 50% a prediction falls on, so it discards what a probability is for. On NFL 2017-24 the repaired XGBoost has <b>higher accuracy</b> than the ridge (0.643 vs 0.638) and <b>worse log loss</b> (0.6423 vs 0.6342). It picks one or two more winners per season but is more confidently wrong. The difference in accuracy is about 11 games out of 2,202, well inside the noise. Log loss is a proper scoring rule: it is minimised only by the true probabilities, it penalises overconfidence steeply, and it uses every game's full probability. It is the metric used to choose between models here. Accuracy and Brier are reported alongside it.</p>
+</div>
+</section>
+
+<section id="boot">
+<h2>9. Paired bootstrap confidence intervals</h2>
+<div class="col">
+<p>Two models scored on the <i>same</i> games are strongly correlated, since hard games are hard for both. Comparing two separate CIs therefore throws away most of the power. Instead, compute the per-game difference d<sub>g</sub> = LL<sub>ridge</sub>(g) &minus; LL<sub>other</sub>(g), resample games with replacement 2,000 times, and read the 2.5th and 97.5th percentiles of the mean. If the interval excludes 0, the difference is unlikely to be a draw of which games happened to be played.</p>
+</div>
+<figure>
+<svg id="forest" viewBox="0 0 600 330" width="100%" role="img" aria-label="Forest plot of paired log-loss differences with 95 percent confidence intervals"></svg>
+<figcaption>Negative means the first-named model is better. Intervals that cross the dashed zero line are within noise. The ridge adjustments (rest, EPA form, EPA rating) all sit at or just above zero. They were measured and not adopted.</figcaption>
+</figure>
+<div class="pitfall"><span class="eyebrow">Limits</span><p>The bootstrap treats games as independent. Games in the same week share weather, officiating trends and injuries, so the true intervals are somewhat wider (inferred). Resampling whole weeks would be the stricter test. The 2025 NFL holdout has 284 games, which is too few to separate models that differ by 0.01, and every NFL 2025 interval crosses zero.</p></div>
+</section>
+
+<section id="vegas">
+<h2>10. Why beating Vegas is a different bar</h2>
+<div class="col">
+<p>The closing line (&Phi;(spread/13.45)) scores <b>0.6086</b> on NFL 2017-24, against the ridge's 0.6342. That gap is 0.026 (CI &minus;0.033 to &minus;0.018), more than twice the gap between the ridge and production. Margin MAE is 9.90 for Vegas and 10.25 for the ridge. The market sees injuries, weather, quarterback changes and the combined judgement of people betting real money. None of the models here use any of that. The MLB work reached the same conclusion (the market has about 2.65&times; our signal). Beating the old model is the right bar for replacing it. Beating Vegas is a separate claim about information we do not have, and no number here supports it.</p>
+<p>Two rules follow. Never tune toward the line or toward media and FPI rankings, because then you are learning to copy them rather than to predict. And never present "model vs Vegas edge" as a betting signal.</p>
+</div>
+</section>
+
+<section id="skew">
+<h2>11. Train/serve skew: the EPA NULLs</h2>
+<div class="col">
+<p>Train/serve skew means the model is validated on one feature pipeline and served on another. Nothing crashes, and the predictions are simply worse than the backtest said they would be.</p>
+</div>
+<div class="box measured"><span class="eyebrow">Measured (BigQuery, read-only)</span>
+<p><b>NFL:</b> all 617 stored predictions (2024: 285, 2025: 284, 2026: 48) have <code>net_epa_8g</code> NULL. The backtest trained with EPA. Production read EPA only from a <code>/tmp</code> parquet cache, which is empty on every cold Cloud Function container. <code>build_features(epa=None)</code> then silently skipped the whole EPA block and trained a different model. Meanwhile the ingest had been writing EPA to BigQuery (2006-2026) the whole time.</p>
+<p><b>CFB, found during this work:</b> every 2026 week 2-4 prediction (382 rows) has <code>home_point_diff_3g = 0.00</code>. On a cold container the fallback fetch stopped at 2025, so the model predicted September 2026 as if no 2026 games had been played. After the fix, a dry run for week 5 shows a mean |point_diff_3g| of 15.8.</p></div>
+<div class="col">
+<p><b>The fix:</b> read the aggregates from BigQuery, where the ingest already persists them, with the local cache only as a fallback. Refuse to predict if last season's EPA is missing. Warn if the current season's EPA lags the results. Stop dropping seasons whose EPA has not landed yet. Nothing rebuilds play-by-play. The model version was bumped to <code>nfl_v1_pure_epa</code> so that repaired rows can be told apart from the old ones. The general lesson, now seen five times in this project: <b>a disk cache in a Cloud Function is not state.</b></p>
+</div>
+<div class="box measured"><span class="eyebrow">Measured: what the EPA fix is worth</span><p>Repaired XGBoost vs production: &minus;0.0035 on 2017-24 (CI &minus;0.0105 to +0.0034) and &minus;0.0100 on 2025 (CI &minus;0.031 to +0.009). The direction is right but the result is inside the noise. The case for the fix is correctness, since the served model now matches the validated one. The accuracy gain alone would not justify it.</p></div>
+</section>
+
+<section id="status">
+<h2>12. What is adopted: nothing yet</h2>
+<div class="tbl"><table>
+<tr><th>Change</th><th>State</th><th>Confidence</th><th>What would raise it</th></tr>
+<tr><td style="white-space:normal">CFB margin ridge</td><td>shadow, off by default</td><td>high (FBS), moderate (FCS)</td><td style="white-space:normal">a live half-season in the shadow table that beats cfb_v1 on the same games</td></tr>
+<tr><td style="white-space:normal">NFL margin ridge</td><td>shadow, off by default</td><td>moderate</td><td style="white-space:normal">it beats production clearly, but beats repaired XGBoost only within noise, so it needs 1-2 live seasons or week-block bootstraps</td></tr>
+<tr><td style="white-space:normal">NFL EPA read from BigQuery</td><td>not yet deployed</td><td>high it is correct; low it helps much</td><td style="white-space:normal">a post-deploy invocation showing non-NULL net_epa_8g</td></tr>
+<tr><td style="white-space:normal">CFB games read from BigQuery</td><td>not yet deployed</td><td>high</td><td style="white-space:normal">a post-deploy run whose rows have nonzero point_diff_3g</td></tr>
+<tr><td style="white-space:normal">Ridge adjustments (rest, EPA)</td><td>measured, rejected</td><td>&mdash;</td><td style="white-space:normal">a new adjustment that clears zero on 2017-24</td></tr>
+</table></div>
+</section>
+
+<section id="defend">
+<h2>13. How to defend this</h2>
+<details><summary>"You replaced gradient boosting with linear regression. Isn't that a downgrade?"</summary><p>It was chosen on out-of-sample log loss, not on how sophisticated it is. On identical games, with weekly refits for both, the ridge scores 0.495 vs 0.541 (CFB FBS 2023-24) and 0.634 vs 0.646 (NFL 2017-24), and both paired CIs are clear of zero. With a few thousand games of nearly additive structure, variance dominates bias. The ridge also sees margins, and the classifier does not.</p></details>
+<details><summary>"You tuned until it won."</summary><p>&alpha;, &tau; and &sigma; were chosen on seasons that are never scored (NFL 2010-16, CFB 2022). The grid had 16 points. 2025 was scored once, after the choices were fixed, and it agrees with the walk-forward seasons. The adjustments that did not help were reported, not hidden.</p></details>
+<details><summary>"Then why is the XGBoost more accurate in the NFL?"</summary><p>0.643 vs 0.638 is about 11 games out of 2,202, which is noise. Log loss is the proper score and it says the XGBoost is more confidently wrong. See section 8.</p></details>
+<details><summary>"The NFL 2025 interval crosses zero."</summary><p>It does, as does every NFL 2025 comparison, because 284 games cannot resolve a 0.01 difference. The claim rests on the eight-season walk-forward. Against the repaired XGBoost even that is within noise, which is why the NFL ridge is a shadow and not a replacement. When a gain is within noise, prefer the simpler model, but prove it live before switching.</p></details>
+<details><summary>"Doesn't collinearity mean the old model was broken?"</summary><p>Not for prediction. Trees tolerate redundant columns. It does mean nobody should read the old model's feature importances as explanations. The ridge's parameters are directly interpretable: a team rating in points, and home field in points.</p></details>
+<details><summary>"Why not add EPA, rest and matchups to the ridge?"</summary><p>The design supports it: covariates are fitted jointly with the ratings. Rest, rolling EPA form and an opponent-adjusted EPA rating were each measured, and each changed log loss by +0.0003 to +0.0027 (none helped). The ratings already absorb what they carry. Matchup features are being tested separately.</p></details>
+<details><summary>"Can it beat Vegas?"</summary><p>No, and it is not meant to. The line scores 0.609 against the ridge's 0.634. See section 10.</p></details>
+</section>
+
+<section id="gloss">
+<h2>Glossary</h2>
+<dl class="gloss">
+<dt>Walk-forward</dt><dd>Predict each period with a model fitted only to earlier periods, then roll forward.</dd>
+<dt>Log loss</dt><dd>Mean of &minus;log(probability assigned to what happened). Proper, and punishes confident misses.</dd>
+<dt>Brier score</dt><dd>Mean squared error of the probability. Proper, and gentler on confident misses.</dd>
+<dt>VIF</dt><dd>1/(1&minus;R&sup2;) of a feature regressed on the others. It measures redundancy.</dd>
+<dt>Exact linear dependence</dt><dd>A feature is an exact combination of others. The correlation matrix has an eigenvalue of 0 and linear coefficients are not identified.</dd>
+<dt>Ridge (L2)</dt><dd>Least squares plus &alpha;&Sigma;&beta;&sup2;, which shrinks estimates toward 0 (league average).</dd>
+<dt>&tau; (decay)</dt><dd>Weeks for a game's weight to fall by a factor of e.</dd>
+<dt>&sigma;</dt><dd>Points of game-level noise, which converts a margin to a probability via &Phi;(m/&sigma;).</dd>
+<dt>&Phi;</dt><dd>Standard normal cumulative distribution function.</dd>
+<dt>HFA</dt><dd>Home-field advantage, in points. Fitted, and zeroed for neutral sites.</dd>
+<dt>Paired bootstrap</dt><dd>Resample per-game differences between two models to get a CI on the mean difference.</dd>
+<dt>Shadow model</dt><dd>Runs in production and writes to its own table, which nothing reads, so it can be scored live before it is adopted.</dd>
+<dt>Train/serve skew</dt><dd>The features at serving time differ from the features the model was validated on.</dd>
+<dt>EPA</dt><dd>Expected points added per play, from nflverse play-by-play.</dd>
+</dl>
+</section>
+</div>
+
+<script>
+(function(){
+var DATA={
+ "CFB FBS 2023-24":{n:1830,rows:[["Elo only",.5688],["XGBoost (production)",.5406,"prod"],["Margin ridge",.4948,"ridge"]]},
+ "CFB FBS 2025":{n:934,rows:[["Elo only",.5525],["XGBoost (production)",.5313,"prod"],["Margin ridge",.4801,"ridge"]]},
+ "CFB FCS 2023-24":{n:1437,rows:[["Elo only",.5763],["XGBoost (production)",.5710,"prod"],["Margin ridge",.5471,"ridge"]]},
+ "CFB FCS 2025":{n:752,rows:[["Elo only",.5545],["XGBoost (production)",.5218,"prod"],["Margin ridge",.5122,"ridge"]]},
+ "NFL 2017-24":{n:2202,rows:[["Elo only",.6462],["XGBoost, no EPA (production)",.6458,"prod"],["XGBoost + EPA (fixed)",.6423],["Margin ridge",.6342,"ridge"],["ridge + rest",.6357],["ridge + rest + EPA form",.6369],["ridge + rest + EPA rating",.6345],["Vegas closing line",.6086,"vegas"]]},
+ "NFL 2025":{n:284,rows:[["Elo only",.6473],["XGBoost, no EPA (production)",.6437,"prod"],["XGBoost + EPA (fixed)",.6337],["Margin ridge",.6339,"ridge"],["ridge + rest",.6375],["ridge + rest + EPA form",.6355],["ridge + rest + EPA rating",.6368],["Vegas closing line",.6093,"vegas"]]}
+};
+var tabs=document.getElementById("tabs"),bars=document.getElementById("bars"),cap=document.getElementById("barcap");
+function show(k){
+ Array.prototype.forEach.call(tabs.children,function(b){b.setAttribute("aria-pressed",b.textContent===k)});
+ var d=DATA[k],vals=d.rows.map(function(r){return r[1]}),lo=Math.min.apply(null,vals)-.01,hi=Math.max.apply(null,vals)+.002;
+ bars.innerHTML=d.rows.map(function(r){var w=((r[1]-lo)/(hi-lo)*100).toFixed(1);
+  return '<div class="row"><span>'+r[0]+'</span><div class="track"><div class="fill '+(r[2]||"")+'" style="width:'+w+'%"></div></div><span class="v">'+r[1].toFixed(4)+'</span></div>'}).join("");
+ cap.innerHTML="<b>"+k+"</b>, n = "+d.n+" games. The axis starts at "+lo.toFixed(3)+" rather than zero, so bar lengths show differences, not ratios. Grey is production, green the ridge, purple the market.";
+}
+Object.keys(DATA).forEach(function(k){var b=document.createElement("button");b.type="button";b.textContent=k;b.onclick=function(){show(k)};tabs.appendChild(b)});
+show("CFB FBS 2023-24");
+
+function erf(x){var s=x<0?-1:1;x=Math.abs(x);var t=1/(1+.3275911*x);
+ var y=1-((((1.061405429*t-1.453152027)*t+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x);return s*y}
+function Phi(z){return .5*(1+erf(z/Math.SQRT2))}
+var svg=document.getElementById("phi"),NS="http://www.w3.org/2000/svg";
+function el(n,a,p){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e}
+var X=function(m){return 40+(m+28)/56*540},Y=function(p){return 210-p*190};
+el("line",{x1:40,y1:210,x2:580,y2:210,"class":"axis"});el("line",{x1:40,y1:20,x2:40,y2:210,"class":"axis"});
+el("line",{x1:X(0),y1:20,x2:X(0),y2:210,"class":"zero"});
+[-28,-14,0,14,28].forEach(function(m){el("text",{x:X(m),y:226,"text-anchor":"middle"}).textContent=m});
+[0,.5,1].forEach(function(p){el("text",{x:34,y:Y(p)+4,"text-anchor":"end"}).textContent=p});
+el("text",{x:310,y:238,"text-anchor":"middle"}).textContent="predicted home margin (points)";
+[[12.48,"var(--s1)","NFL σ=12.48"],[15.55,"var(--s2)","CFB σ=15.55"]].forEach(function(c,i){
+ var d="";for(var m=-28;m<=28;m+=.5)d+=(m===-28?"M":"L")+X(m).toFixed(1)+" "+Y(Phi(m/c[0])).toFixed(1);
+ el("path",{d:d,fill:"none",stroke:c[1],"stroke-width":2.2});
+ el("text",{x:60,y:40+i*16,style:"fill:"+c[1]}).textContent=c[2]});
+var mk=el("line",{x1:0,y1:20,x2:0,y2:210,stroke:"var(--ink-3)","stroke-width":1});
+var inp=document.getElementById("m");
+function upd(){var m=+inp.value;document.getElementById("mv").textContent=m;
+ document.getElementById("pn").textContent=(100*Phi(m/12.48)).toFixed(1)+"%";
+ document.getElementById("pc").textContent=(100*Phi(m/15.55)).toFixed(1)+"%";
+ mk.setAttribute("x1",X(m));mk.setAttribute("x2",X(m))}
+inp.oninput=upd;upd();
+
+var F=[
+ ["CFB FBS 23-24: ridge − XGB",-.0458,-.0570,-.0342],
+ ["CFB FBS 2025: ridge − XGB",-.0512,-.0688,-.0343],
+ ["CFB FCS 23-24: ridge − XGB",-.0239,-.0400,-.0076],
+ ["CFB FCS 2025: ridge − XGB",-.0096,-.0290,.0100],
+ ["NFL 17-24: ridge − prod XGB",-.0116,-.0194,-.0037],
+ ["NFL 2025: ridge − prod XGB",-.0098,-.0284,.0076],
+ ["NFL 17-24: EPA fix − prod XGB",-.0035,-.0105,.0034],
+ ["NFL 17-24: ridge − fixed XGB",-.0081,-.0174,.0011],
+ ["NFL 17-24: +rest − ridge",.0014,-.0005,.0034],
+ ["NFL 17-24: +rest+EPA form − ridge",.0027,-.0000,.0058],
+ ["NFL 17-24: +rest+EPA rating − ridge",.0003,-.0020,.0026],
+ ["NFL 17-24: Vegas − ridge",-.0256,-.0334,-.0178]];
+var fs=document.getElementById("forest"),lo=-.075,hi=.015,x0=250,x1=585;
+var FX=function(v){return x0+(v-lo)/(hi-lo)*(x1-x0)};
+el("line",{x1:FX(0),y1:8,x2:FX(0),y2:300,"class":"zero"},fs);
+[-.06,-.04,-.02,0].forEach(function(v){el("text",{x:FX(v),y:318,"text-anchor":"middle"},fs).textContent=v.toFixed(2)});
+F.forEach(function(r,i){var y=20+i*24,clear=r[3]<0||r[2]>0,col=clear?"var(--s3)":"var(--ink-3)";
+ el("text",{x:x0-8,y:y+4,"text-anchor":"end"},fs).textContent=r[0];
+ el("line",{x1:FX(r[2]),y1:y,x2:FX(r[3]),y2:y,stroke:col,"stroke-width":2},fs);
+ el("circle",{cx:FX(r[1]),cy:y,r:4,fill:col},fs)});
+})();
+</script>
+<script>/* Theme toggle for the learn pages; shares the site's stored choice. */
+(function(){var b=document.getElementById('lh-theme');if(!b)return;var r=document.documentElement;
+function cur(){var t=r.getAttribute('data-theme');if(t)return t;return window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+function lab(){var n=cur()==='dark'?'light':'dark';b.textContent=n==='light'?'\u2600':'\u263E';b.setAttribute('aria-label','Switch to '+n+' theme');b.title='Switch to '+n+' theme';}
+lab();b.addEventListener('click',function(){var n=cur()==='dark'?'light':'dark';try{localStorage.setItem('ht-theme',n);}catch(e){}
+r.setAttribute('data-theme',n);location.reload();});})();
+</script>
+</body>
+</html>

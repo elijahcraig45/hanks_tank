@@ -2,25 +2,25 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0b1220" />
     <meta
       name="description"
-      content="Hank's Tank is an MLB analytics app with daily predictions, live game detail, scouting reports, standings, player pages, and comparison tools."
+      content="Hank's Tank is a multi-sport analytics site for MLB, NFL and college football: daily model predictions, power rankings with uncertainty, live game detail, and model scoreboards."
     />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Hank's Tank" />
     <meta property="og:title" content="Hank's Tank" />
     <meta
       property="og:description"
-      content="Hank's Tank is an MLB analytics app with daily predictions, live game detail, scouting reports, standings, player pages, and comparison tools."
+      content="Hank's Tank is a multi-sport analytics site for MLB, NFL and college football: daily model predictions, power rankings with uncertainty, live game detail, and model scoreboards."
     />
     <meta property="og:url" content="https://hankstank.com/" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Hank's Tank" />
     <meta
       name="twitter:description"
-      content="Hank's Tank is an MLB analytics app with daily predictions, live game detail, scouting reports, standings, player pages, and comparison tools."
+      content="Hank's Tank is a multi-sport analytics site for MLB, NFL and college football: daily model predictions, power rankings with uncertainty, live game detail, and model scoreboards."
     />
     <link rel="canonical" href="https://hankstank.com/" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
@@ -47,6 +47,19 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
+    <script>
+      /* Theme before first paint: a stored choice, else the OS setting. Mirrored
+         in src/utils/theme.js; storage can throw in private windows. */
+      (function () {
+        var t = null;
+        try { t = localStorage.getItem('ht-theme'); } catch (e) {}
+        if (t !== 'light' && t !== 'dark') {
+          t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+        document.documentElement.setAttribute('data-bs-theme', t);
+      })();
+    </script>
     <title>Hank's Tank</title>
   </head>
   <body>

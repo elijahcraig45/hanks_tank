@@ -15,10 +15,10 @@ function NotFoundPage() {
           <Button as={Link} to="/" variant="primary">
             Home
           </Button>
-          <Button as={Link} to="/games" variant="outline-secondary">
+          <Button as={Link} to="/mlb/games" variant="outline-secondary">
             Games
           </Button>
-          <Button as={Link} to="/predictions" variant="outline-secondary">
+          <Button as={Link} to="/mlb/predictions" variant="outline-secondary">
             Predictions
           </Button>
         </div>

@@ -1,6 +1,6 @@
 .scenario-simulator-page {
   min-height: 100vh;
-  background: #f8f9fa;
+  background: var(--surface-2);
 }
 
 .scenario-simulator-header {
@@ -12,7 +12,7 @@
 }
 
 .scenario-simulator-eyebrow {
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.76rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -34,7 +34,7 @@
 }
 
 .scenario-simulator-toolbar .form-label {
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -57,8 +57,8 @@
   flex-wrap: wrap;
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 14px;
-  background: #fff;
-  color: #0f172a;
+  background: var(--surface);
+  color: var(--text);
   padding: 0.7rem 0.85rem;
   text-align: left;
 }
@@ -76,12 +76,12 @@
 .scenario-simulator-slider {
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 14px;
-  background: #fff;
+  background: var(--surface);
   padding: 0.85rem 0.95rem;
 }
 
 .scenario-simulator-slider-value {
-  color: #0f172a;
+  color: var(--text);
   font-size: 0.85rem;
   font-weight: 700;
   white-space: nowrap;
@@ -95,7 +95,7 @@
 
 .scenario-simulator-ledger-label {
   display: block;
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -111,14 +111,14 @@
 .scenario-simulator-lineup-card {
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 16px;
-  background: #fff;
+  background: var(--surface);
   padding: 1rem;
 }
 
 .scenario-simulator-lineup-metric {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text);
 }
 
 .scenario-simulator-lineup-table select {
@@ -139,7 +139,7 @@
 .scenario-simulator-summary-pill {
   border-radius: 999px;
   background: rgba(15, 23, 42, 0.05);
-  color: #0f172a;
+  color: var(--text);
   font-size: 0.82rem;
   font-weight: 600;
   padding: 0.5rem 0.8rem;

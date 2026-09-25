@@ -616,7 +616,7 @@ const GameDetailsPage = () => {
     return (
       <tr key={player.person.id}>
         <td className="fw-semibold">
-          <Link to={`/player/${player.person.id}`} className="game-player-link">
+          <Link to={`/mlb/player/${player.person.id}`} className="game-player-link">
             {player.person.fullName}
           </Link>
         </td>
@@ -641,7 +641,7 @@ const GameDetailsPage = () => {
     return (
       <tr key={player.person.id}>
         <td className="fw-semibold">
-          <Link to={`/player/${player.person.id}`} className="game-player-link">
+          <Link to={`/mlb/player/${player.person.id}`} className="game-player-link">
             {player.person.fullName}
           </Link>
         </td>
@@ -684,7 +684,7 @@ const GameDetailsPage = () => {
             <div className="pbp-text flex-grow-1">
               {matchup?.batter?.id ? (
                 <Link
-                  to={`/player/${matchup.batter.id}`}
+                  to={`/mlb/player/${matchup.batter.id}`}
                   className="pbp-batter"
                   onClick={(clickEvent) => clickEvent.stopPropagation()}
                 >
@@ -711,13 +711,13 @@ const GameDetailsPage = () => {
       {/* Header */}
       <div className="game-header mb-4">
         <h2 className="game-title mb-1">
-          <Link to={`/team/${awayTeam.abbreviation}`} className="game-team-link game-team-link--muted">
+          <Link to={`/mlb/team/${awayTeam.abbreviation}`} className="game-team-link game-team-link--muted">
             {awayTeam.abbreviation}
           </Link>
           {" "}
           <span className="text-muted fw-light">@</span>
           {" "}
-          <Link to={`/team/${homeTeam.abbreviation}`} className="game-team-link">
+          <Link to={`/mlb/team/${homeTeam.abbreviation}`} className="game-team-link">
             {homeTeam.abbreviation}
           </Link>
           <Badge
@@ -738,19 +738,19 @@ const GameDetailsPage = () => {
           {status.abstractGameState !== "Final" && status.abstractGameState !== "Completed" && " · Auto refresh on"}
         </p>
         <div className="game-header-links mt-2">
-          <Link to={`/team/${awayTeam.abbreviation}`} className="game-header-pill">
+          <Link to={`/mlb/team/${awayTeam.abbreviation}`} className="game-header-pill">
             {awayTeam.teamName} hub
           </Link>
-          <Link to={`/team/${homeTeam.abbreviation}`} className="game-header-pill">
+          <Link to={`/mlb/team/${homeTeam.abbreviation}`} className="game-header-pill">
             {homeTeam.teamName} hub
           </Link>
           {probablePitchers.away?.id && (
-            <Link to={`/player/${probablePitchers.away.id}`} className="game-header-pill">
+            <Link to={`/mlb/player/${probablePitchers.away.id}`} className="game-header-pill">
               {awayTeam.abbreviation} starter
             </Link>
           )}
           {probablePitchers.home?.id && (
-            <Link to={`/player/${probablePitchers.home.id}`} className="game-header-pill">
+            <Link to={`/mlb/player/${probablePitchers.home.id}`} className="game-header-pill">
               {homeTeam.abbreviation} starter
             </Link>
           )}
@@ -861,7 +861,7 @@ const GameDetailsPage = () => {
                 {selectedAtBat?.matchup && (
                   <span className="text-muted" style={{ fontSize: "0.78rem" }}>
                     {selectedAtBat.matchup.batter?.id ? (
-                      <Link to={`/player/${selectedAtBat.matchup.batter.id}`} className="game-inline-link">
+                      <Link to={`/mlb/player/${selectedAtBat.matchup.batter.id}`} className="game-inline-link">
                         {selectedAtBat.matchup.batter.fullName}
                       </Link>
                     ) : (
@@ -869,7 +869,7 @@ const GameDetailsPage = () => {
                     )}
                     {" vs "}
                     {selectedAtBat.matchup.pitcher?.id ? (
-                      <Link to={`/player/${selectedAtBat.matchup.pitcher.id}`} className="game-inline-link">
+                      <Link to={`/mlb/player/${selectedAtBat.matchup.pitcher.id}`} className="game-inline-link">
                         {selectedAtBat.matchup.pitcher.fullName}
                       </Link>
                     ) : (
@@ -899,7 +899,7 @@ const GameDetailsPage = () => {
             <Col xs={12} lg={6} key={side}>
               <Card className="shadow-sm">
                 <Card.Header className="py-2 fw-semibold">
-                  <Link to={`/team/${team.abbreviation}`} className="game-team-card-link">
+                  <Link to={`/mlb/team/${team.abbreviation}`} className="game-team-card-link">
                     {team.teamName}
                   </Link>{" "}
                   Batting
@@ -933,7 +933,7 @@ const GameDetailsPage = () => {
             <Col xs={12} lg={6} key={side}>
               <Card className="shadow-sm">
                 <Card.Header className="py-2 fw-semibold">
-                  <Link to={`/team/${team.abbreviation}`} className="game-team-card-link">
+                  <Link to={`/mlb/team/${team.abbreviation}`} className="game-team-card-link">
                     {team.teamName}
                   </Link>{" "}
                   Pitching
@@ -968,7 +968,7 @@ const GameDetailsPage = () => {
                 <p className="mb-1">
                   <span className="text-muted">{awayTeam.abbreviation}:</span>{" "}
                   {probablePitchers.away?.id ? (
-                    <Link to={`/player/${probablePitchers.away.id}`} className="game-inline-link">
+                    <Link to={`/mlb/player/${probablePitchers.away.id}`} className="game-inline-link">
                       {probablePitchers.away.fullName}
                     </Link>
                   ) : (
@@ -978,7 +978,7 @@ const GameDetailsPage = () => {
                 <p className="mb-0">
                   <span className="text-muted">{homeTeam.abbreviation}:</span>{" "}
                   {probablePitchers.home?.id ? (
-                    <Link to={`/player/${probablePitchers.home.id}`} className="game-inline-link">
+                    <Link to={`/mlb/player/${probablePitchers.home.id}`} className="game-inline-link">
                       {probablePitchers.home.fullName}
                     </Link>
                   ) : (
@@ -1007,7 +1007,7 @@ const GameDetailsPage = () => {
                 <p className="mb-1">{venue.name}</p>
                 <p className="mb-0 text-muted">
                   Home club:{" "}
-                  <Link to={`/team/${homeTeam.abbreviation}`} className="game-inline-link">
+                  <Link to={`/mlb/team/${homeTeam.abbreviation}`} className="game-inline-link">
                     {homeTeam.teamName}
                   </Link>
                 </p>

@@ -152,7 +152,7 @@ function TeamPage() {
       normalizedTeamAbbr &&
       teamAbbr.toUpperCase() !== normalizedTeamAbbr
     ) {
-      navigate(`/team/${normalizedTeamAbbr}`, { replace: true });
+      navigate(`/mlb/team/${normalizedTeamAbbr}`, { replace: true });
     }
   }, [navigate, normalizedTeamAbbr, teamAbbr]);
 
@@ -334,7 +334,7 @@ function TeamPage() {
             <Button as={Link} to="/" variant="primary">
               Home
             </Button>
-            <Button as={Link} to="/TeamBatting" variant="outline-secondary">
+            <Button as={Link} to="/mlb/stats/team-batting" variant="outline-secondary">
               Team Leaderboards
             </Button>
           </div>
@@ -489,7 +489,7 @@ function TeamPage() {
                           {schedule.slice(0, 5).map((game) => (
                             <Link
                               key={game.gamePk}
-                              to={`/game/${game.gamePk}`}
+                              to={`/mlb/game/${game.gamePk}`}
                               className="team-schedule-link text-decoration-none"
                             >
                               <div>
@@ -637,7 +637,7 @@ function TeamPage() {
                                     {players.map((player) => (
                                       <tr key={player.person.id}>
                                         <td className="fw-semibold">
-                                          <Link to={`/player/${player.person.id}`}>{player.person.fullName}</Link>
+                                          <Link to={`/mlb/player/${player.person.id}`}>{player.person.fullName}</Link>
                                         </td>
                                         <td>{player.position?.abbreviation || '—'}</td>
                                         <td>{player.jerseyNumber || '—'}</td>
@@ -663,7 +663,7 @@ function TeamPage() {
                             {rosterPitchers.map((player) => (
                               <tr key={player.person.id}>
                                 <td className="fw-semibold">
-                                  <Link to={`/player/${player.person.id}`}>{player.person.fullName}</Link>
+                                  <Link to={`/mlb/player/${player.person.id}`}>{player.person.fullName}</Link>
                                 </td>
                                 <td>{player.position?.abbreviation || '—'}</td>
                                 <td>{player.jerseyNumber || '—'}</td>
@@ -782,13 +782,13 @@ function TeamPage() {
         </Tabs>
 
         <div className="d-flex gap-2 flex-wrap pb-4">
-          <Button as={Link} to="/TeamBatting" variant="primary">
+          <Button as={Link} to="/mlb/stats/team-batting" variant="primary">
             Team Batting Leaders
           </Button>
-          <Button as={Link} to="/TeamPitching" variant="outline-primary">
+          <Button as={Link} to="/mlb/stats/team-pitching" variant="outline-primary">
             Team Pitching Leaders
           </Button>
-          <Button as={Link} to="/transactions" variant="outline-secondary">
+          <Button as={Link} to="/mlb/transactions" variant="outline-secondary">
             League Transactions
           </Button>
         </div>

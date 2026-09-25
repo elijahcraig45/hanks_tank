@@ -418,7 +418,7 @@ function PredictionCard({ pred, game, favoriteTeams, onToggleFavorite }) {
             )}
             <div>
               {awayAbbr ? (
-                <Link to={`/team/${awayAbbr}`} className="pred-team-link">
+                <Link to={`/mlb/team/${awayAbbr}`} className="pred-team-link">
                   <div className="pred-team-name" style={{ color: awayWins ? awayColor : undefined }}>
                     {pred.away_team_name}
                   </div>
@@ -444,7 +444,7 @@ function PredictionCard({ pred, game, favoriteTeams, onToggleFavorite }) {
             {homeWins && <span className="pred-winner-crown">👑</span>}
             <div className="text-end">
               {homeAbbr ? (
-                <Link to={`/team/${homeAbbr}`} className="pred-team-link">
+                <Link to={`/mlb/team/${homeAbbr}`} className="pred-team-link">
                   <div className="pred-team-name" style={{ color: homeWins ? homeColor : undefined }}>
                     {pred.home_team_name}
                   </div>
@@ -559,7 +559,7 @@ function PredictionCard({ pred, game, favoriteTeams, onToggleFavorite }) {
 
         {pred.game_pk && (
           <div className="mt-2 text-end">
-            <Link to={`/game/${pred.game_pk}`} className="pred-game-link">
+            <Link to={`/mlb/game/${pred.game_pk}`} className="pred-game-link">
               🔎 Open Game Center →
             </Link>
           </div>
@@ -570,6 +570,26 @@ function PredictionCard({ pred, game, favoriteTeams, onToggleFavorite }) {
 }
 
 // ─── Main page ───────────────────────────────────────────────────────────────
+
+const SORT_LABELS = {
+  time: "game time",
+  edge: "strongest edge",
+  confidence: "confidence tier",
+  matchup: "matchup",
+};
+
+/**
+ * How many filters narrow the board. Sort order is not a filter, so it is left out;
+ * the collapsed bar names it separately.
+ */
+export function countActiveFilters({ searchTerm, confidenceFilter, lineupOnly, favoritesOnly }) {
+  return [
+    searchTerm.trim() !== "",
+    confidenceFilter !== "all",
+    lineupOnly,
+    favoritesOnly,
+  ].filter(Boolean).length;
+}
 
 const PredictionsPage = () => {
   const today = new Date().toISOString().split("T")[0];
@@ -585,6 +605,9 @@ const PredictionsPage = () => {
   const [sortMode, setSortMode] = useState("time");
   const [favoriteTeams, setFavoriteTeams] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
+  // Phones only: the filter panel starts collapsed so the first screen shows games.
+  // On wider screens the panel is always shown and this has no effect (CSS).
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const fetchData = useCallback(async (date) => {
     setLoading(true);
@@ -710,6 +733,19 @@ const PredictionsPage = () => {
   );
   const lineupPreds = filteredPredictions.filter((p) => p.lineup_confirmed);
 
+  const activeFilterCount = countActiveFilters({
+    searchTerm, confidenceFilter, lineupOnly, favoritesOnly,
+  });
+  const clearFilters = () => {
+    setSearchTerm("");
+    setConfidenceFilter("all");
+    setLineupOnly(false);
+    setFavoritesOnly(false);
+  };
+  const updatedLabel = lastUpdated
+    ? lastUpdated.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+    : null;
+
   const handleToggleFavorite = (team) => {
     setFavoriteTeams(toggleFavoriteTeam(team));
   };
@@ -733,11 +769,11 @@ const PredictionsPage = () => {
                 : "Daily game outcome forecasts"}
             </p>
           </div>
-          <div className="d-flex flex-wrap gap-2">
-            <Link to="/prediction-diagnostics" className="btn btn-outline-primary btn-sm">
+          <div className="d-flex flex-wrap gap-2 pred-head-actions">
+            <Link to="/mlb/models/diagnostics" className="btn btn-outline-primary btn-sm">
               Open diagnostics
             </Link>
-            <Link to="/scenario-simulator" className="btn btn-outline-secondary btn-sm">
+            <Link to="/mlb/models/scenario-simulator" className="btn btn-outline-secondary btn-sm">
               Open simulator
             </Link>
             <SaveResearchViewButton
@@ -779,8 +815,36 @@ const PredictionsPage = () => {
         </span>
       </div>
 
-      <Card className="border-0 shadow-sm mb-4">
+      <Card className={`pred-toolbar-card border-0 shadow-sm mb-4${filtersOpen ? " pred-toolbar-card--open" : ""}`}>
         <Card.Body className="pred-toolbar">
+          {/* Phone bar: one row with the filter count; the panel below opens from it. */}
+          <div className="pred-filterbar">
+            <button
+              type="button"
+              className="pred-filter-toggle"
+              aria-expanded={filtersOpen}
+              aria-controls="prediction-filters"
+              aria-label={`Filters${activeFilterCount ? `, ${activeFilterCount} active` : ""}`}
+              onClick={() => setFiltersOpen((open) => !open)}
+            >
+              <span aria-hidden="true" className="pred-filter-icon">☰</span>
+              Filters
+              {activeFilterCount > 0 && (
+                <span className="pred-filter-count" aria-hidden="true">{activeFilterCount}</span>
+              )}
+              <span aria-hidden="true" className="pred-filter-caret">{filtersOpen ? "▴" : "▾"}</span>
+            </button>
+            <span className="pred-filterbar-summary">
+              Sorted by {SORT_LABELS[sortMode] || sortMode}
+              {updatedLabel && <> · Updated {updatedLabel}</>}
+            </span>
+            {activeFilterCount > 0 && (
+              <button type="button" className="pred-filter-clear" onClick={clearFilters}>
+                Clear
+              </button>
+            )}
+          </div>
+          <div id="prediction-filters" className="pred-toolbar-panel">
           <div className="pred-toolbar-grid">
             <Form.Group controlId="prediction-search">
               <Form.Label className="pred-toolbar-label">Search</Form.Label>
@@ -851,11 +915,12 @@ const PredictionsPage = () => {
                 <span className="text-muted small">Favorite a team on a card to create a quick predictions filter.</span>
               )}
             </div>
-            {lastUpdated && (
-              <span className="text-muted small">
-                Updated {lastUpdated.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+            {updatedLabel && (
+              <span className="text-muted small pred-toolbar-updated">
+                Updated {updatedLabel}
               </span>
             )}
+          </div>
           </div>
         </Card.Body>
       </Card>

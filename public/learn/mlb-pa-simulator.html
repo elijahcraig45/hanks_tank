@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>/* Follow the theme chosen on the main site (same origin). */(function(){try{var t=localStorage.getItem('ht-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PA Simulator Explained</title>
+<style>
+:root{
+  color-scheme: light;
+  --ground:#f6f7f9; --surface:#ffffff; --surface-2:#eef1f5;
+  --ink:#111620; --ink-2:#4b5566; --ink-3:#7d8798;
+  --rule:#dee2e9; --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a;
+  --s1-soft:#dbe8f9; --warn-bg:#fdf1ea; --ok-bg:#e7f4ee;
+  --f-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --f-serif:Georgia,"Times New Roman",serif;
+  --f-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --ground:#13161b; --surface:#1a1e25; --surface-2:#21262e;
+    --ink:#eef1f5; --ink-2:#aeb8c6; --ink-3:#78828f;
+    --rule:#2c333d; --s1:#4a93ea; --s2:#e46a38; --s3:#23b683;
+    --s1-soft:#1d2c40; --warn-bg:#2a1f19; --ok-bg:#152620;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --ground:#13161b; --surface:#1a1e25; --surface-2:#21262e;
+  --ink:#eef1f5; --ink-2:#aeb8c6; --ink-3:#78828f;
+  --rule:#2c333d; --s1:#4a93ea; --s2:#e46a38; --s3:#23b683;
+  --s1-soft:#1d2c40; --warn-bg:#2a1f19; --ok-bg:#152620;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--f-serif);font-size:17px;line-height:1.62}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px 80px}
+h1,h2,h3{font-family:var(--f-sans);line-height:1.2;margin:0}
+h1{font-size:clamp(28px,5vw,40px);letter-spacing:-.02em}
+h2{font-size:clamp(21px,3vw,26px);margin-top:48px;padding-top:12px;border-top:1px solid var(--rule)}
+h3{font-size:16px;margin:22px 0 6px}
+p{margin:0 0 1em} a{color:var(--s1)}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+header{padding:44px 0 20px}
+.lede{font-size:19px;color:var(--ink-2);margin-top:14px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.box{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px 18px;margin:18px 0}
+.warn{background:var(--warn-bg)} .ok{background:var(--ok-bg)}
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden;margin:22px 0}
+.stat{background:var(--surface);padding:12px 14px}
+.stat b{display:block;font-family:var(--f-mono);font-size:21px}
+.stat span{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.tw{overflow-x:auto;margin:14px 0;border:1px solid var(--rule);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-family:var(--f-sans);font-size:14px}
+th,td{padding:7px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-size:12px;color:var(--ink-2);background:var(--surface-2)}
+td.n{font-family:var(--f-mono);text-align:right;white-space:nowrap}
+.g{color:var(--s3);font-weight:600} .b{color:var(--s2);font-weight:600}
+.tag{display:inline-block;font-family:var(--f-mono);font-size:11px;padding:1px 6px;border-radius:3px;background:var(--surface-2);color:var(--ink-2)}
+code{font-family:var(--f-mono);font-size:.88em;background:var(--surface-2);padding:1px 4px;border-radius:3px}
+.eq{font-family:var(--f-mono);font-size:15px;background:var(--surface-2);padding:10px 12px;border-radius:4px;overflow-x:auto;white-space:nowrap;margin:10px 0}
+nav.toc{font-family:var(--f-sans);font-size:14.5px;columns:2;column-gap:28px}
+nav.toc a{display:block;padding:2px 0;text-decoration:none}
+@media (max-width:560px){nav.toc{columns:1}}
+.demo{font-family:var(--f-sans);font-size:14px}
+.demo label{display:flex;gap:8px;align-items:center;margin:6px 0;flex-wrap:wrap}
+.demo input[type=range]{flex:1;min-width:140px}
+.demo button{font:inherit;padding:6px 14px;border-radius:4px;border:1px solid var(--rule);background:var(--s1);color:#fff;cursor:pointer}
+.log{font-family:var(--f-mono);font-size:12.5px;background:var(--surface-2);padding:10px;border-radius:4px;max-height:220px;overflow:auto;white-space:pre-wrap}
+svg text{fill:var(--ink-2);font-family:var(--f-sans);font-size:11px}
+dl dt{font-family:var(--f-sans);font-weight:600;margin-top:10px} dl dd{margin:2px 0 0 0;color:var(--ink-2)}
+details{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:10px 14px;margin:10px 0}
+details summary{font-family:var(--f-sans);font-weight:600;cursor:pointer}
+.small{font-size:14px;color:var(--ink-2)}
+</style>
+<link rel="stylesheet" href="learn.css">
+</head>
+<body>
+<nav class="lh-bar" aria-label="Site">
+ <div class="lh-in">
+  <a class="lh-brand" href="/"><span class="lh-mark" aria-hidden="true">HT</span><span class="lh-name">Hank&rsquo;s Tank</span></a>
+  <span class="lh-sep" aria-hidden="true">/</span>
+  <a class="lh-learn" href="/learn">Learn</a>
+  <span class="lh-sep" aria-hidden="true">/</span>
+  <span class="lh-topic">MLB</span>
+  <button type="button" class="lh-theme" id="lh-theme" aria-label="Switch theme" title="Switch theme">&#9790;</button>
+ </div>
+</nav>
+<div class="wrap">
+<header>
+  <div class="eyebrow">Hank's Tank · research, not production · measured 2026-09-25</div>
+  <h1>The plate-appearance simulator, and how to defend it</h1>
+  <p class="lede">The simulator plays every at-bat of a game thousands of times and reports what happened. This page explains the ideas it rests on, using the numbers measured on <b>15,000 games it never saw during tuning</b>, and says plainly what it is good at and what it is not.</p>
+  <div class="strip">
+    <div class="stat"><b>0.67835</b><span>winner log loss, 2020-26</span></div>
+    <div class="stat"><b>−0.0056</b><span>nats behind the closing line</span></div>
+    <div class="stat"><b>+0.0103</b><span>totals shape gain over market NB</span></div>
+    <div class="stat"><b>−2.2%</b><span>starter-K CRPS vs naive</span></div>
+    <div class="stat"><b>72 ms</b><span>per game at 3,000 sims</span></div>
+  </div>
+  <p class="small">Companion pages, not repeated here: <a href="ml-course.html">ML course</a> (the textbook versions of shrinkage, log5, Markov chains, Monte Carlo, calibration, proper losses), <a href="ml-lessons.html">ML lessons</a>, and <a href="v10-vs-pa-sim.html">V10 vs PA sim</a> (the earlier v1 result). This page covers the simulator, v2.</p>
+</header>
+
+<nav class="toc box">
+  <a href="#verdict">1. The verdict in one table</a>
+  <a href="#mc">2. Monte Carlo, and how many sims</a>
+  <a href="#markov">3. The 24 base-out states (demo)</a>
+  <a href="#log5">4. log5: batter meets pitcher</a>
+  <a href="#shrink">5. Shrinkage and stabilisation points</a>
+  <a href="#decay">6. Time-decayed weighting</a>
+  <a href="#cap">7. Why PA-level fitting escapes the sample cap, and evaluation does not</a>
+  <a href="#calib">8. Calibration and reliability</a>
+  <a href="#crps">9. Scoring whole distributions: log score and CRPS</a>
+  <a href="#select">10. Selection bias and the frozen holdout</a>
+  <a href="#market">11. The market as the benchmark</a>
+  <a href="#outputs">12. What it is good at: totals shape and props</a>
+  <a href="#defend">13. How to defend this (Q&amp;A)</a>
+  <a href="#gloss">14. Glossary</a>
+</nav>
+
+<section id="verdict">
+<h2>1. The verdict in one table</h2>
+<p>All numbers are out-of-sample. Positive gain means the simulator's loss is lower. The CIs come from resampling whole dates (games on the same day share weather and schedule shocks), 2,000 times.</p>
+<div class="tw"><table>
+<tr><th>Output</th><th>Test set</th><th>Simulator vs</th><th>Gain (nats or runs)</th><th>95% CI</th><th>Read</th></tr>
+<tr><td>Winner</td><td>2020-26, n=15,000</td><td>Elo + pythag logistic</td><td class="n">+0.0005</td><td class="n">[−0.0014, +0.0023]</td><td>tie</td></tr>
+<tr><td>Winner</td><td>2020-26</td><td>v1 simulator</td><td class="n g">+0.0034</td><td class="n">[+0.0020, +0.0048]</td><td>v2 is a real upgrade on v1</td></tr>
+<tr><td>Winner</td><td>2020-26</td><td>sim + strength stack vs strength</td><td class="n g">+0.0021</td><td class="n">[+0.0010, +0.0032]</td><td>adds information to box-score features</td></tr>
+<tr><td>Winner</td><td>2020-21, n=3,259</td><td>closing moneyline</td><td class="n b">−0.0056</td><td class="n">[−0.0091, −0.0023]</td><td>the market is better</td></tr>
+<tr><td>Winner</td><td>2020-21</td><td>market + sim vs market</td><td class="n">−0.0001</td><td class="n">[−0.0003, +0.0001]</td><td>nothing on top of the line</td></tr>
+<tr><td>Winner</td><td>2026 09-08..09-23, n=207 (unseen)</td><td>V10 as served</td><td class="n">+0.0088</td><td class="n">[−0.0143, +0.0308]</td><td>too few games to tell</td></tr>
+<tr><td>Winner</td><td>2026 to 09-07, n=1,749</td><td>V10 as served</td><td class="n g">+0.0083</td><td class="n">[+0.0012, +0.0150]</td><td>beats V10</td></tr>
+<tr><td>Total runs (log score)</td><td>2020-26</td><td>NB on team RS/RA + park</td><td class="n g">+0.0125</td><td class="n">[+0.0079, +0.0171]</td><td>better distribution</td></tr>
+<tr><td>Total runs (CRPS)</td><td>2020-21</td><td>closing total, NB</td><td class="n b">−0.023</td><td class="n">[−0.036, −0.009]</td><td>the market knows the mean better</td></tr>
+<tr><td>Total runs (log score)</td><td>2020-21</td><td>sim <i>shape</i> at the market mean vs market NB</td><td class="n g">+0.0102</td><td class="n">[+0.0013, +0.0199]</td><td>the sim's value is shape</td></tr>
+<tr><td>Over/under</td><td>2020-21, n=2,866</td><td>closing O/U price</td><td class="n">−0.0010</td><td class="n">[−0.0023, +0.0003]</td><td>no edge</td></tr>
+<tr><td>Run line</td><td>2020-21, n=2,981</td><td>closing run line</td><td class="n b">−0.0049</td><td class="n">[−0.0077, −0.0019]</td><td>market better</td></tr>
+<tr><td>First 5 innings (3-way)</td><td>2020-26</td><td>market- or strength-derived</td><td class="n">+0.0019</td><td class="n">[−0.0001, +0.0040]</td><td>tie; market wins where it exists</td></tr>
+<tr><td>Starter strikeouts (CRPS)</td><td>2020-26, n=29,987</td><td>K% × expected batters faced</td><td class="n g">+0.029</td><td class="n">[+0.025, +0.033]</td><td>real</td></tr>
+<tr><td>Batter ≥1 hit</td><td>n=269,951</td><td>season rate × PAs for slot</td><td class="n g">+0.0037</td><td class="n">[+0.0033, +0.0040]</td><td>real, needs calibrating</td></tr>
+<tr><td>Batter ≥1 HR</td><td>n=269,951</td><td>same</td><td class="n">+0.0001</td><td class="n">[−0.0002, +0.0004]</td><td>null</td></tr>
+<tr><td>Series winner</td><td>2020-26, n=3,978</td><td>strength, game-1 only</td><td class="n">+0.0003</td><td class="n">[−0.0054, +0.0059]</td><td>tie</td></tr>
+</table></div>
+<div class="box warn"><b>In one sentence:</b> as a win-probability model the simulator ties a two-feature team-strength logistic and sits 0.0056 nats behind the betting market. Where it earns its keep is anything that needs a <i>whole distribution</i> or a <i>player-level</i> line (total-runs shape, strikeout props, hit props), which a game-level model can't produce at all.</div>
+</section>
+
+<section id="mc">
+<h2>2. Monte Carlo, and how many sims you need</h2>
+<p>The simulator does not work out P(home win) with a formula. It plays the game N times and counts. Each play is a sequence of plate appearances. Each PA draws an outcome (K, BB, 1B, 2B, 3B, HR, error, ground out, air out) from that batter-vs-pitcher distribution, then draws how the runners move from a table measured on 1.9M real Statcast PAs. The <a href="ml-course.html#c11">course page</a> covers the general idea. Here is what it means for this model.</p>
+<p>A win probability estimated from N independent games has standard error √(p(1−p)/N). Being off by δ costs about δ²/(2p(1−p)) nats in expectation, so the <b>Monte Carlo penalty on log loss is about 1/(2N)</b>, whatever the model. Measured on 722 games (2017, model fixed, N varied, N=20,000 as the reference):</p>
+<div class="tw"><table>
+<tr><th>Sims N</th><th>SD of p error, measured</th><th>√(.25/N), theory</th><th>Expected log-loss penalty 1/(2N)</th><th>Time per game</th></tr>
+<tr><td class="n">100</td><td class="n">0.0485</td><td class="n">0.050</td><td class="n">0.0050</td><td class="n">7 ms</td></tr>
+<tr><td class="n">300</td><td class="n">0.0280</td><td class="n">0.029</td><td class="n">0.0017</td><td class="n">13 ms</td></tr>
+<tr><td class="n">1,000</td><td class="n">0.0152</td><td class="n">0.016</td><td class="n">0.0005</td><td class="n">26 ms</td></tr>
+<tr><td class="n">3,000</td><td class="n">0.0101</td><td class="n">0.009</td><td class="n">0.00017</td><td class="n">72 ms</td></tr>
+<tr><td class="n">10,000</td><td class="n">n/a</td><td class="n">0.005</td><td class="n">0.00005</td><td class="n">240 ms</td></tr>
+</table></div>
+<p><b>MC error vs model error.</b> Our model is 0.0056 nats behind the market. At N=3,000 the Monte Carlo share of that is 0.00017, about 3%. More sims won't close the gap. Only a better model will. The rule to take away: pick N so that 1/(2N) is a small fraction of the smallest difference you want to detect. When comparing variants, reuse the same random seeds (common random numbers) so the noise cancels in the difference.</p>
+</section>
+
+<section id="markov">
+<h2>3. Markov chains and the 24 base-out states</h2>
+<p>Everything baseball needs to know between pitches fits in <b>which bases are occupied (8 ways) × outs (0, 1, 2)</b>: 24 states. A third out ends the half-inning. The chain is Markov because the next state depends only on the current state and the PA outcome, not on how the inning got there. v1 used a hand-written advancement table (a single moves every runner one base) and then needed a fudge factor α = 1.155 on hits to reach real run totals. v2 measures the transitions instead: for every (state, outcome) it counts where runners actually ended up and how many scored, including stolen bases, wild pitches, sacrifice flies and double plays. That alone moved the season run bias from <span class="mono">−0.60</span> to <span class="mono">+0.05</span> runs per game on 2016-19 with no fudge factor.</p>
+<div class="box demo" id="demo">
+  <b>Try it: one half-inning with the fixed (v1) advancement table</b>
+  <label>K% <input type="range" id="k" min="10" max="35" value="22"><span class="mono" id="kv"></span></label>
+  <label>BB% <input type="range" id="bb" min="4" max="15" value="9"><span class="mono" id="bbv"></span></label>
+  <label>HR% <input type="range" id="hr" min="1" max="7" step="0.5" value="3"><span class="mono" id="hrv"></span></label>
+  <p class="small" style="margin:6px 0">Singles 15%, doubles 4.5%, triples 0.4%; the rest are balls-in-play outs, and 40% of ground balls with a runner on first and fewer than two outs become double plays.</p>
+  <button id="one">Play one inning</button> <button id="many">Play 20,000 innings</button>
+  <div class="log" id="out" style="margin-top:10px">Press a button.</div>
+</div>
+</section>
+
+<section id="log5">
+<h2>4. log5: combining the batter and the pitcher</h2>
+<p>For each outcome class c, the matchup probability is proportional to <b>batter rate × pitcher rate ÷ league rate</b>, and the nine classes are then renormalised to sum to one. The derivation is in the <a href="ml-course.html#c09">course page</a>. The part that matters here is <i>which</i> league rate goes in the denominator. v2 splits both sides by handedness: the batter's rate against this pitcher's throwing hand, and the pitcher's rate against this batter's stance. The denominator is then the league rate for that same stance × hand combination. Divide by the overall league rate instead and the platoon effect gets counted twice.</p>
+<div class="eq">p(c) ∝ b(c | vs hand) · q(c | vs stand) / L(c | stand, hand) · park(c) · home(c) · TTO(c)</div>
+<p>Park, home field and times-through-the-order enter as per-class multipliers. Measured separately on 2016-19: per-class park factors improved totals CRPS by <span class="mono">0.016 [0.005, 0.028]</span> over no park at all, which is real. The two-sided platoon, TTO and home-in-the-rates each moved winner log loss by less than 0.0007, with CIs spanning zero, so none of them is measurably different. Home-in-the-rates does fix the raw sim's biggest calibration flaw, though: v1 predicted the home team to win 50.0% of the time when home teams actually won 53.0%. v2 predicts 53.2%.</p>
+</section>
+
+<section id="shrink">
+<h2>5. Bayesian shrinkage, beta-binomial, and stabilisation points</h2>
+<p>A batter with 40 PAs and 4 home runs isn't a 10% home-run hitter. Each class rate is estimated as <span class="mono">(count + k·league) / (PAs + k)</span>. That is the posterior mean under a beta prior with k "pseudo-PAs" of league-average performance. The course page (<a href="ml-course.html#c08">empirical Bayes</a>) derives it. The useful fact is that k is <b>estimated from the data</b> by method of moments: observed spread between players, minus the spread binomial noise alone would produce, equals the true-talent spread. And k has a plain meaning: it is the number of PAs at which a player's own rate gets 50% weight. Sabermetricians call it the stabilisation point. Measured (all-history weights, as of 2019-07-01):</p>
+<div class="tw"><table>
+<tr><th>Class</th><th>Batter k (PAs)</th><th>Pitcher k (BF)</th><th>Meaning</th></tr>
+<tr><td>Strikeout</td><td class="n">42</td><td class="n">78</td><td>K rate is a skill that shows almost at once</td></tr>
+<tr><td>Walk</td><td class="n">102</td><td class="n">198</td><td></td></tr>
+<tr><td>Home run</td><td class="n">169</td><td class="n">736</td><td>pitcher HR allowed is mostly noise for a season</td></tr>
+<tr><td>Single</td><td class="n">201</td><td class="n">518</td><td>BABIP luck</td></tr>
+<tr><td>Double</td><td class="n">867</td><td class="n">1,516</td><td></td></tr>
+<tr><td>Reached on error</td><td class="n">2,905</td><td class="n">4,276</td><td>essentially not a skill</td></tr>
+</table></div>
+<p>This is why the simulator is strongest on strikeouts. That is the class it can read off a player fastest. A related trick, "x-outcomes", replaces half of each ball in play's actual result with the league-average result for its exit velocity and launch angle. It removes some BABIP luck and improved totals CRPS by <span class="mono">0.0037 [0.0005, 0.0070]</span>. It was the only change adopted after the ablations (see §10).</p>
+</section>
+
+<section id="decay">
+<h2>6. Time-decayed weighting</h2>
+<p>v1 weighted a 2015 PA the same as yesterday's. v2 weights each PA by <span class="mono">e<sup>−age/τ</sup></span>, so the counts are "effective PAs", and the shrinkage runs on those effective counts. The decay updates incrementally: multiply last week's counts by <span class="mono">e<sup>−7/τ</sup></span> and add the new week. Measured on 2017-19 calibrated winner log loss:</p>
+<div class="tw"><table>
+<tr><th>Weighting</th><th>Log loss</th><th>vs equal weight</th></tr>
+<tr><td>equal (v1)</td><td class="n">0.67672</td><td></td></tr>
+<tr><td>τ = 730 days</td><td class="n">0.67571</td><td class="n">+0.0010</td></tr>
+<tr><td>τ = 365 days</td><td class="n">0.67551</td><td class="n">+0.0012</td></tr>
+<tr><td>τ = 180 days</td><td class="n">0.67680</td><td class="n">−0.0001</td></tr>
+</table></div>
+<p>A U-shape: too long and you're fitting players who no longer exist, too short and you're fitting noise. The earlier "1 season hard cut" was pointing the same way. The same idea fixed the bullpen. Building each team's bullpen from relievers who actually pitched in the team's last 30 days of games, instead of the top-12 relievers across all seasons, gained <span class="mono">+0.0011 [+0.0003, +0.0019]</span>, the one component whose CI cleared zero on winners.</p>
+<p class="small">One trap found and fixed along the way: a "recent 30 days" window goes empty every April, because the previous 30 calendar days are the offseason. The window has to be measured back from each team's most recent game.</p>
+</section>
+
+<section id="cap">
+<h2>7. Why PA-level fitting escapes the sample cap, and evaluation does not</h2>
+<p>The earlier auto-search (<a href="ml-lessons.html">lessons</a>) found the binding constraint: ~2,400 games a season can support about three game-level parameters. The simulator gets around that for <b>fitting</b>. Its parameters are player rates learned from about 185,000 PAs a season, and the game-level model has almost nothing left to estimate (at most a two-parameter calibration). That's why it can use thousands of player-specific numbers without overfitting.</p>
+<p><b>Evaluation doesn't escape.</b> Every claim is still scored one game at a time, and one game is one Bernoulli draw with a per-game log-loss SD of about 0.07. On 415 games, the standard error of a paired difference is around 0.003 nats, bigger than most differences worth having. That's why this study moved off the 2026 holdout and onto <b>2016-2026: 9,702 dev games and 15,000 test games</b>. It's also why the 207 unseen September games show a +0.009 gain over V10 with a CI of [−0.014, +0.031] and prove nothing. You'd need about 2,000 games to resolve 0.005 nats.</p>
+</section>
+
+<section id="calib">
+<h2>8. Calibration and reliability diagrams</h2>
+<p>Calibration means "of all games given 60%, about 60% should be won" (<a href="ml-course.html#c14">course</a>). v1 needed Platt scaling (a logistic regression on logit p) because it had no home edge. v2's raw output is already close. Test 2020-26: raw log loss 0.67860, Platt-calibrated (fit only on earlier seasons) 0.67835. The diagram below shows it: points on the diagonal are calibrated, and v1's points sit above the diagonal because it underrates home teams.</p>
+<div class="box"><svg id="rel" viewBox="0 0 340 300" width="100%" role="img" aria-label="Reliability diagram"></svg>
+<p class="small" style="margin:6px 0 0">Bins of predicted P(home win), 2020-26 test games. <span style="color:var(--s2)">v1 raw</span>, <span style="color:var(--s1)">v2 raw</span>, <span style="color:var(--s3)">v2 calibrated</span>. Dashed line = perfect calibration.</p></div>
+<p>Totals need their own calibration. The raw sim runs hot: about +0.2 runs per game in 2016-19, rising to +0.7 to +0.8 in 2022-26, a drift not yet explained. The fix is an <b>exponential tilt</b>: multiply the run distribution by e<sup>θk</sup> and choose θ so the mean moves by the bias seen in earlier seasons. The shape survives the tilt.</p>
+</section>
+
+<section id="crps">
+<h2>9. Scoring whole distributions: log score and CRPS</h2>
+<p>A total-runs forecast is 31 probabilities, not one number. Two proper scoring rules are used here. Proper means you can only minimise your expected score by reporting what you actually believe; the <a href="ml-course.html#c16">course</a> covers why that matters.</p>
+<ul>
+<li><b>Log score</b> = −log P(the total that actually happened). It is local: only the probability on the realised outcome counts. It punishes being overconfident about shape.</li>
+<li><b>CRPS</b> = Σ<sub>k</sub> (F(k) − 1{y ≤ k})², the squared distance between the forecast CDF and the step function at the outcome. It is in runs, rewards getting the <i>location</i> right, and reduces to absolute error for a point forecast.</li>
+</ul>
+<p>They disagree here, and the disagreement is the finding. Against the closing total (2020-21), the sim loses on CRPS (<span class="mono">−0.023</span>) because the market knows the <i>mean</i> better: correlation of the forecast mean with the actual total is 0.21 for the market and 0.16 for the sim. But take the sim's distribution, tilt it to the market's mean, and it beats the market line wrapped in a negative binomial on log score (<span class="mono">+0.0102 [+0.0013, +0.0199]</span>). It also beats an empirical "totals given this line" histogram on 2017-19 (<span class="mono">+0.011 [+0.004, +0.017]</span>). The sim knows which games have fat or thin tails (a strikeout duel, two tired bullpens), and a line alone can't tell you that.</p>
+</section>
+
+<section id="select">
+<h2>10. Selection bias and the frozen-config holdout</h2>
+<p>Try 23 variants on the same games and the best one looks good partly by luck. With paired-difference SEs of about 0.0005 nats, the expected best of 20 null variants is about +0.001, which is exactly the size of the "best" dev result here (a v1-like variant with a recent bullpen, 0.67469 vs 0.67572). So the procedure was:</p>
+<ol>
+<li>Dev = 2016-19 only (plus 2015 as a never-scored calibration year for league constants: TTO multipliers, temperature slopes, the x-outcome table).</li>
+<li>A selection rule written down <i>before</i> testing: start from the full model; adopt a one-at-a-time change only if its dev CI on its target metric excludes zero. Only x-outcomes (xw = 0.5) qualified.</li>
+<li>Config frozen to <code>FROZEN_CONFIG.json</code> with a timestamp, then scored once on 2020-2026.</li>
+</ol>
+<p>The frozen model scored 0.67835 on test, vs 0.6754 on dev. That is not overfitting. 2020-26 is simply a harder environment for everyone: the market's own loss rose from 0.6696 to 0.6717. The gap to the market (0.0056 in both) and the tie with the strength model reproduced, which is the real check.</p>
+<div class="box warn"><b>Nulls, stated as nulls.</b> Centred temperature on HR/extra-base rates: totals CRPS +0.002 [−0.005, +0.009]. Per-pitcher pitch-count hook vs league curve, TTO, two-sided platoon, home-in-rates: winner deltas within ±0.0007 on dev, all CIs spanning zero. Park-neutralised player counts: the switch turned out to be a no-op in the code, so this is <i>untested</i>, not null.</div>
+</section>
+
+<section id="market">
+<h2>11. The market as the benchmark</h2>
+<p>Closing lines aggregate all public information plus money. They are the hardest honest benchmark there is. The SBR archive used here (2015-21) needed repair: its rows pair teams from different games. Per-team moneylines were right, and each total belongs to the game of the team in the record's "home" slot, which is that game's visitor. Verified: line vs actual total r = 0.218 one way, 0.039 the other.</p>
+<p>Against the close, the sim is 0.0056 nats behind on winners and adds nothing on top (−0.0001). It is behind on run line and has no O/U edge. This matches the earlier finding that the market carries about 2.65× our signal. PA-level modelling doesn't change that. The market already prices lineups, starters, bullpens and parks.</p>
+</section>
+
+<section id="outputs">
+<h2>12. What it is actually good at</h2>
+<ul>
+<li><b>Strikeout props.</b> Starter-K CRPS 1.269 vs 1.298 for K% × expected BF (+2.2%, CI [+1.9%, +2.5%]), MAE 1.82 vs 1.87, on 29,987 starts. The model knows the opposing lineup's K rates, handedness, and when this starter gets pulled.</li>
+<li><b>Hit and strikeout lines for batters.</b> P(≥1 hit) gains +0.0037 nats and P(≥1 K) +0.0056 over the naive rate (n = 269,951). Caveat: the sim over-predicts both (P(≥1 hit) 64.5% predicted vs 60.8% actual, P(≥1 HR) 13.7% vs 11.7%) because it plays every starter all nine innings with no substitutions. Calibrate these before showing them.</li>
+<li><b>Total-runs distribution shape</b> (§9).</li>
+<li><b>Coherence.</b> One simulation gives the winner, total, margin, F5, team totals and every player line, all consistent with each other. A stack of separate models can't guarantee that.</li>
+</ul>
+<p>Not good at: beating the market anywhere; F5, which is a tie overall and loses to the market-derived F5 in 2020-21 even though a starter-driven sim should be strongest there; series, which ties the game-1 strength model.</p>
+</section>
+
+<section id="defend">
+<h2>13. How to defend this</h2>
+<details><summary>"It's only 0.0005 nats better than a two-feature logistic. Why bother?"</summary><p>On winners, don't bother. It's a tie, and the page says so. The case rests on outputs the logistic can't make: player strikeout and hit distributions, total-runs shape, and one consistent box score. Stacked with the strength model it adds +0.0021 [+0.0010, +0.0032], so it carries some independent information.</p></details>
+<details><summary>"How do you know you didn't tune it onto the test set?"</summary><p>The config was frozen with a timestamp before 2020-26 was scored. Every calibration map was fit on earlier seasons only. 23 variants are declared, and the dev "winner" was not the one shipped to test, because the selection rule was fixed in advance.</p></details>
+<details><summary>"Isn't 3,000 sims too few?"</summary><p>The penalty is 1/(2N) = 0.00017 nats, about 3% of the gap to the market. Measured error SD matched √(p(1−p)/N) at every N tested.</p></details>
+<details><summary>"The 2026 September result is 61% accuracy!"</summary><p>On 207 games. The 95% interval on accuracy is roughly ±6.6 points, and the log-loss gain over V10 is +0.009 [−0.014, +0.031]. It's encouraging and it isn't evidence. The evidence is the 15,000-game test.</p></details>
+<details><summary>"Why not just use the market?"</summary><p>For winners, you should: it is better, and our features add nothing to it. The simulator's job is producing the things the market doesn't publish for free, and saying where those stand relative to the market's mean.</p></details>
+<details><summary>"What would change your mind?"</summary><p>A stack gain over the closing line with a CI above zero on a new season. Or prop results against real prop lines (we only have naive baselines). Or the run-level drift explained and fixed, raising totals CRPS against the market.</p></details>
+</section>
+
+<section id="gloss">
+<h2>14. Glossary</h2>
+<dl>
+<dt>nat</dt><dd>Unit of log loss (natural log). 0.001 nats over 2,400 games is about a 2.4-nat total likelihood difference.</dd>
+<dt>Log loss / log score</dt><dd>−log of the probability given to what happened. Lower is better. Proper.</dd>
+<dt>CRPS</dt><dd>Continuous ranked probability score: squared area between forecast CDF and outcome step. In the outcome's units.</dd>
+<dt>Platt scaling</dt><dd>Logistic regression of the outcome on logit(p). A two-parameter recalibration.</dd>
+<dt>Exponential tilt</dt><dd>Reweighting a distribution by e<sup>θk</sup> to move its mean while keeping its shape.</dd>
+<dt>Beta-binomial / k</dt><dd>Model where each player's true rate is beta-distributed around league. k = prior pseudo-sample size = stabilisation point.</dd>
+<dt>log5</dt><dd>Odds-ratio combination of batter, pitcher and league rates.</dd>
+<dt>Base-out state</dt><dd>One of 24 (runners × outs) situations. Sufficient state for a half-inning.</dd>
+<dt>TTO</dt><dd>Times through the order. Starters get worse the third time a lineup sees them (measured: K ×0.91, HR ×1.08 vs average).</dd>
+<dt>Hook hazard</dt><dd>Per-PA probability the starter is removed, from pitch count vs his usual, runs allowed, inning.</dd>
+<dt>x-outcomes</dt><dd>League-average result for a ball in play's exit velocity and launch angle, used to denoise rates.</dd>
+<dt>Date-block bootstrap</dt><dd>Resampling whole days to get CIs that respect same-day correlation.</dd>
+<dt>Frozen config</dt><dd>Model settings fixed and timestamped before the test data is scored.</dd>
+<dt>Stack</dt><dd>Logistic regression over several models' logits, fit on earlier seasons. Its gain measures independent information.</dd>
+</dl>
+<p class="small">Sources: the v2 simulator and its backtest scripts, with the frozen config, test report, Monte Carlo error, shrinkage and reliability results saved alongside them.</p>
+</section>
+</div>
+<script>
+(function(){
+  // ---------- half-inning demo (fixed v1 table, 9 classes)
+  var $=function(i){return document.getElementById(i)};
+  function probs(){
+    var k=+$('k').value/100, bb=+$('bb').value/100, hr=+$('hr').value/100;
+    var s1=.15,s2=.045,s3=.004, e=.007;
+    var rest=Math.max(0,1-k-bb-hr-s1-s2-s3-e);
+    $('kv').textContent=(k*100).toFixed(0)+'%'; $('bbv').textContent=(bb*100).toFixed(0)+'%'; $('hrv').textContent=(hr*100).toFixed(1)+'%';
+    return [['K',k],['BB',bb],['1B',s1],['2B',s2],['3B',s3],['HR',hr],['E',e],['GO',rest*.49],['AO',rest*.51]];
+  }
+  function draw(P){var u=Math.random(),c=0;for(var i=0;i<P.length;i++){c+=P[i][1];if(u<c)return P[i][0];}return 'AO';}
+  function step(b,o,ev){ // returns [bases,outs,runs,text]
+    var b1=b&1,b2=(b>>1)&1,b3=(b>>2)&1;
+    switch(ev){
+      case 'BB': if(!b1)return[b|1,o,0]; if(!b2)return[1|2|(b3<<2),o,0]; if(!b3)return[7,o,0]; return[7,o,1];
+      case '1B': case 'E': return[1|(b1<<1)|(b2<<2),o,b3];
+      case '2B': return[2|(b1<<2),o,b2+b3];
+      case '3B': return[4,o,b1+b2+b3];
+      case 'HR': return[0,o,1+b1+b2+b3];
+      case 'GO': if(b1&&o<=1&&Math.random()<.4)return[b&~1,o+2,0]; return[b,o+1,0];
+      default: return[b,o+1,0];
+    }
+  }
+  function name(b){var s=[];if(b&1)s.push('1st');if(b&2)s.push('2nd');if(b&4)s.push('3rd');return s.length?s.join('+'):'empty';}
+  function inning(P,log){var b=0,o=0,r=0,n=0,lines=[];
+    while(o<3&&n<40){var ev=draw(P);var t=step(b,o,ev);n++;
+      if(log)lines.push(('PA '+n+': ').padEnd(8)+ev.padEnd(3)+'  state '+name(b)+', '+o+' out -> '+(t[1]>=3?'inning over':name(t[0])+', '+t[1]+' out')+(t[2]?'   +'+t[2]+' run'+(t[2]>1?'s':''):''));
+      b=t[0];o=t[1];r+=t[2];}
+    return [r,lines];}
+  ['k','bb','hr'].forEach(function(i){$(i).addEventListener('input',probs)}); probs();
+  $('one').onclick=function(){var x=inning(probs(),true);$('out').textContent=x[1].join('\n')+'\n\nRuns: '+x[0];};
+  $('many').onclick=function(){var P=probs(),N=20000,tot=0,h=[0,0,0,0,0,0];
+    for(var i=0;i<N;i++){var r=inning(P,false)[0];tot+=r;h[Math.min(r,5)]++;}
+    var m=tot/N;$('out').textContent='Mean runs / half-inning: '+m.toFixed(3)+'  (x ~17.3 half-innings = '+(m*17.3).toFixed(2)+' runs per game both teams)\n'+
+      'SE of that mean: '+(Math.sqrt(1.0/N)).toFixed(4)+'  (MC error shrinks as 1/sqrt(N))\n\n'+
+      h.map(function(c,i){return (i==5?'5+':i)+' runs '+(100*c/N).toFixed(1).padStart(5)+'%  '+'#'.repeat(Math.round(60*c/N));}).join('\n')+
+      '\n\nThe fixed table under-scores real baseball; v2 replaces it with transitions measured on 1.9M PAs.';};
+  // ---------- reliability diagram
+  var R={v1:[[.359,.414],[.427,.479],[.476,.503],[.524,.549],[.573,.585],[.622,.644],[.683,.677]],
+         raw:[[.377,.347],[.430,.410],[.477,.463],[.525,.523],[.574,.572],[.621,.650],[.677,.691]],
+         cal:[[.368,.421],[.428,.397],[.477,.493],[.525,.524],[.574,.566],[.623,.633],[.685,.689]]};
+  var svg=$('rel'),W=340,H=300,x0=40,y0=260,sx=260/.45,sy=230/.45,lo=.3;
+  function X(p){return x0+(p-lo)*sx} function Y(p){return y0-(p-lo)*sy}
+  var css=getComputedStyle(document.documentElement);
+  var s='<line x1="'+X(.3)+'" y1="'+Y(.3)+'" x2="'+X(.75)+'" y2="'+Y(.75)+'" stroke="currentColor" stroke-dasharray="4 4" opacity=".4"/>';
+  for(var t=.3;t<=.751;t+=.15){s+='<text x="'+X(t)+'" y="'+(y0+16)+'" text-anchor="middle">'+t.toFixed(2)+'</text><text x="'+(x0-6)+'" y="'+(Y(t)+4)+'" text-anchor="end">'+t.toFixed(2)+'</text>';}
+  s+='<text x="'+(x0+130)+'" y="'+(H-4)+'" text-anchor="middle">predicted P(home win)</text><text x="10" y="'+(Y(.52))+'" transform="rotate(-90 10 '+Y(.52)+')" text-anchor="middle">actual</text>';
+  [['v1','--s2'],['raw','--s1'],['cal','--s3']].forEach(function(a){var c=css.getPropertyValue(a[1]).trim();
+    s+='<polyline fill="none" stroke="'+c+'" stroke-width="2" points="'+R[a[0]].map(function(p){return X(p[0])+','+Y(p[1])}).join(' ')+'"/>';
+    R[a[0]].forEach(function(p){s+='<circle cx="'+X(p[0])+'" cy="'+Y(p[1])+'" r="3.5" fill="'+c+'"/>';});});
+  svg.style.color=css.getPropertyValue('--ink-2'); svg.innerHTML=s;
+})();
+</script>
+<script>/* Theme toggle for the learn pages; shares the site's stored choice. */
+(function(){var b=document.getElementById('lh-theme');if(!b)return;var r=document.documentElement;
+function cur(){var t=r.getAttribute('data-theme');if(t)return t;return window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+function lab(){var n=cur()==='dark'?'light':'dark';b.textContent=n==='light'?'\u2600':'\u263E';b.setAttribute('aria-label','Switch to '+n+' theme');b.title='Switch to '+n+' theme';}
+lab();b.addEventListener('click',function(){var n=cur()==='dark'?'light':'dark';try{localStorage.setItem('ht-theme',n);}catch(e){}
+r.setAttribute('data-theme',n);location.reload();});})();
+</script>
+</body>
+</html>

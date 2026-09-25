@@ -11,7 +11,7 @@ td, th {
   border-color: var(--ht-gray-200) !important;
 }
 .card-header {
-  background: #fff !important;
+  background: var(--surface) !important;
   border-bottom-color: var(--ht-gray-200) !important;
   font-size: 0.875rem;
 }
@@ -74,7 +74,7 @@ td, th {
   font-family: var(--ht-font-mono);
   font-size: 0.65rem;
   background: var(--ht-navy-mid);
-  color: #94a3b8;
+  color: var(--text-faint);
   padding: 2px 7px;
   border-radius: 4px;
   letter-spacing: 0.04em;

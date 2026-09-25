@@ -428,7 +428,7 @@ const TeamPitching = () => {
                             className={getStatTypeColor(key)}
                           >
                             {key === "Team" ? (
-                              <Link to={`/team/${value}`} className="text-decoration-none fw-bold">
+                              <Link to={`/mlb/team/${value}`} className="text-decoration-none fw-bold">
                                 {value}
                               </Link>
                             ) : (

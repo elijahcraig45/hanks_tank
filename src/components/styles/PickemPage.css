@@ -53,7 +53,7 @@
   position: sticky; top: 0; z-index: 2;
   display: flex; align-items: baseline; gap: .6rem;
   margin: 0 0 .5rem; padding: .35rem 0;
-  background: #fff;
+  background: var(--surface);
   border-bottom: 1px solid var(--ht-gray-200);
   font-size: .88rem; font-weight: 700;
 }
@@ -73,7 +73,7 @@
 
 .pk-game {
   border: 1px solid var(--ht-gray-200); border-radius: var(--ht-radius);
-  padding: .5rem .65rem; background: #fff;
+  padding: .5rem .65rem; background: var(--surface);
   display: flex; flex-direction: column; gap: .35rem;
 }
 /* A locked game stays visible but reads as inert — hiding it would make a sheet
@@ -111,7 +111,7 @@
   display: flex; align-items: baseline; justify-content: space-between; gap: .4rem;
   appearance: none; text-align: left; cursor: pointer;
   border: 1px solid var(--ht-gray-200); border-radius: var(--ht-radius);
-  background: #fff; color: inherit; font: inherit; font-size: .85rem;
+  background: var(--surface); color: inherit; font: inherit; font-size: .85rem;
   padding: .4rem .55rem;
   transition: border-color .12s ease, background .12s ease;
 }
@@ -141,7 +141,7 @@
   padding: .8rem 0; border-top: 1px solid var(--ht-gray-200);
   /* Sticky so the save button is reachable from anywhere in a long sheet rather than
      only after scrolling to the bottom of sixty games. */
-  position: sticky; bottom: 0; z-index: 3; background: #fff;
+  position: sticky; bottom: 0; z-index: 3; background: var(--surface);
 }
 .pk-count { font-size: .82rem; color: var(--ht-gray-600); }
 

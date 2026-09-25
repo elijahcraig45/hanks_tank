@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import RankingsBoard, { buildTiers } from './RankingsBoard';
+import RankingsBoard, { asOfLabel, buildTiers, shortDate } from './RankingsBoard';
 import ApiService from '../services/api';
 
 jest.mock('../services/api', () => ({
@@ -118,5 +118,22 @@ describe('buildTiers', () => {
     expect(tiers).toHaveLength(1);
     expect(tiers[0].label).toBe('No clear tiers');
     expect(tiers[0].rows).toHaveLength(3);
+  });
+});
+
+describe('board freshness label', () => {
+  test('prefers the as-of date over the internal week index', () => {
+    expect(asOfLabel({ as_of_week: 27, as_of_date: '2026-09-24',
+      computed_at: '2026-09-25T11:02:03.000Z' })).toBe('through Sep 24 · updated Sep 25');
+  });
+
+  test('falls back to the week for boards without a date', () => {
+    expect(asOfLabel({ as_of_week: 4 })).toBe('through week 4');
+    expect(asOfLabel(null)).toBeNull();
+  });
+
+  test('does not shift a date across the UTC boundary', () => {
+    expect(shortDate('2026-03-01')).toBe('Mar 1');
+    expect(shortDate(undefined)).toBeNull();
   });
 });

@@ -1,12 +1,11 @@
-import { act, render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { act, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import Navbar from './Navbar';
+import Navbar, { footballSectionOf } from './Navbar';
 
-function renderNavbar(initialEntries = ['/']) {
+function renderNavbar(path = '/') {
   return render(
     <MemoryRouter
-      initialEntries={initialEntries}
+      initialEntries={[path]}
       future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
     >
       <Navbar />
@@ -14,47 +13,118 @@ function renderNavbar(initialEntries = ['/']) {
   );
 }
 
-test('marks the football tab active on a football route', () => {
-  renderNavbar(['/football/nfl/picks']);
+const switcher = () => within(screen.getByRole('navigation', { name: 'Sport' }));
 
-  expect(screen.getByRole('link', { name: /football/i })).toHaveClass('ht-sport--active');
-});
-
-test('marks the baseball tab active on any MLB route', () => {
-  renderNavbar(['/predictions']);
-
-  expect(screen.getByRole('button', { name: /baseball/i })).toHaveClass('ht-sport--active');
-});
-
-test('baseball mega menu groups every MLB page', async () => {
+test('offers the three sports as peers, plus an all-sports home', () => {
   renderNavbar();
 
-  await act(async () => {
-    userEvent.click(screen.getByRole('button', { name: /baseball/i }));
+  expect(switcher().getByRole('link', { name: /all sports/i })).toHaveAttribute('href', '/');
+  expect(switcher().getByRole('link', { name: /mlb/i })).toHaveAttribute('href', '/mlb');
+  expect(switcher().getByRole('link', { name: /nfl/i })).toHaveAttribute('href', '/nfl');
+  expect(switcher().getByRole('link', { name: /cfb/i })).toHaveAttribute('href', '/cfb');
+  // No sport bar on the all-sports home.
+  expect(screen.queryByRole('navigation', { name: /sections/i })).not.toBeInTheDocument();
+});
+
+test('marks the active sport and sets the accent on the document', () => {
+  renderNavbar('/nfl/rankings');
+
+  expect(switcher().getByRole('link', { name: /nfl/i })).toHaveClass('ht-switch--active');
+  expect(switcher().getByRole('link', { name: /mlb/i })).not.toHaveClass('ht-switch--active');
+  expect(document.documentElement).toHaveAttribute('data-sport', 'nfl');
+});
+
+test('every sport gets the same core sections in the same order', () => {
+  const core = ['Predictions', 'Rankings', 'Stats', 'Models'];
+  ['/mlb/predictions', '/nfl/picks', '/cfb/fbs/picks'].forEach((path) => {
+    const { unmount } = renderNavbar(path);
+    const labels = within(screen.getByRole('navigation', { name: /sections/i }))
+      .getAllByRole('link').map((a) => a.textContent);
+    expect(labels.filter((l) => core.includes(l))).toEqual(core);
+    unmount();
   });
-
-  // One menu now covers what used to be two dropdowns.
-  expect(screen.getByText('Scoreboard')).toBeInTheDocument();
-  expect(screen.getByText('Team Batting')).toBeInTheDocument();
-  expect(screen.getByText('Comparison Workbench')).toBeInTheDocument();
-  expect(screen.getByText('Transactions')).toBeInTheDocument();
 });
 
-test('football stays a single top-level tab with no dropdown', () => {
-  renderNavbar();
+test('MLB stats pages open a pill row with every leaderboard', () => {
+  renderNavbar('/mlb/stats/team-pitching');
 
-  const football = screen.getByRole('link', { name: /football/i });
-  expect(football).toHaveAttribute('href', '/football');
-  expect(screen.queryByText('College FBS')).not.toBeInTheDocument();
+  const pills = within(screen.getByRole('navigation', { name: /stats pages/i }));
+  expect(pills.getByRole('link', { name: 'Team pitching' })).toHaveAttribute('aria-current', 'page');
+  expect(pills.getByRole('link', { name: 'Player batting' })).toBeInTheDocument();
+  expect(pills.getByRole('link', { name: 'Transactions' })).toBeInTheDocument();
 });
 
-test('opens the mobile menu drawer', async () => {
+test('MLB team and game pages keep their section highlighted', () => {
+  renderNavbar('/mlb/game/824776');
+  const sections = within(screen.getByRole('navigation', { name: /sections/i }));
+  expect(sections.getByRole('link', { name: 'Scores' })).toHaveClass('ht-section--active');
+});
+
+test('football Models leads to the model scoreboard, and Pick’em sits in the sport', () => {
+  renderNavbar('/nfl/diagnostics');
+
+  const sections = within(screen.getByRole('navigation', { name: /sections/i }));
+  expect(sections.getByRole('link', { name: 'Models' })).toHaveClass('ht-section--active');
+  expect(sections.getByRole('link', { name: /pick/i })).toHaveAttribute('href', '/pickem/nfl');
+  expect(sections.getByRole('link', { name: 'Models' })).toHaveAttribute('href', '/nfl/models');
+});
+
+test('NFL has no scores section; college does, with a division switch', () => {
+  renderNavbar('/nfl/picks');
+  expect(within(screen.getByRole('navigation', { name: /sections/i }))
+    .queryByRole('link', { name: 'Scores' })).not.toBeInTheDocument();
+});
+
+test('the college division switch keeps the current section', () => {
+  renderNavbar('/cfb/fbs/rankings');
+
+  const division = within(screen.getByRole('group', { name: 'Division' }));
+  expect(division.getByRole('link', { name: 'FCS' })).toHaveAttribute('href', '/cfb/fcs/rankings');
+  expect(division.getByRole('link', { name: 'FBS' })).toHaveClass('ht-division-btn--active');
+});
+
+test('pick’em pages keep their sport bar', () => {
+  renderNavbar('/pickem/nfl/leaderboard');
+
+  const sections = within(screen.getByRole('navigation', { name: /nfl sections/i }));
+  expect(sections.getByRole('link', { name: /pick/i })).toHaveClass('ht-section--active');
+});
+
+test('renders a bottom tab bar for phones', () => {
+  renderNavbar('/mlb/predictions');
+
+  const bottom = within(screen.getByRole('navigation', { name: 'Sports' }));
+  expect(bottom.getByRole('link', { name: /home/i })).toHaveAttribute('href', '/');
+  expect(bottom.getByRole('link', { name: /mlb/i })).toHaveAttribute('aria-current', 'page');
+  expect(bottom.getByRole('link', { name: /pick/i })).toHaveAttribute('href', '/pickem');
+});
+
+test('the theme toggle flips the document theme', () => {
+  document.documentElement.setAttribute('data-theme', 'light');
   renderNavbar();
 
-  await act(async () => {
-    userEvent.click(screen.getByRole('button', { name: /menu/i }));
-  });
+  act(() => { screen.getByRole('button', { name: /switch to dark theme/i }).click(); });
+  expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
+  expect(document.documentElement).toHaveAttribute('data-bs-theme', 'dark');
+});
 
-  expect(screen.getAllByText(/football/i).length).toBeGreaterThan(1);
-  expect(screen.getByText('Player Pitching')).toBeInTheDocument();
+test('footballSectionOf reads both path shapes', () => {
+  expect(footballSectionOf('/nfl', false)).toBe('picks');
+  expect(footballSectionOf('/cfb/fcs/stats', false)).toBe('stats');
+  expect(footballSectionOf('/cfb/fbs/game/401', false)).toBe('scoreboard');
+  expect(footballSectionOf('/pickem/cfb', true)).toBe('pickem');
+});
+
+test('links to Learn from the top bar and from each sport bar', () => {
+  const { unmount } = renderNavbar('/learn');
+  expect(screen.getByRole('link', { name: 'Learn' })).toHaveAttribute('aria-current', 'page');
+  unmount();
+
+  [['/mlb/predictions', '/learn#mlb'], ['/nfl/picks', '/learn#football'], ['/cfb/fbs/rankings', '/learn#football']]
+    .forEach(([path, href]) => {
+      const { unmount: done } = renderNavbar(path);
+      const sections = within(screen.getByRole('navigation', { name: /sections/i }));
+      expect(sections.getByRole('link', { name: 'Learn' })).toHaveAttribute('href', href);
+      done();
+    });
 });
