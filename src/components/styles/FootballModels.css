@@ -1,0 +1,89 @@
+/* ─── Football model comparison (experiment) ───────────────────────────────
+   Builds on FootballPage.css's panels and tables; only what they lack is here. */
+
+.fm-badge {
+  font-family: var(--ht-font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sport-ftbl);
+  background: var(--sport-ftbl-soft);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+.fm-score { margin-top: 1rem; }
+.fm-score-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.fm-score-head h3 { margin: 0 0 0.4rem; font-size: 0.86rem; font-weight: 700; }
+.fm-score-note {
+  font-family: var(--ht-font-mono);
+  font-size: 0.72rem;
+  color: var(--ht-gray-600);
+}
+.fm-table td, .fm-table th { white-space: nowrap; }
+.fm-table tr.fm-best td { font-weight: 700; }
+
+.fm-week {
+  border: 1px solid var(--ht-gray-200);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.82rem;
+  background: #fff;
+}
+
+.fm-th-sub { font-weight: 400; font-size: 0.68rem; color: var(--ht-gray-400); }
+.fm-games { margin-top: 0.75rem; }
+.fm-game-teams { font-weight: 600; }
+.fm-game-meta { font-size: 0.72rem; color: var(--ht-gray-600); }
+
+.fm-cell { vertical-align: top; }
+.fm-cell-prob { font-family: var(--ht-font-mono); font-weight: 700; }
+.fm-cell-sub { font-size: 0.72rem; color: var(--ht-gray-600); }
+.fm-cell--none { color: var(--ht-gray-400); }
+.fm-cell--hit { box-shadow: inset 3px 0 0 var(--ht-green); }
+.fm-cell--miss { box-shadow: inset 3px 0 0 var(--ht-red); }
+.fm-cell--late { opacity: 0.55; }
+.fm-cell-flag { font-size: 0.66rem; color: var(--ht-red); }
+
+.fm-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.fm-card {
+  background: #fff;
+  border: 1px solid var(--ht-gray-200);
+  border-top: 3px solid var(--sport-ftbl);
+  border-radius: var(--ht-radius);
+  box-shadow: var(--ht-shadow-sm);
+  padding: 1rem 1.1rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+.fm-card--market { border-top-color: var(--ht-gray-800); }
+.fm-card--drive_sim { border-top-style: dashed; opacity: 0.8; }
+.fm-card-head h3 { margin: 0; font-size: 0.98rem; font-weight: 800; }
+.fm-card-role { font-size: 0.72rem; color: var(--ht-gray-600); }
+.fm-card h4 {
+  margin: 0.8rem 0 0.2rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ht-gray-600);
+}
+.fm-card p, .fm-card ul { margin: 0.2rem 0; }
+.fm-card ul { padding-left: 1.1rem; }
+.fm-record { font-family: var(--ht-font-mono); font-size: 0.74rem; }
+.fm-diffs { font-size: 0.8rem; margin: 0.75rem 0 0; padding-left: 1.1rem; }
+
+@media (max-width: 600px) {
+  .fm-cards { grid-template-columns: 1fr; }
+}
