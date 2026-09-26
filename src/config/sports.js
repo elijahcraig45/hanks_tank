@@ -35,6 +35,27 @@ export function footballPath(leagueKey, section) {
   return section ? `${base}/${section}` : base;
 }
 
+/**
+ * The unified predictions pages: every model side by side, plus simulation detail and
+ * player projections. `sub` is '' (games), 'players', or 'game/<id>'.
+ * @param {'mlb'|'nfl'|'cfb'} sport
+ * @param {'fbs'|'fcs'|null} division
+ */
+export function predictionsPath(sport, division = null, sub = '') {
+  let base = '/mlb/predictions';
+  if (sport === 'nfl') base = '/nfl/predictions';
+  else if (sport === 'cfb') base = `/cfb/${CFB_DIVISIONS.includes(division) ? division : 'fbs'}/predictions`;
+  return sub ? `${base}/${sub}` : base;
+}
+
+/** The one-game projections view. `query` is appended as-is (date, season, week). */
+export function predictionsGamePath(sport, division, gameId, query = {}) {
+  const qs = new URLSearchParams();
+  Object.entries(query).forEach(([k, v]) => { if (v != null && v !== '') qs.set(k, String(v)); });
+  const q = qs.toString();
+  return `${predictionsPath(sport, division, `game/${encodeURIComponent(gameId)}`)}${q ? `?${q}` : ''}`;
+}
+
 export function footballGamePath(leagueKey, gameId) {
   return `${footballPath(leagueKey)}/game/${gameId}`;
 }
@@ -46,6 +67,8 @@ export function footballGamePath(leagueKey, gameId) {
  * without a nav change. Anything unlisted becomes its own top-level entry.
  */
 export const FOOTBALL_SECTION_GROUP = {
+  predictions: 'predictions',
+  'predictions/players': 'predictions',
   picks: 'predictions',
   scoreboard: 'scores',
   rankings: 'rankings',
@@ -67,7 +90,9 @@ const GROUP_ORDER = ['predictions', 'scores', 'rankings', 'stats', 'models'];
 
 /** Shorter labels for the section pills, where the page's own label is long. */
 const FOOTBALL_CHILD_LABEL = {
-  picks: 'Model picks',
+  predictions: 'Games',
+  'predictions/players': 'Players',
+  picks: 'Classic picks',
   scoreboard: 'Scores & schedule',
   rankings: 'Power rankings',
   stats: 'Team stats',
@@ -82,7 +107,15 @@ const FOOTBALL_CHILD_LABEL = {
  */
 export function footballNav(leagueKey, sections = []) {
   const league = { key: leagueKey, sport: footballSportOf(leagueKey) };
-  const available = sections.filter((s) => !s.availableFor || s.availableFor(league));
+  // The unified predictions pages lead the Predictions group: Games | Players | Models
+  // scoreboard, then the classic picks board. The scoreboard entry is an alias of the
+  // Models section's page (key `predictions-models`), so it never marks this group active.
+  const unified = [
+    { key: 'predictions', label: 'Games' },
+    { key: 'predictions/players', label: 'Players' },
+  ];
+  const available = [...unified, ...sections]
+    .filter((s) => !s.availableFor || s.availableFor(league));
   const groups = new Map();
   available.forEach((s) => {
     const g = FOOTBALL_SECTION_GROUP[s.key] || s.key;
@@ -93,6 +126,12 @@ export function footballNav(leagueKey, sections = []) {
       to: footballPath(leagueKey, s.key),
     });
   });
+  if (groups.has('predictions') && available.some((s) => s.key === 'models')) {
+    const g = groups.get('predictions');
+    g.splice(2, 0, {
+      key: 'predictions-models', label: 'Models scoreboard', to: footballPath(leagueKey, 'models'), alias: true,
+    });
+  }
   const order = [...GROUP_ORDER, ...[...groups.keys()].filter((g) => !GROUP_ORDER.includes(g))];
   const nav = order.filter((g) => groups.has(g)).map((g) => {
     const children = groups.get(g);
@@ -117,6 +156,9 @@ export function footballNav(leagueKey, sections = []) {
 export const MLB = {
   home: '/mlb',
   predictions: '/mlb/predictions',
+  predictionsPlayers: '/mlb/predictions/players',
+  predictionsClassic: '/mlb/predictions/classic',
+  predictionsGame: (gamePk, date) => predictionsGamePath('mlb', null, gamePk, { date }),
   games: '/mlb/games',
   game: (gamePk) => `/mlb/game/${gamePk}`,
   rankings: '/mlb/rankings',
@@ -143,7 +185,18 @@ export const MLB = {
 };
 
 export const MLB_NAV = [
-  { key: 'predictions', label: 'Predictions', to: MLB.predictions },
+  {
+    key: 'predictions',
+    label: 'Predictions',
+    to: MLB.predictions,
+    children: [
+      { key: 'games', label: 'Games', to: MLB.predictions, exact: true, match: ['/mlb/predictions/game/'] },
+      { key: 'players', label: 'Players', to: MLB.predictionsPlayers },
+      // An alias of the Models section's page: it links there but never marks this group active.
+      { key: 'models-scoreboard', label: 'Models scoreboard', to: MLB.models, alias: true },
+      { key: 'classic', label: 'Classic board', to: MLB.predictionsClassic },
+    ],
+  },
   { key: 'scores', label: 'Scores', to: MLB.games, match: ['/mlb/game/'] },
   { key: 'rankings', label: 'Rankings', to: MLB.rankings },
   {
@@ -221,7 +274,6 @@ export const LEGACY_PARAM_REDIRECTS = [
   ['/football/:league', (p) => footballPath(p.league)],
   ['/football/:league/:section', (p) => footballPath(p.league, p.section)],
   ['/football/:league/game/:gameId', (p) => footballGamePath(p.league, p.gameId)],
-  ['/nfl/predictions', () => footballPath('nfl', 'picks')],
 ];
 
 /* ── Where am I ──────────────────────────────────────────────────────── */

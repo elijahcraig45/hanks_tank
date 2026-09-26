@@ -28,7 +28,45 @@ const ROUTE_METADATA = [
     path: '/mlb/predictions',
     title: 'Predictions',
     description:
-      'See daily MLB win probabilities, confidence tiers, model signals, and links into each scouting report.',
+      'Every MLB model on every game: win probabilities side by side, simulated scores with their ranges, and CSV or JSON export.',
+  },
+  {
+    path: '/mlb/predictions/players',
+    title: 'MLB Player Projections',
+    description:
+      'Simulated MLB player stat projections for every game: mean, 90% range and P(at least one), with calibration notes and CSV export.',
+  },
+  {
+    path: '/mlb/predictions/game/:gameId',
+    title: 'Game Projections',
+    description:
+      'Every model on one MLB game, with the simulated score, total and margin distributions and player projections.',
+  },
+  {
+    path: '/mlb/predictions/classic',
+    title: 'Predictions (classic board)',
+    description:
+      'The classic MLB predictions board: the production model\'s win probabilities, confidence tiers and the reasons behind each pick.',
+  },
+  {
+    path: '/nfl/predictions/players',
+    title: 'NFL Player Projections',
+    description: 'Player projections for the NFL (not available yet: the drive simulator projects games, not players).',
+  },
+  {
+    path: '/nfl/predictions/game/:gameId',
+    title: 'NFL Game Projections',
+    description: 'Every model on one NFL game, with the drive simulator\'s score, margin and total distributions.',
+  },
+  {
+    path: '/cfb/:league/predictions/players',
+    title: 'College Football Player Projections',
+    description: 'Player projections for college football (not available yet).',
+  },
+  {
+    path: '/cfb/:league/predictions/game/:gameId',
+    title: 'College Football Game Projections',
+    description: 'Every model on one college football game side by side.',
   },
   {
     path: '/mlb/models',

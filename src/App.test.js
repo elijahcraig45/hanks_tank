@@ -31,6 +31,9 @@ jest.mock('./components/football/FootballGamePage', () => () => <div>FootballGam
 jest.mock('./components/BaseballRankingsPage', () => () => <div>BaseballRankingsPage</div>);
 jest.mock('./components/pickem/PickemPage', () => () => <div>PickemPage</div>);
 jest.mock('./components/NotFoundPage', () => () => <div>NotFoundPage</div>);
+jest.mock('./components/predictions/UnifiedSlatePage', () => ({ sport }) => <div>UnifiedSlatePage {sport}</div>);
+jest.mock('./components/predictions/PlayerProjectionsPage', () => ({ sport }) => <div>PlayerProjectionsPage {sport}</div>);
+jest.mock('./components/predictions/GameProjectionsPage', () => ({ sport }) => <div>GameProjectionsPage {sport}</div>);
 
 beforeEach(() => {
   window.history.pushState({}, '', '/');
@@ -50,9 +53,7 @@ test('renders the app shell and default route', () => {
 
 test('serves each football sport at every depth of its path', () => {
   [
-    ['/nfl', "NFL | Hank's Tank"],
     ['/nfl/rankings', "NFL | Hank's Tank"],
-    ['/cfb/fbs', "College Football | Hank's Tank"],
     ['/cfb/fcs/rankings', "College Football | Hank's Tank"],
   ].forEach(([path, title]) => {
     window.history.pushState({}, '', path);
@@ -63,22 +64,44 @@ test('serves each football sport at every depth of its path', () => {
   });
 });
 
-test('redirects the legacy NFL predictions path onto the NFL picks', () => {
-  window.history.pushState({}, '', '/nfl/predictions');
+test('serves the unified predictions pages for every sport', () => {
+  [
+    ['/mlb/predictions', 'UnifiedSlatePage mlb'],
+    ['/mlb/predictions/players', 'PlayerProjectionsPage mlb'],
+    ['/mlb/predictions/game/824776', 'GameProjectionsPage mlb'],
+    ['/mlb/predictions/classic', 'PredictionsPage'],
+    ['/nfl/predictions', 'UnifiedSlatePage nfl'],
+    ['/nfl/predictions/players', 'PlayerProjectionsPage nfl'],
+    ['/nfl/predictions/game/401', 'GameProjectionsPage nfl'],
+    ['/nfl/picks', 'FootballPage'],
+    ['/cfb/fcs/predictions', 'UnifiedSlatePage cfb'],
+    ['/cfb/fbs/predictions/players', 'PlayerProjectionsPage cfb'],
+    ['/cfb/fbs/predictions/game/401', 'GameProjectionsPage cfb'],
+  ].forEach(([path, text]) => {
+    window.history.pushState({}, '', path);
+    const { unmount } = render(<App />);
+    expect(screen.getByText(text)).toBeInTheDocument();
+    unmount();
+  });
+});
 
-  render(<App />);
-
-  expect(screen.getByText('FootballPage')).toBeInTheDocument();
-  expect(window.location.pathname).toBe('/nfl/picks');
+test('sport homes open the unified predictions', () => {
+  [['/nfl', '/nfl/predictions'], ['/cfb/fbs', '/cfb/fbs/predictions'], ['/cfb', '/cfb/fbs/predictions']]
+    .forEach(([from, to]) => {
+      window.history.pushState({}, '', from);
+      const { unmount } = render(<App />);
+      expect(window.location.pathname).toBe(to);
+      unmount();
+    });
 });
 
 test.each([
-  ['/football', '/nfl'],
+  ['/football', '/nfl/predictions'],
   ['/football/nfl/picks', '/nfl/picks'],
   ['/football/fbs/rankings', '/cfb/fbs/rankings'],
   ['/football/fcs/models', '/cfb/fcs/models'],
   ['/football/fbs/game/401', '/cfb/fbs/game/401'],
-  ['/cfb', '/cfb/fbs'],
+  ['/cfb', '/cfb/fbs/predictions'],
   ['/cfb/rankings', '/cfb/fbs/rankings'],
   ['/games', '/mlb/games'],
   ['/game/824776', '/mlb/game/824776'],
@@ -127,7 +150,7 @@ test('tracks recently viewed routes for supported pages', () => {
   render(<App />);
 
   expect(screen.getByText('Mock Navbar')).toBeInTheDocument();
-  expect(screen.getByText('PredictionsPage')).toBeInTheDocument();
+  expect(screen.getByText('UnifiedSlatePage mlb')).toBeInTheDocument();
 
   const recentViews = JSON.parse(window.localStorage.getItem(STORAGE_KEY));
   expect(recentViews).toHaveLength(1);
