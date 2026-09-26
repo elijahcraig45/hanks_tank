@@ -412,6 +412,44 @@ class ApiService {
   }
 
   /** MLB simulator run totals and starter strikeouts for one date (shadow). */
+  /**
+   * Unified predictions (contract v1): every model for every game on a slate, with the
+   * simulators' distributions. MLB takes `date`; football takes `season` and `week`;
+   * college also takes `division`. Returns the unwrapped `data` plus `meta`.
+   *
+   * REACT_APP_PREDICTIONS_MOCKS=true serves contract-shaped fixtures instead (a separate
+   * chunk, never loaded otherwise) for building the pages before the endpoint exists.
+   */
+  async getPredictionsSlate(sport, { date, season, week, division } = {}) {
+    if (process.env.REACT_APP_PREDICTIONS_MOCKS === 'true') {
+      const mocks = await import('./predictionMocks');
+      return mocks.mockSlate(sport, { date, season, week, division });
+    }
+    const qs = new URLSearchParams();
+    if (date) qs.set('date', date);
+    if (season) qs.set('season', season);
+    if (week) qs.set('week', week);
+    if (division) qs.set('division', division);
+    const raw = await this.get(`/predictions/${sport}/slate?${qs.toString()}`, { cacheTTL: 5 });
+    return unwrapApiEnvelope(raw);
+  }
+
+  /** Player stat projections (MLB only for now; football answers `available: false`). */
+  async getPlayerProjections(sport, { date, gameId, season, week, division } = {}) {
+    if (process.env.REACT_APP_PREDICTIONS_MOCKS === 'true') {
+      const mocks = await import('./predictionMocks');
+      return mocks.mockPlayers(sport, { date, gameId });
+    }
+    const qs = new URLSearchParams();
+    if (gameId) qs.set('game_id', gameId);
+    else if (date) qs.set('date', date);
+    if (season) qs.set('season', season);
+    if (week) qs.set('week', week);
+    if (division) qs.set('division', division);
+    const raw = await this.get(`/predictions/${sport}/players?${qs.toString()}`, { cacheTTL: 5 });
+    return unwrapApiEnvelope(raw);
+  }
+
   async getMlbTotalsProps(date) {
     const qs = date ? `?date=${date}` : '';
     return unwrapApiEnvelope(await this.get(`/models/mlb/totals-props${qs}`, { cacheTTL: 10 }));
@@ -744,5 +782,5 @@ if (process.env.NODE_ENV !== 'test') {
   setInterval(() => apiService.clearExpiredCache(), 5 * 60 * 1000);
 }
 
-export { ApiService, API_BASE_URL };
+export { ApiService, API_BASE_URL, unwrapApiEnvelope };
 export default apiService;

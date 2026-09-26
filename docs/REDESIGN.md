@@ -40,7 +40,7 @@ CFB         /cfb/fbs     Predictions · Scores · Rankings · Stats ▸ · Model
 
 | Section | MLB | NFL / CFB |
 |---|---|---|
-| Predictions | `/mlb/predictions` | `/nfl/picks`, `/cfb/fbs/picks` |
+| Predictions | `/mlb/predictions` (+ `/players`, `/game/:id`, `/classic`) | `/nfl/predictions`, `/cfb/:div/predictions` (+ `/players`, `/game/:id`); classic `/nfl/picks`, `/cfb/:div/picks` |
 | Scores | `/mlb/games`, `/mlb/game/:gamePk` | `/cfb/:div/scoreboard`, `/cfb/:div/game/:id` (no NFL feed) |
 | Rankings | `/mlb/rankings` | `/nfl/rankings`, `/cfb/:div/rankings` |
 | Stats | team/player batting & pitching, transactions, team & player pages | team stats, leaders, players |
@@ -102,3 +102,14 @@ at least 4.5:1 in both themes (see the table in the commit adding the tokens).
 Models → Model comparison automatically, and `/football/:league/models` redirects
 to `/nfl/models` / `/cfb/:division/models`. The rankings branch's `asOfLabel` header
 works unchanged; the homepage leader cards already read `meta.as_of_date`.
+
+## Unified predictions (2026-09-25)
+
+The Predictions section is the unified slate (`GET /api/predictions/:sport/slate`): every
+model on every game, production only the default featured model, simulation
+distributions and MLB player projections one click from each card, CSV/JSON export.
+Nav: Predictions → Games | Players | Models scoreboard | Classic. `/nfl` and `/cfb/:div`
+land on it; the old boards stay at `/mlb/predictions/classic`, `/nfl/picks`,
+`/cfb/:div/picks`. Code: `src/components/predictions/`, rules in
+`src/utils/unifiedPredictions.js`. `REACT_APP_PREDICTIONS_MOCKS=true` serves
+contract-shaped fixtures (`src/services/predictionMocks.js`, its own chunk).
