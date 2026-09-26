@@ -109,7 +109,8 @@ test('the theme toggle flips the document theme', () => {
 });
 
 test('footballSectionOf reads both path shapes', () => {
-  expect(footballSectionOf('/nfl', false)).toBe('picks');
+  expect(footballSectionOf('/nfl', false)).toBe('predictions');
+  expect(footballSectionOf('/nfl/predictions/players', false)).toBe('predictions/players');
   expect(footballSectionOf('/cfb/fcs/stats', false)).toBe('stats');
   expect(footballSectionOf('/cfb/fbs/game/401', false)).toBe('scoreboard');
   expect(footballSectionOf('/pickem/cfb', true)).toBe('pickem');
@@ -127,4 +128,26 @@ test('links to Learn from the top bar and from each sport bar', () => {
       expect(sections.getByRole('link', { name: 'Learn' })).toHaveAttribute('href', href);
       done();
     });
+});
+
+test('each sport’s Predictions opens Games | Players | Models scoreboard', () => {
+  [
+    ['/mlb/predictions', '/mlb/predictions', '/mlb/predictions/players', '/mlb/models'],
+    ['/nfl/predictions', '/nfl/predictions', '/nfl/predictions/players', '/nfl/models'],
+    ['/cfb/fcs/predictions/players', '/cfb/fcs/predictions', '/cfb/fcs/predictions/players', '/cfb/fcs/models'],
+  ].forEach(([path, games, players, models]) => {
+    const { unmount } = renderNavbar(path);
+    const pills = within(screen.getByRole('navigation', { name: /predictions pages/i }));
+    expect(pills.getByRole('link', { name: 'Games' })).toHaveAttribute('href', games);
+    expect(pills.getByRole('link', { name: 'Players' })).toHaveAttribute('href', players);
+    expect(pills.getByRole('link', { name: 'Models scoreboard' })).toHaveAttribute('href', models);
+    unmount();
+  });
+});
+
+test('the Models page keeps its own section active despite the Predictions alias', () => {
+  renderNavbar('/mlb/models');
+  const sections = within(screen.getByRole('navigation', { name: /sections/i }));
+  expect(sections.getByRole('link', { name: 'Models' })).toHaveClass('ht-section--active');
+  expect(sections.getByRole('link', { name: 'Predictions' })).not.toHaveClass('ht-section--active');
 });
