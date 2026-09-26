@@ -8,6 +8,7 @@ import {
 import CalibrationChart, { sharedDomain } from './CalibrationChart';
 import TotalsPropsPanel from './TotalsPropsPanel';
 import { formatDate, formatTime, num, pct, signed, withCi } from './format';
+import { predictionsPath } from '../../config/sports';
 import '../styles/Models.css';
 
 /**
@@ -407,6 +408,16 @@ export default function ModelsPage({
 
       <div className="mdl-body">
         {embedded && <p className="mdl-intro">{SPORT_INTRO[sport]}</p>}
+
+        <Link to={predictionsPath(sport, division)} className="mdl-picks-link">
+          <span>
+            <strong>See every model&rsquo;s picks for {sport === 'mlb' ? 'today' : 'this week'}</strong>
+            <span className="mdl-picks-sub">
+              Each game with every model side by side{sport === 'cfb' ? '' : ', simulated scores with their ranges'} and CSV export
+            </span>
+          </span>
+          <span aria-hidden="true">→</span>
+        </Link>
 
         <div className="mdl-rule" role="note">
           <strong>How this is scored.</strong> Only predictions written strictly before first pitch or
