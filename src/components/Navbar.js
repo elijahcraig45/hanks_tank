@@ -25,7 +25,8 @@ export function footballSectionOf(pathname, pickem) {
   const seg = pathname.split('/').filter(Boolean);
   const rest = seg[0] === 'cfb' ? seg.slice(2) : seg.slice(1);
   if (rest[0] === 'game') return 'scoreboard';
-  return rest[0] || 'picks';
+  if (rest[0] === 'predictions' && rest[1] === 'players') return 'predictions/players';
+  return rest[0] || 'predictions';
 }
 
 const pathHit = (pathname, to, exact) => (
@@ -34,7 +35,13 @@ const pathHit = (pathname, to, exact) => (
 
 function mlbNav(pathname) {
   return MLB_NAV.map((item) => {
-    const children = item.children?.map((c) => ({ ...c, active: pathHit(pathname, c.to, c.exact) })) || null;
+    // An alias child (e.g. "Models scoreboard" under Predictions) links to a page that
+    // belongs to another group, so it never marks its own group active.
+    const children = item.children?.map((c) => ({
+      ...c,
+      active: !c.alias && (pathHit(pathname, c.to, c.exact)
+        || (c.match || []).some((m) => pathname.startsWith(m))),
+    })) || null;
     const active = pathHit(pathname, item.to, item.exact)
       || (item.match || []).some((m) => pathname.startsWith(m))
       || Boolean(children?.some((c) => c.active));
@@ -45,7 +52,7 @@ function mlbNav(pathname) {
 function footballNavWithState(ctx, pathname) {
   const current = footballSectionOf(pathname, ctx.pickem);
   return footballNav(ctx.league, FOOTBALL_SECTIONS || []).map((item) => {
-    const children = item.children?.map((c) => ({ ...c, active: c.key === current })) || null;
+    const children = item.children?.map((c) => ({ ...c, active: !c.alias && c.key === current })) || null;
     const ownKey = item.key === 'pickem' ? 'pickem' : item.to.split('/').pop();
     const active = children ? children.some((c) => c.active) : ownKey === current;
     return { ...item, active, children };

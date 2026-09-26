@@ -23,6 +23,9 @@ import AdvancedPlayerAnalysis from './components/AdvancedPlayerAnalysis';
 import Transactions from './components/Transactions';
 import TeamTransactions from './components/TeamTransactions';
 import PredictionsPage from './components/PredictionsPage';
+import UnifiedSlatePage from './components/predictions/UnifiedSlatePage';
+import PlayerProjectionsPage from './components/predictions/PlayerProjectionsPage';
+import GameProjectionsPage from './components/predictions/GameProjectionsPage';
 import FootballPage from './components/FootballPage';
 import FootballGamePage from './components/football/FootballGamePage';
 import PickemPage from './components/pickem/PickemPage';
@@ -61,6 +64,13 @@ function CfbRoute({ children }) {
   return children;
 }
 
+/** `/cfb/fbs` lands on that division's unified predictions. */
+function CfbHome() {
+  const { league } = useParams();
+  const location = useLocation();
+  return <Navigate to={`/cfb/${league}/predictions${location.search}`} replace />;
+}
+
 function AppShell() {
   return (
     <>
@@ -73,7 +83,11 @@ function AppShell() {
 
           {/* ── MLB ── */}
           <Route path="/mlb" element={<Navigate to={MLB.predictions} replace />} />
-          <Route path={MLB.predictions} element={<PredictionsPage />} />
+          <Route path={MLB.predictions} element={<UnifiedSlatePage sport="mlb" />} />
+          <Route path={MLB.predictionsPlayers} element={<PlayerProjectionsPage sport="mlb" />} />
+          <Route path="/mlb/predictions/game/:gameId" element={<GameProjectionsPage sport="mlb" />} />
+          {/* The pre-unified board (V10 only, with its "why" breakdown), kept reachable. */}
+          <Route path={MLB.predictionsClassic} element={<PredictionsPage />} />
           <Route path={MLB.games} element={<TodaysGames />} />
           <Route path="/mlb/game/:gamePk" element={<GameDetailsPage />} />
           <Route path={MLB.rankings} element={<BaseballRankingsPage />} />
@@ -101,13 +115,19 @@ function AppShell() {
           <Route path={MLB.assistedAnalysis} element={<AssistedAnalysis />} />
 
           {/* ── NFL ── FootballPage falls back to the NFL league when no :league. */}
-          <Route path="/nfl" element={<FootballPage />} />
+          <Route path="/nfl" element={<Navigate to="/nfl/predictions" replace />} />
+          <Route path="/nfl/predictions" element={<UnifiedSlatePage sport="nfl" />} />
+          <Route path="/nfl/predictions/players" element={<PlayerProjectionsPage sport="nfl" />} />
+          <Route path="/nfl/predictions/game/:gameId" element={<GameProjectionsPage sport="nfl" />} />
           <Route path="/nfl/game/:gameId" element={<FootballGamePage league="nfl" />} />
           <Route path="/nfl/:section" element={<FootballPage />} />
 
           {/* ── College ── */}
           <Route path="/cfb" element={<Navigate to="/cfb/fbs" replace />} />
-          <Route path="/cfb/:league" element={<CfbRoute><FootballPage /></CfbRoute>} />
+          <Route path="/cfb/:league" element={<CfbRoute><CfbHome /></CfbRoute>} />
+          <Route path="/cfb/:league/predictions" element={<CfbRoute><UnifiedSlatePage sport="cfb" /></CfbRoute>} />
+          <Route path="/cfb/:league/predictions/players" element={<CfbRoute><PlayerProjectionsPage sport="cfb" /></CfbRoute>} />
+          <Route path="/cfb/:league/predictions/game/:gameId" element={<CfbRoute><GameProjectionsPage sport="cfb" /></CfbRoute>} />
           <Route path="/cfb/:league/game/:gameId" element={<CfbRoute><FootballGamePage /></CfbRoute>} />
           <Route path="/cfb/:league/:section" element={<CfbRoute><FootballPage /></CfbRoute>} />
 
