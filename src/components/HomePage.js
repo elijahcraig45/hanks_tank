@@ -17,7 +17,7 @@ import {
   getTeamLogoUrl,
   getTeamShortName,
 } from "../utils/teamMetadata";
-import { MLB, footballPath } from "../config/sports";
+import { MLB, footballPath, footballSportOf, predictionsGamePath, predictionsPath } from "../config/sports";
 import RankBand from "./RankBand";
 import "./styles/HomePage.css";
 
@@ -199,9 +199,25 @@ function normalizePick(row, sport, leagueKey) {
     winner: row.predicted_winner,
     crossDivision: Boolean(row.cross_division),
     date: row.game_date || row.game_time_utc,
-    href: sport === "mlb" ? MLB.game(row.game_pk) : footballPath(leagueKey, "picks"),
+    href: sport === "mlb"
+      ? MLB.predictionsGame(row.game_pk, extractIsoDate(row.game_date || row.game_time_utc) || undefined)
+      : footballGameHref(row, leagueKey),
   };
 }
+
+/** A football game's unified card: every model on it, plus the simulation detail. */
+function footballGameHref(row, leagueKey) {
+  const sport = footballSportOf(leagueKey);
+  return predictionsGamePath(sport, sport === "cfb" ? leagueKey : null, row.game_id, {
+    season: row.season, week: row.week,
+  });
+}
+
+/** Where a sport's Predictions entry points: the unified slate. */
+const footballPredictions = (leagueKey) => {
+  const sport = footballSportOf(leagueKey);
+  return predictionsPath(sport, sport === "cfb" ? leagueKey : null);
+};
 
 /** "2026-09-24" → "Sep 24", parsed by hand so it cannot slip a day west of UTC. */
 function shortIsoDate(iso) {
@@ -308,7 +324,11 @@ function MlbGameTile({ game, homeProb }) {
   };
 
   return (
-    <Link to={MLB.game(game.gamePk)} className="tile">
+    <Link
+      to={MLB.predictionsGame(game.gamePk, game.officialDate || extractIsoDate(game.gameDate) || undefined)}
+      className="tile"
+      aria-label={`${away.team.name} at ${home.team.name}: every model's prediction`}
+    >
       <div className={`tile-inner${status.cls === "live" ? " tile-inner--live" : ""}`}>
         <div className="tile-status">
           <span className={`ts ts--${status.cls}`}>{status.text}</span>
@@ -328,7 +348,7 @@ function FootballGameTile({ row, leagueKey }) {
   const homeFav = homePct >= 50;
 
   return (
-    <Link to={footballPath(leagueKey, "picks")} className="tile">
+    <Link to={footballGameHref(row, leagueKey)} className="tile">
       <div className="tile-inner">
         <div className="tile-status">
           <span className="ts ts--preview">{fmtDay(row.game_date)}</span>
@@ -721,7 +741,7 @@ function HomePage() {
       },
       leader: boards.nfl?.rows?.[0],
       links: [
-        { to: footballPath("nfl", "picks"), label: "Predictions" },
+        { to: footballPredictions("nfl"), label: "Predictions" },
         { to: footballPath("nfl", "rankings"), label: "Rankings" },
         { to: footballPath("nfl", "diagnostics"), label: "Models" },
         { to: "/pickem/nfl", label: "Pick’em" },
@@ -752,7 +772,7 @@ function HomePage() {
           },
       leader: boards.cfb?.rows?.[0],
       links: [
-        { to: footballPath("fbs", "picks"), label: "Predictions" },
+        { to: footballPredictions("fbs"), label: "Predictions" },
         { to: footballPath("fbs", "scoreboard"), label: "Scores" },
         { to: footballPath("fbs", "rankings"), label: "Rankings" },
         { to: "/pickem/cfb", label: "Pick’em" },
@@ -792,7 +812,7 @@ function HomePage() {
 
         {/* ── Sport rails ── */}
         {games.length > 0 && (
-          <Rail title="MLB today" sport="mlb" count={games.length} moreTo={MLB.predictions} moreLabel="All predictions">
+          <Rail title="MLB today" sport="mlb" count={games.length} moreTo={MLB.predictions} moreLabel="Every model's picks">
             {games.map((g) => <MlbGameTile key={g.gamePk} game={g} homeProb={mlbProbs[g.gamePk]} />)}
           </Rail>
         )}
@@ -806,8 +826,8 @@ function HomePage() {
               title={`${l.label} this week`}
               sport={l.sport}
               count={rows.length}
-              moreTo={footballPath(l.key, "picks")}
-              moreLabel="All picks"
+              moreTo={footballPredictions(l.key)}
+              moreLabel="Every model's picks"
             >
               {rows.map((r) => (
                 <FootballGameTile key={r.game_id} row={r} leagueKey={l.key} />
@@ -819,8 +839,8 @@ function HomePage() {
         {games.length === 0 && footballCount === 0 && (
           <div className="home-quiet">
             Nothing on the board right now. Try{" "}
-            <Link to={footballPath("nfl", "picks")}>NFL picks</Link>,{" "}
-            <Link to={footballPath("fbs", "picks")}>college picks</Link> or{" "}
+            <Link to={footballPredictions("nfl")}>NFL predictions</Link>,{" "}
+            <Link to={footballPredictions("fbs")}>college predictions</Link> or{" "}
             <Link to={MLB.predictions}>MLB predictions</Link>.
           </div>
         )}
