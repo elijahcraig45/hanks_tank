@@ -59,7 +59,7 @@ const AdvancedPlayerAnalysis = () => {
   const statCategories = statType === 'batting' ? battingStatCategories : pitchingStatCategories;
   const [selectedCategory, setSelectedCategory] = useState('Overall');
 
-  const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+  const colors = ['var(--viz-1)', 'var(--viz-2)', 'var(--viz-3)', 'var(--viz-4)', 'var(--viz-5)', 'var(--viz-6)'];
 
   useEffect(() => {
     fetchPlayers();
@@ -202,7 +202,7 @@ const AdvancedPlayerAnalysis = () => {
   // Get percentile color
   const getPercentileColor = (percentile) => {
     if (percentile >= 90) return '#10b981'; // Green
-    if (percentile >= 75) return '#3b82f6'; // Blue
+    if (percentile >= 75) return '#65a30d'; // Light green
     if (percentile >= 50) return '#f59e0b'; // Orange
     if (percentile >= 25) return '#ef4444'; // Red
     return '#6b7280'; // Gray
@@ -475,7 +475,7 @@ const AdvancedPlayerAnalysis = () => {
         <Card.Body>
           <ResponsiveContainer width="100%" height={500}>
             <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--viz-grid)" />
               <XAxis 
                 dataKey="x" 
                 type="number" 
@@ -495,7 +495,7 @@ const AdvancedPlayerAnalysis = () => {
                 cursor={{ strokeDasharray: '3 3', stroke: '#9ca3af' }}
                 contentStyle={{ 
                   backgroundColor: '#ffffff', 
-                  border: '2px solid #3b82f6',
+                  border: '2px solid var(--accent)',
                   borderRadius: '8px',
                   padding: '12px'
                 }}

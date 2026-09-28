@@ -125,7 +125,7 @@
 
 .team-schedule-link:hover {
   transform: translateY(-1px);
-  border-color: rgba(13, 110, 253, 0.28);
+  border-color: rgba(var(--brand-rgb), 0.28);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
   color: var(--accent);
 }

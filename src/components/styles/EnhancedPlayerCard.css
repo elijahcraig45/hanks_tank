@@ -7,7 +7,7 @@
 
 .enhanced-player-card:hover {
   transform: translateY(-2px);
-  border-left-color: var(--bs-primary);
+  border-left-color: var(--accent);
 }
 
 .hover-lift {

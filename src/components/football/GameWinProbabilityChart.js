@@ -18,16 +18,17 @@ import {
  *
  * Two hues, so a legend is always present and the tooltip names both teams — identity is
  * never carried by colour alone. The pair is validated for colour-vision separation
- * against the panel surface (CVD ΔE 27.9 against a floor of 8), not eyeballed. A 2px
+ * against the panel surface (CVD ΔE 23.2 light / 20.5 dark against a target of 8), not
+ * eyeballed. The colours are CSS tokens (src/index.css), so both themes get their own steps. A 2px
  * surface-coloured stroke separates the bands, which doubles as making the boundary —
  * the actual probability — the most legible thing in the figure.
  */
 
-const HOME = '#c2410c';   // --sport-ftbl
-const AWAY = '#2a78d6';
-const SURFACE = '#ffffff';
-const GRID = '#e5e7eb';
-const AXIS_TEXT = '#52514e';
+const HOME = 'var(--viz-1)';
+const AWAY = 'var(--viz-2)';
+const SURFACE = 'var(--surface)';
+const GRID = 'var(--viz-grid)';
+const AXIS_TEXT = 'var(--viz-axis)';
 
 function WpTooltip({ active, payload, homeName, awayName }) {
   if (!active || !payload?.length) return null;

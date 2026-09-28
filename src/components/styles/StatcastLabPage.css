@@ -64,8 +64,8 @@
 }
 
 .statcast-lab-player-chip--active {
-  border-color: rgba(13, 110, 253, 0.35);
-  background: rgba(13, 110, 253, 0.08);
+  border-color: rgba(var(--brand-rgb), 0.35);
+  background: rgba(var(--brand-rgb), 0.08);
 }
 
 .statcast-lab-chart {

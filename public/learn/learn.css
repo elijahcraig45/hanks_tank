@@ -1,17 +1,28 @@
 /* Shared chrome for the /learn write-ups.
    Each page keeps its own palette and light/dark rules; this file only
    (1) adds the site bar, (2) swaps headings and UI text onto the site's
-   sans stack, and (3) moves the page and card surfaces onto the site's
-   tokens (see src/index.css), in both themes. It is linked after each
-   page's own <style>, so equal-specificity rules here win. */
+   sans stack, (3) moves the page and card surfaces onto the site's
+   neutral tokens (see src/index.css), in both themes, and (4) puts links
+   and UI accents (--accent, notes, the link colour) on the brand green.
+   Chart series colours (--s1…, --bar) are each page's own validated data
+   palette and are left alone. It is linked after each page's own <style>,
+   so equal-specificity rules here win. */
 
 :root {
   --lh-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
   --lh-mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
-  --lh-chrome: #0b1220;
-  --lh-chrome-text: #e5e9f0;
-  --lh-chrome-muted: #a3aec0;
+  --lh-chrome: #0b0c0c;
+  --lh-chrome-text: #e7e9e8;
+  --lh-chrome-muted: #a3a8a6;
   --lh-chrome-border: rgba(255, 255, 255, .09);
+  --lh-chrome-accent: #4ade80;
+  --lh-link: #157a3c;
+
+  /* Light surfaces and UI accent from the site tokens. */
+  --ground: #f4f4f5; --surface: #ffffff; --surface-2: #f0f0f1;
+  --rule: #e4e4e7; --rule-2: #cfcfd4;
+  --bg: #f4f4f5; --card: #ffffff; --line: #e4e4e7; --code: #f0f0f1;
+  --accent: #157a3c; --on-accent: #ffffff; --acc-bg: #e3f3e8; --note-bg: #f0f0f1;
 
   /* Page fonts: display and UI text follow the site; body text keeps each
      page's own reading face. */
@@ -26,20 +37,30 @@
    own: the OS setting unless the visitor picked light, or an explicit dark. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --ground: #0b1020; --surface: #131a2b; --surface-2: #1a2236;
-    --rule: #263049; --rule-2: #34405c;
-    --bg: #0b1020; --card: #131a2b; --line: #263049; --code: #1a2236;
-    --lh-chrome: #070b16;
+    --ground: #0b0c0c; --surface: #151717; --surface-2: #1c1f1e;
+    --rule: #292d2b; --rule-2: #3a3f3c;
+    --bg: #0b0c0c; --card: #151717; --line: #292d2b; --code: #1c1f1e;
+    --accent: #4ade80; --on-accent: #0b0c0c; --acc-bg: rgba(74, 222, 128, .13); --note-bg: #1c1f1e;
+    --lh-link: #4ade80;
+    --lh-chrome: #070808;
   }
 }
 :root[data-theme="dark"] {
-  --ground: #0b1020; --surface: #131a2b; --surface-2: #1a2236;
-  --rule: #263049; --rule-2: #34405c;
-  --bg: #0b1020; --card: #131a2b; --line: #263049; --code: #1a2236;
-  --lh-chrome: #070b16;
+  --ground: #0b0c0c; --surface: #151717; --surface-2: #1c1f1e;
+  --rule: #292d2b; --rule-2: #3a3f3c;
+  --bg: #0b0c0c; --card: #151717; --line: #292d2b; --code: #1c1f1e;
+  --accent: #4ade80; --on-accent: #0b0c0c; --acc-bg: rgba(74, 222, 128, .13); --note-bg: #1c1f1e;
+  --lh-link: #4ade80;
+  --lh-chrome: #070808;
 }
 
 body { margin: 0; }
+
+/* Links wear the brand green on every page, whichever variable the page
+   itself used for them (--accent, --s1). */
+a { color: var(--lh-link); }
+.lh-bar a { color: inherit; }
+
 
 .lh-bar {
   background: var(--lh-chrome);
@@ -80,8 +101,8 @@ body { margin: 0; }
   font-size: 11px;
   font-weight: 800;
   color: #fff;
-  background: linear-gradient(135deg, #1d4ed8 0 33%, #6d28d9 33% 66%, #b93c0a 66% 100%);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18);
+  background: #0b0c0c;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), inset 0 -3px 0 var(--lh-chrome-accent);
 }
 .lh-bar .lh-sep { color: var(--lh-chrome-muted); }
 .lh-bar .lh-topic {
@@ -109,7 +130,7 @@ body { margin: 0; }
 }
 .lh-bar button.lh-theme:hover { background: rgba(255, 255, 255, .08); color: #fff; }
 .lh-bar button.lh-theme:focus-visible,
-.lh-bar a:focus-visible { outline: 2px solid #8ab8ff; outline-offset: 2px; }
+.lh-bar a:focus-visible { outline: 2px solid var(--lh-chrome-accent); outline-offset: 2px; }
 
 @media (max-width: 380px) {
   .lh-bar .lh-name { display: none; }

@@ -734,11 +734,11 @@ function ScenarioSimulatorPage() {
                         { side: selectedPrediction.away_team_name, share: Number((simulation.awayWinRate * 100).toFixed(1)) },
                       ]}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 116, 139, 0.2)" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--viz-grid)" />
                       <XAxis dataKey="side" />
                       <YAxis />
                       <Tooltip />
-                      <Bar dataKey="share" fill="#2563eb" radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="share" fill="var(--viz-1)" radius={[6, 6, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -752,11 +752,11 @@ function ScenarioSimulatorPage() {
                 <div className="scenario-simulator-chart">
                   <ResponsiveContainer width="100%" height={320}>
                     <BarChart data={simulation.bins}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 116, 139, 0.2)" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--viz-grid)" />
                       <XAxis dataKey="label" />
                       <YAxis />
                       <Tooltip />
-                      <Bar dataKey="count" fill="#16a34a" radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="count" fill="var(--viz-2)" radius={[6, 6, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
