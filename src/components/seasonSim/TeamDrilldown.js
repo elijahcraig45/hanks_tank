@@ -1,15 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import { ColumnChart, ProbBar } from './DistBars';
+import RemainingSchedule from './RemainingSchedule';
 import {
   ROUND_ODDS, fmtMeanRecord, fmtNum, fmtPct, fmtRecord, fmtSigned, parseDist,
 } from './simFormat';
 
 /**
- * One team's simulated season: wins distribution, seed distribution, round-by-round
- * odds, rating with its uncertainty, and the strength of what is left. A dialog so it
+ * One team's simulated season: wins distribution, remaining schedule with per-game
+ * P(win), seed distribution, round-by-round odds, rating with its uncertainty, and the strength of what is left. A dialog so it
  * works as a bottom sheet on a phone; Escape and the backdrop close it.
  */
-export default function TeamDrilldown({ sport, team, onClose }) {
+export default function TeamDrilldown({ sport, team, season, week, onClose }) {
   const closeRef = useRef(null);
 
   useEffect(() => {
@@ -94,6 +95,9 @@ export default function TeamDrilldown({ sport, team, onClose }) {
           highlight={(k) => p10 != null && p90 != null && k >= p10 && k <= p90}
           caption={p10 != null ? `Darker bars: the middle 80% of simulations (${p10}–${p90} wins). Median ${fmtNum(team.wins_p50, 0)}.` : null}
         />
+
+        <h4 className="ssim-h4">Remaining schedule</h4>
+        <RemainingSchedule sport={sport} team={team} season={season} week={week} />
 
         <h4 className="ssim-h4">{sport === 'nfl' ? 'Playoff seed' : 'CFP seed'}</h4>
         <ColumnChart
