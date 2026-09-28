@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import ApiService from '../services/api';
 import RankBand from './RankBand';
+import { ComparePicker, PairExplanation, TeamRationale } from './RankingRationale';
 import './styles/RankingsBoard.css';
 
 /**
@@ -10,67 +11,13 @@ import './styles/RankingsBoard.css';
  * accent colour and which optional columns it actually has. Columns a sport does not
  * carry are dropped from the header rather than rendered as a wall of dashes — MLB has
  * no FPI at all, and the NFL has strength of schedule but no strength of record.
- */
-
-const TIER_NAMES = [
-  ['In a class alone', 'clear separation from everyone below'],
-  ['Real contenders', 'separated from the pack, not from each other'],
-  ['The pack', 'interchangeable on this season’s results'],
-  ['Solid', 'good teams without a distinguishing result'],
-  ['The rest', 'ordering here is close to arbitrary'],
-];
-
-/**
- * Group the board into tiers.
  *
- * A flat 1..N list implies a precision the fit does not have — neighbouring teams are
- * often separated by less than a point. A break starts wherever the gap to the next
- * team is large relative to the typical gap, so teams inside a tier are genuinely
- * interchangeable and teams across tiers are genuinely separated.
+ * There are no tier dividers. Every row instead carries its own reason — a summary line
+ * the ML job builds from the fit, expandable to the full rationale — and each row can
+ * say why it sits above the next one. Where two neighbours cannot be told apart, the
+ * summary says "statistically tied" with the bootstrap numbers, which is what the tier
+ * labels were trying (and failing) to express.
  */
-export function buildTiers(rows) {
-  if (!rows.length) return [];
-  const gaps = rows.map((r) => r.gap_to_next).filter((g) => g != null && !Number.isNaN(g));
-  if (!gaps.length) return [{ label: 'All teams', desc: '', rows }];
-
-  const sorted = [...gaps].sort((a, b) => a - b);
-  const median = sorted[Math.floor(sorted.length / 2)] || 1;
-  const breakAt = Math.max(median * 3, 25);
-
-  const tiers = [];
-  let current = [];
-  rows.forEach((r, i) => {
-    current.push(r);
-    const isLast = i === rows.length - 1;
-    if (!isLast && r.gap_to_next != null && r.gap_to_next >= breakAt) {
-      tiers.push(current);
-      current = [];
-    }
-  });
-  if (current.length) tiers.push(current);
-
-  // One tier holding everybody means no gap was large enough to break on — the teams
-  // are not separable, which is the opposite of what "In a class alone" claims. This
-  // is the normal case for baseball, where the whole league fits inside a few points.
-  if (tiers.length === 1) {
-    return [{
-      label: 'No clear tiers',
-      desc: 'no gap here is large enough to separate one group from another',
-      rows: tiers[0],
-    }];
-  }
-
-  return tiers.map((group, i) => {
-    const [label, desc] = TIER_NAMES[Math.min(i, TIER_NAMES.length - 1)];
-    return {
-      label: tiers.length > TIER_NAMES.length && i >= TIER_NAMES.length - 1
-        ? `${label} (${group[0].rank}–${group[group.length - 1].rank})`
-        : label,
-      desc,
-      rows: group,
-    };
-  });
-}
 
 const ord = (v) => (v == null ? '—' : `${v}`);
 
@@ -117,7 +64,6 @@ export default function RankingsBoard({
   accent = 'mlb',
   title,
   limit = 400,
-  showTiers = true,
 }) {
   const [rows, setRows] = useState([]);
   const [meta, setMeta] = useState(null);
@@ -125,12 +71,17 @@ export default function RankingsBoard({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [conference, setConference] = useState('all');
+  // Which team's rationale is open, and which "why above #N+1" panel is open.
+  const [openTeam, setOpenTeam] = useState(null);
+  const [openPair, setOpenPair] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
       setExpanded(false);
+      setOpenTeam(null);
+      setOpenPair(null);
       setError(null);
       try {
         const res = await ApiService.getRankings(sport, { season, division, limit });
@@ -163,16 +114,11 @@ export default function RankingsBoard({
     [rows, conference]
   );
 
-  // Filtering to one conference makes tiers meaningless — they describe breaks in the
-  // whole field, not within a subset — so the filtered view is a plain ranked list.
   const filtering = conference !== 'all';
   const shown = filtering
     ? inConference
     : (expanded ? rows : rows.slice(0, 25));
-  const tiers = useMemo(
-    () => (showTiers && !filtering ? buildTiers(rows.slice(0, 25)) : []),
-    [rows, showTiers, filtering]
-  );
+  const hasRationale = rows.some((r) => r.summary);
 
   const scale = useMemo(() => {
     if (!rows.length) return { top: 1, floor: 0 };
@@ -200,29 +146,65 @@ export default function RankingsBoard({
   const width = (r) =>
     Math.max(3, ((r.rating - scale.floor) / (scale.top - scale.floor)) * 100);
 
-  const Row = ({ r }) => (
-    <tr>
-      <td className="rb-num">{r.rank}</td>
-      <td className="rb-team">
-        <span className="rb-name">{r.team}</span>
-        <span className="rb-strength">
-          <span className={`rb-strength-fill rb-strength-fill--${accent}`}
-                style={{ width: `${width(r)}%` }} />
-        </span>
-      </td>
-      <td className="rb-mono">{r.record}</td>
-      <td className="rb-mono rb-rating">{Math.round(r.rating)}</td>
-      <td className="rb-mono rb-range">
-        <span className="rb-range-text">
-          {r.rank_p05 != null ? `${r.rank_p05}–${r.rank_p95}` : '—'}
-        </span>
-        <RankBand rank={r.rank} lo={r.rank_p05} hi={r.rank_p95} total={rows.length} />
-      </td>
-      {columns.map((c) => (
-        <td key={c.key} className="rb-mono">{c.render(r)}</td>
-      ))}
-    </tr>
-  );
+  const span = 5 + columns.length;
+  const nextOf = (r) => rows.find((x) => x.rank === r.rank + 1 && x.team === r.vs_next?.b);
+
+  const Row = ({ r }) => {
+    const isOpen = openTeam === r.team;
+    const pairOpen = openPair === r.team;
+    const next = r.vs_next ? nextOf(r) || { rank: r.vs_next.b_rank, team: r.vs_next.b } : null;
+    return (
+      <>
+        <tr className={`rb-row${isOpen ? ' rb-row--open' : ''}`}>
+          <td className="rb-num">{r.rank}</td>
+          <td className="rb-team">
+            <span className="rb-name">{r.team}</span>
+            <span className="rb-strength">
+              <span className={`rb-strength-fill rb-strength-fill--${accent}`}
+                    style={{ width: `${width(r)}%` }} />
+            </span>
+          </td>
+          <td className="rb-mono">{r.record}</td>
+          <td className="rb-mono rb-rating">{Math.round(r.rating)}</td>
+          <td className="rb-mono rb-range">
+            <span className="rb-range-text">
+              {r.rank_p05 != null ? `${r.rank_p05}–${r.rank_p95}` : '—'}
+            </span>
+            <RankBand rank={r.rank} lo={r.rank_p05} hi={r.rank_p95} total={rows.length} />
+          </td>
+          {columns.map((c) => (
+            <td key={c.key} className="rb-mono">{c.render(r)}</td>
+          ))}
+        </tr>
+        {r.summary && (
+          <tr className="rb-sumrow">
+            <td colSpan={span}>
+              <div className="rb-sum">
+                <p className="rb-summary">{r.summary}</p>
+                <div className="rb-sum-actions">
+                  <button type="button" className="rb-link" aria-expanded={isOpen}
+                          onClick={() => setOpenTeam(isOpen ? null : r.team)}>
+                    {isOpen ? 'Hide details' : 'Details'}
+                  </button>
+                  {next && (
+                    <button type="button" className="rb-link rb-link--quiet" aria-expanded={pairOpen}
+                            onClick={() => setOpenPair(pairOpen ? null : r.team)}>
+                      why above #{next.rank}?
+                    </button>
+                  )}
+                </div>
+                {pairOpen && <PairExplanation pair={r.vs_next} sport={sport} />}
+                {isOpen && (
+                  <TeamRationale row={r} rows={rows} season={season} model={meta?.model}
+                                 boardSize={rows.length} />
+                )}
+              </div>
+            </td>
+          </tr>
+        )}
+      </>
+    );
+  };
 
   return (
     <section className={`rb rb--${accent}`}>
@@ -256,6 +238,19 @@ export default function RankingsBoard({
 
       {meta?.note && <p className="rb-caveat">{meta.note}</p>}
 
+      {hasRationale && (
+        <p className="rb-note">
+          <strong>Why each team is where it is</strong> comes from the same fit: how much of
+          the rating was carried over from last season, what each game was worth to it, and
+          how hard the schedule has been. "Statistically tied" means the bootstrap resamples
+          often put the two teams the other way round.
+        </p>
+      )}
+
+      {hasRationale && rows.length > 1 && (
+        <ComparePicker rows={rows} sport={sport} season={season} />
+      )}
+
       {conferences.length > 1 && (
         <div className="rb-filter">
           <label>
@@ -287,27 +282,13 @@ export default function RankingsBoard({
               {columns.map((c) => <th key={c.key} title={c.title}>{c.label}</th>)}
             </tr>
           </thead>
-          {expanded || !tiers.length ? (
-            <tbody>{shown.map((r) => <Row key={r.team} r={r} />)}</tbody>
-          ) : (
-            tiers.map((tier) => (
-              <tbody key={tier.label}>
-                <tr className="rb-tier">
-                  <td colSpan={5 + columns.length}>
-                    <span className="rb-tier-name">{tier.label}</span>
-                    <span className="rb-tier-desc">{tier.desc}</span>
-                  </td>
-                </tr>
-                {tier.rows.map((r) => <Row key={r.team} r={r} />)}
-              </tbody>
-            ))
-          )}
+          <tbody>{shown.map((r) => <Row key={r.team} r={r} />)}</tbody>
         </table>
       </div>
 
       {!filtering && rows.length > 25 && (
         <button className="rb-expand" onClick={() => setExpanded((e) => !e)}>
-          {expanded ? 'Show top 25 by tier' : `Show all ${rows.length} teams`}
+          {expanded ? 'Show top 25' : `Show all ${rows.length} teams`}
         </button>
       )}
     </section>
