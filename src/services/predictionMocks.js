@@ -219,16 +219,24 @@ const CFB_TEAMS = [
 ];
 
 function marginExact(mean) {
-  const out = {};
+  // Same shape the drive simulator stores: -60..60 plus the "<=-61" / ">=61" tails, summing to 1.
+  const raw = {};
   let total = 0;
-  for (let k = -21; k <= 21; k += 1) {
+  const w = (k) => {
     let p = Math.exp(-((k - mean) ** 2) / (2 * 13 * 13));
     if (Math.abs(k) === 3) p *= 2.6;
     if (Math.abs(k) === 7) p *= 1.9;
     if (k === 0) p *= 0.05;
-    out[String(k)] = p; total += p;
+    return p;
+  };
+  let lo = 0; let hi = 0;
+  for (let k = -100; k <= 100; k += 1) {
+    const p = w(k); total += p;
+    if (k <= -61) lo += p; else if (k >= 61) hi += p; else raw[String(k)] = p;
   }
-  Object.keys(out).forEach((k) => { out[k] = Math.round((out[k] / total) * 0.78 * 10000) / 10000; });
+  const out = { '<=-61': Math.round((lo / total) * 1e6) / 1e6 };
+  Object.keys(raw).forEach((k) => { out[k] = Math.round((raw[k] / total) * 1e6) / 1e6; });
+  out['>=61'] = Math.round((hi / total) * 1e6) / 1e6;
   return out;
 }
 
