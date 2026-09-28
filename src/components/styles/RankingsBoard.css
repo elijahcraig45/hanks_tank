@@ -483,6 +483,21 @@
   background: var(--warn-soft, var(--surface-3));
   border: 1px solid var(--border);
 }
+/* Resample share ("56%") on the why-above affordance and in the pair facts. */
+.rr-chip {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 0.64rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  vertical-align: 1px;
+}
 .rr-common { margin-top: 0.3rem; max-width: 560px; }
 
 .rr-compare {

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import RankingsBoard, { asOfLabel, shortDate } from './RankingsBoard';
-import { DecompositionBar, signed } from './RankingRationale';
+import { DecompositionBar, orderLabel, signed } from './RankingRationale';
 import ApiService from '../services/api';
 
 jest.mock('../services/api', () => ({
@@ -151,9 +151,14 @@ describe('rationale', () => {
     ApiService.getRankings.mockResolvedValue(twoTeams());
     render(<RankingsBoard sport="cfb" season={2026} title="FBS" />);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'why above #2?' }));
+    const affordance = await screen.findByRole('button', { name: /^why above #2\?/ });
+    // The resample share is a chip on the affordance itself, before it is opened.
+    expect(affordance).toHaveTextContent('49%');
+    fireEvent.click(affordance);
     expect(screen.getByText(/11.9 rating points above Indiana/)).toBeInTheDocument();
-    expect(screen.getByText('statistically tied')).toBeInTheDocument();
+    // Older stored pairs have no order_label; the band is derived from p_order.
+    expect(screen.getByText('a coin flip')).toBeInTheDocument();
+    expect(screen.queryByText(/statistically tied/i)).not.toBeInTheDocument();
     // Only one neighbour below, so only one affordance.
     expect(screen.getAllByRole('button', { name: /why above/ })).toHaveLength(1);
   });
@@ -174,6 +179,24 @@ describe('rationale', () => {
       'cfb', { a: 'Indiana', b: 'Notre Dame', season: 2026 });
   });
 
+  test('shows the resample share and band in the compare output', async () => {
+    ApiService.getRankings.mockResolvedValue(twoTeams());
+    ApiService.compareRankings.mockResolvedValue({
+      data: { a: 'Notre Dame', b: 'Indiana', gap: 11.9, p_a_wins_neutral: 0.517,
+        p_order: 0.665, tied: true, order_label: 'a slight edge',
+        gap_from_prior: -119.7, gap_from_current: 131.6, common: [],
+        common_totals: { n: 0 }, text: 'Compared: Notre Dame over Indiana.' },
+    });
+    render(<RankingsBoard sport="cfb" season={2026} title="FBS" />);
+
+    fireEvent.change(await screen.findByLabelText('First team'), { target: { value: 'Indiana' } });
+    fireEvent.change(screen.getByLabelText('Second team'), { target: { value: 'Notre Dame' } });
+    expect(await screen.findByText('Compared: Notre Dame over Indiana.')).toBeInTheDocument();
+    expect(screen.getByLabelText(/ahead of Indiana in 67% of resamples \(a slight edge\)/))
+      .toHaveTextContent('67%');
+    expect(screen.getByText('a slight edge')).toBeInTheDocument();
+  });
+
   test('boards built before the rationale columns render without it', async () => {
     ApiService.getRankings.mockResolvedValue({
       data: [team({ team: 'Brewers' }), team({ team: 'Dodgers', rank: 2, rating: 90 })],
@@ -184,6 +207,19 @@ describe('rationale', () => {
     expect(await screen.findByText('Brewers')).toBeInTheDocument();
     expect(screen.queryByText('Compare any two teams')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Details' })).not.toBeInTheDocument();
+  });
+});
+
+describe('orderLabel', () => {
+  test('matches the ML and backend bands on the displayed percentage', () => {
+    const cases = [
+      [0.5, 'a coin flip'], [0.594, 'a coin flip'], [0.595, 'a slight edge'],
+      [0.744, 'a slight edge'], [0.745, 'a clear edge'], [0.894, 'a clear edge'],
+      [0.895, 'separated'], [0.41, 'a coin flip'], [0.4, 'a slight edge the other way'],
+      [0.05, 'separated the other way'],
+    ];
+    for (const [p, label] of cases) expect([p, orderLabel(p)]).toEqual([p, label]);
+    expect(orderLabel(null)).toBeNull();
   });
 });
 

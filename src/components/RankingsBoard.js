@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import ApiService from '../services/api';
 import RankBand from './RankBand';
-import { ComparePicker, PairExplanation, TeamRationale } from './RankingRationale';
+import { ComparePicker, OrderChip, PairExplanation, TeamRationale } from './RankingRationale';
 import './styles/RankingsBoard.css';
 
 /**
@@ -14,9 +14,10 @@ import './styles/RankingsBoard.css';
  *
  * There are no tier dividers. Every row instead carries its own reason — a summary line
  * the ML job builds from the fit, expandable to the full rationale — and each row can
- * say why it sits above the next one. Where two neighbours cannot be told apart, the
- * summary says "statistically tied" with the bootstrap numbers, which is what the tier
- * labels were trying (and failing) to express.
+ * say why it sits above the next one, with the share of bootstrap resamples that keep
+ * that order shown as a chip on the affordance. The summary quotes the same share with a
+ * coarse band ("a coin flip" under 60%, up to "separated" at 90%+), which is what the
+ * tier labels were trying (and failing) to express.
  */
 
 const ord = (v) => (v == null ? '—' : `${v}`);
@@ -190,6 +191,7 @@ export default function RankingsBoard({
                     <button type="button" className="rb-link rb-link--quiet" aria-expanded={pairOpen}
                             onClick={() => setOpenPair(pairOpen ? null : r.team)}>
                       why above #{next.rank}?
+                      <OrderChip pair={r.vs_next} />
                     </button>
                   )}
                 </div>
@@ -242,8 +244,10 @@ export default function RankingsBoard({
         <p className="rb-note">
           <strong>Why each team is where it is</strong> comes from the same fit: how much of
           the rating was carried over from last season, what each game was worth to it, and
-          how hard the schedule has been. "Statistically tied" means the bootstrap resamples
-          often put the two teams the other way round.
+          how hard the schedule has been. The percentage next to each "why above" is the
+          share of bootstrap resamples that keep the two teams in that order. Under 60% is
+          called a coin flip, 60–74% a slight edge, 75–89% a clear edge and 90% or more
+          separated; at 40% or under the resamples lean the other way.
         </p>
       )}
 
