@@ -32,4 +32,4 @@
   text-decoration: none;
 }
 .ht-footer-links a:hover { color: var(--text); text-decoration: underline; }
-.ht-footer-links a.ht-footer-learn { color: var(--mlb); }
+.ht-footer-links a.ht-footer-learn { color: var(--accent); }

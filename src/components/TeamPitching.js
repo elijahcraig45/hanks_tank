@@ -202,7 +202,7 @@ const TeamPitching = () => {
   const getChartData = () => {
     return filteredData.map(team => ({
       ...team,
-      color: teamColors[team.Team] || '#8884d8'
+      color: teamColors[team.Team] || 'var(--viz-1)'
     }));
   };
 
@@ -230,7 +230,7 @@ const TeamPitching = () => {
             <XAxis dataKey="Team" />
             <YAxis />
             <Tooltip content={<CustomTooltip />} />
-            <Line type="monotone" dataKey={chartStat} stroke="#8884d8" strokeWidth={2} />
+            <Line type="monotone" dataKey={chartStat} stroke="var(--viz-1)" strokeWidth={2} />
           </LineChart>
         );
       case 'scatter':
@@ -240,7 +240,7 @@ const TeamPitching = () => {
             <XAxis dataKey="Team" />
             <YAxis />
             <Tooltip content={<CustomTooltip />} />
-            <Scatter dataKey={chartStat} fill="#8884d8" />
+            <Scatter dataKey={chartStat} fill="var(--viz-1)" />
           </ScatterChart>
         );
       default:
@@ -250,7 +250,7 @@ const TeamPitching = () => {
             <XAxis dataKey="Team" />
             <YAxis />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey={chartStat} fill="#8884d8" />
+            <Bar dataKey={chartStat} fill="var(--viz-1)" />
           </BarChart>
         );
     }

@@ -174,7 +174,7 @@ const PlayerPage = () => {
     getTeamAbbreviationFromId(playerDetails?.currentTeam?.id);
   const teamMeta = getTeamMetaByAbbr(teamAbbreviation);
   const strikezonePosition = isPitcher && !isBatter ? 'pitcher' : 'batter';
-  const accentColor = teamMeta?.primaryColor || (isPitcher && !isBatter ? '#dc3545' : '#0d6efd');
+  const accentColor = teamMeta?.primaryColor || (isPitcher && !isBatter ? '#dc3545' : '#157a3c');
   const accentAltColor = teamMeta?.secondaryColor || '#0f172a';
   const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_320,q_auto:best/v1/people/${playerId}/headshot/67/current`;
   const initials = playerName.split(' ').map(n => n[0]).join('').slice(0, 2);

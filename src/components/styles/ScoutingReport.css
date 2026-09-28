@@ -47,7 +47,7 @@
 /* ── Narrative lede ── */
 .sr-lede {
   background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface) 100%);
-  border-left: 3px solid #0d6efd;
+  border-left: 3px solid var(--accent);
   border-radius: 0 6px 6px 0;
   padding: 0.55rem 0.75rem;
 }
@@ -109,9 +109,9 @@
 }
 
 .sr-insight-chip--neutral {
-  background: rgba(13, 110, 253, 0.08);
-  color: #0a58ca;
-  border-color: rgba(13, 110, 253, 0.15);
+  background: rgba(var(--brand-rgb), 0.08);
+  color: var(--accent-strong);
+  border-color: rgba(var(--brand-rgb), 0.15);
 }
 
 /* ── Pitcher duel ── */
@@ -283,8 +283,8 @@
   transition: width 0.4s ease;
   min-width: 2px;
 }
-.sr-h2h-bar-away { background: #6c757d; }
-.sr-h2h-bar-home { background: #0d6efd; }
+.sr-h2h-bar-away { background: var(--viz-fill-muted); }
+.sr-h2h-bar-home { background: var(--viz-fill-1); }
 .sr-h2h-bar-lbl { color: #fff; font-size: 0.68rem; font-weight: 700; }
 .sr-h2h-bar-gp { font-size: 0.65rem; color: var(--text-faint); text-align: right; }
 

@@ -75,21 +75,19 @@ Pick'em keeps `/pickem/:sport/:section` because those links are shared outside t
 ## Design system
 
 Tokens in `src/index.css`: surfaces, text, borders, status colours, spacing and type
-scales, and one accent per sport (`--accent` resolves from `data-sport` on the shell).
-Light and dark themes follow the OS, with a manual override stored per browser;
-Bootstrap follows via `data-bs-theme`. Accent contrast against the page background is
-at least 4.5:1 in both themes (see the table in the commit adding the tokens).
+scales, one brand accent (green) and a secondary tint per sport. Light and dark themes
+follow the OS, with a manual override stored per browser; Bootstrap follows via
+`data-bs-theme`. See "Colour" below for the palette and the contrast numbers.
 
 ## Flagged, not changed
 
 - Unrouted components (listed above) are left in place; `AssistedAnalysis` is a
   placeholder now reachable only at `/mlb/lab/assisted-analysis` (not in the nav).
-- Bootstrap CSS loads twice: the CDN `<link>` in `public/index.html` and the npm import
-  in `src/index.js` (5.3.0 and 5.3.2). Harmless, but one should go.
+- ~~Bootstrap CSS loads twice~~ — fixed in the green recolour: the CDN `<link>` (5.3.0) and
+  the unused CDN JS bundle are gone; the npm import in `src/index.js` is the only copy.
 - "Rankings movers" on the homepage is not possible yet: the rankings API returns no
   prior rank. The homepage shows the top five per sport with rank bands instead.
-- `--text-faint` is 4.4:1 on the page background (4.7:1 on cards); use it only for
-  de-emphasised metadata.
+- `--text-faint` now clears 4.5:1 on every surface in both themes (5.1 at worst).
 - In dark mode team-coloured names fall back to the theme text colour (brand navies
   and golds are unreadable on one of the two themes); bars keep team colours.
 - The older MLB pages keep their own headers and Bootstrap layouts inside the new
@@ -113,3 +111,103 @@ land on it; the old boards stay at `/mlb/predictions/classic`, `/nfl/picks`,
 `/cfb/:div/picks`. Code: `src/components/predictions/`, rules in
 `src/utils/unifiedPredictions.js`. `REACT_APP_PREDICTIONS_MOCKS=true` serves
 contract-shaped fixtures (`src/services/predictionMocks.js`, its own chunk).
+
+## Colour: the green recolour (2026-09-28)
+
+Branch `design/green-recolor`. The default blue is gone. The site is a charcoal/gray
+neutral base with one green as the brand trim. Layout and features are unchanged; only
+tokens, the Bootstrap bridge and colour usages moved.
+
+### Palette
+
+| Token | Light | Dark | Job |
+|---|---|---|---|
+| `--bg` | `#f4f4f5` | `#0b0c0c` | page |
+| `--surface` | `#ffffff` | `#151717` | cards |
+| `--surface-2` / `-3` | `#f0f0f1` / `#e4e4e7` | `#1c1f1e` / `#262a28` | wells, tracks |
+| `--text` / `-2` | `#18181b` / `#3f3f46` | `#ececed` / `#c8cbca` | ink |
+| `--text-muted` / `-faint` | `#52525b` / `#65656d` | `#a0a5a3` / `#8b908e` | secondary ink |
+| `--border` / `-strong` | `#e4e4e7` / `#cfcfd4` | `#292d2b` / `#3a3f3c` | hairlines |
+| `--brand` = `--accent` | `#157a3c` | `#4ade80` | links, active nav, focus, primary buttons |
+| `--brand-strong` | `#0f6130` | `#86efac` | hover / pressed |
+| `--text-on-accent` | `#ffffff` | `#0b0c0c` | text on a green fill |
+| `--chrome` / `--chrome-accent` | `#0b0c0c` / `#4ade80` | `#070808` / `#4ade80` | nav bars (dark in both) |
+| `--pos` | `#157a3c` | `#4ade80` | hit / better |
+| `--neg` / `--live` | `#c4312a` | `#f26a5f` / `#ff6b5e` | miss / worse / live |
+| `--warn` | `#8f6000` | `#fbbf24` | small sample, disagreement |
+| `--mlb` / `--nfl` / `--cfb` | `#d6457a` / `#4a3aa7` / `#b07400` | `#e0668f` / `#9085e9` / `#c98500` | sport tints |
+| `--viz-1…6` | `#157a3c #4a3aa7 #d6457a #b07400 #2a78d6 #eb6834` | `#1f9d55 #9085e9 #e0668f #c98500 #3987e5 #d95926` | chart series, in order |
+| `--viz-muted` | `#71717a` | `#5b605e` | the "other side" beside one coloured series |
+| `--viz-fill-1/2/muted` | `#157a3c` / `#4a3aa7` / `#52525b` (both themes) | | bars that carry a white % label |
+
+Bootstrap: `--bs-primary`, links, focus rings, `.btn-primary`, outline, pills,
+pagination, dropdown/list-group active, progress, form checks and focus are the brand
+green (Bootstrap compiles several of these as literals, so `index.css` overrides the
+component variables). `info` is a neutral charcoal `#52525b` rather than cyan.
+
+### Sport identity
+
+Green is the accent in every sport; `data-sport` no longer changes `--accent`. Each sport
+is carried by its icon plus a secondary tint (`--sport`, resolved from `data-sport`): the
+top trim of the homepage sport cards, the underline of the sport icon tiles, the
+homepage spinner, and the dots/bands of the cross-sport model scoreboard, the one chart
+where the three sports sit side by side. The tints are rose (MLB), violet (NFL) and gold
+(CFB), chosen so they pass the dataviz validator all-pairs in both themes and each clears
+3:1 against its card (4.2 / 8.6 / 3.9 light, 5.5 / 5.8 / 5.9 dark). Rows stay labelled,
+so identity is never colour alone.
+
+### Data colours (validated with the dataviz skill's `validate_palette.js`)
+
+- `--viz-1…6` (green, violet, rose, gold, blue, orange), adjacent pairs:
+  light worst CVD ΔE 10.4, normal-vision 18.9, all ≥ 3:1 on `#ffffff`;
+  dark worst CVD ΔE 12.3, normal-vision 17.7, all ≥ 3:1 on `#151717`. PASS.
+- Slots 1–2 (green + violet), all pairs: CVD 23.2 light / 20.5 dark. Every two-series chart
+  (home/away win probability, drive chart, accuracy vs edge) uses this pair.
+- Sport tints (rose, violet, gold), all pairs: CVD 10.4 / 12.3, normal 18.9 / 17.7. PASS.
+- Green cannot lead a three-series all-pairs set: under protan/deutan it collapses into
+  orange, red, and in dark into rose and gold (ΔE 1.8–6.7). So overlapping forms
+  (radar, scatter) with 3+ series lean on their legend; blue only appears as slot 5.
+- Status is reserved: green `--pos` and red `--neg` are ΔE 6.4 apart under deutan in
+  light (the floor band), which is why every hit/miss/delta carries ✓/✗, a sign or a label.
+
+### Contrast (WCAG, computed)
+
+| Pair | Light (bg / surface / surface-2) | Dark (bg / surface / surface-2) |
+|---|---|---|
+| `--text` | 16.1 / 17.7 / 15.6 | 16.6 / 15.2 / 14.1 |
+| `--text-2` | 9.5 / 10.4 / 9.2 | 12.0 / 11.0 / 10.2 |
+| `--text-muted` | 7.0 / 7.7 / 6.8 | 7.8 / 7.2 / 6.7 |
+| `--text-faint` | 5.3 / 5.8 / 5.1 | 6.0 / 5.6 / 5.1 |
+| `--accent` / `--pos` | 4.9 / 5.4 / 4.8 | 11.2 / 10.3 / 9.5 |
+| `--neg` | 5.0 / 5.5 / 4.8 | 6.5 / 6.0 / 5.5 |
+| `--warn` | 5.0 / 5.5 / 4.8 | 11.7 / 10.8 / 10.0 |
+| text on accent | 5.4 | 11.2 |
+| accent on `--accent-soft` | 4.7 | 8.0 |
+| `--neg` on `--neg-soft` | 4.6 | 5.0 |
+| white on `--viz-fill-1/2/muted` | 5.4 / 8.6 / 7.7 | same |
+| chrome text / muted / accent on chrome | 16.1 / 8.1 / 11.2 | same |
+
+Every text pairing clears 4.5:1 and every UI pairing 3:1. The one sub-3:1 mark is
+`--viz-muted` in dark (2.8:1 on the surface): it is always the neutral half of a
+two-part bar whose coloured half and labels carry the reading.
+
+### What was hardcoded and replaced
+
+- `#0d6efd`/`#007bff`/`#3b82f6`/`#2563eb`/`#1d4ed8` and their `rgba()` tints in 15 legacy
+  stylesheets → `--accent`, `--accent-strong`, `rgba(var(--brand-rgb), a)`; white text
+  on those fills → `--text-on-accent`. Bootstrap info cyan (`#d1ecf1`, `#cff4fc` …) →
+  neutral surfaces.
+- Recharts/SVG series (`#8884d8`, the Recharts demo palette, blue/orange/green line
+  sets, radar colour lists) → `var(--viz-N)` in fixed order; grids → `--viz-grid`.
+- Probability bars: home blue → violet, away gray, predicted winner green (three states
+  kept). Win-probability chart and drive chart: orange/blue → green/violet tokens, and
+  the chart's hardcoded white surface/grid now follow the theme.
+- The three-sport gradient logo mark → a charcoal tile with a green trim (site bar and
+  learn bar); the CRA React favicon/logos → an "HT" charcoal/green icon;
+  `theme-color`/manifest `#0b1220` (navy) → `#0b0c0c`.
+- `public/learn/learn.css`: bar, mark and focus ring recoloured; page surfaces on the
+  neutral tokens in both themes; links and `--accent` on the green. Each page's own
+  chart series (`--s1` blue etc.) is its validated data palette and was left alone.
+
+Kept on purpose: team colours (`teamMetadata.js`), pitch-type colours in the live
+strike zone, and the hot/cold wOBA pair in the scouting report (blue is the "cold" pole).

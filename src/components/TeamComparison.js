@@ -43,7 +43,7 @@ const TeamComparison = () => {
   const pitchingStats = ['ERA', 'WHIP', 'SO', 'W', 'IP', 'H', 'BB'];
   const comparisonStats = statType === 'batting' ? battingStats : pitchingStats;
 
-  const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#a4de6c', '#8dd1e1'];
+  const colors = ['var(--viz-1)', 'var(--viz-2)', 'var(--viz-3)', 'var(--viz-4)', 'var(--viz-5)', 'var(--viz-6)'];
 
   useEffect(() => {
     fetchTeams();

@@ -88,7 +88,7 @@ const ScatterPlotMatrix = ({ data, sortKey }) => {
                   <YAxis type="number" dataKey={xStat} name={xStat} />
                   <XAxis type="number" dataKey={yStat} name={yStat} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Scatter name={`${yStat} vs ${xStat}`} data={data} fill="#8884d8" />
+                  <Scatter name={`${yStat} vs ${xStat}`} data={data} fill="var(--viz-1)" />
                 </ScatterChart>
               </ResponsiveContainer>
             </div>

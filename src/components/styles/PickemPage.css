@@ -147,7 +147,7 @@
 
 .pk-save {
   appearance: none; border: 0; border-radius: var(--ht-radius);
-  background: var(--sport-ftbl); color: #fff; font: inherit; font-weight: 600;
+  background: var(--sport-ftbl); color: var(--text-on-accent); font: inherit; font-weight: 600;
   padding: .5rem 1.1rem; cursor: pointer;
 }
 .pk-save:disabled { background: var(--ht-gray-400); cursor: not-allowed; }
