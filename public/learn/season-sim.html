@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>/* Follow the theme chosen on the main site (same origin). */(function(){try{var t=localStorage.getItem('ht-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Football Season Simulator</title>
+<style>
+:root{color-scheme:light;
+ --ground:#f6f7f9;--surface:#fff;--surface-2:#eef1f5;
+ --ink:#111620;--ink-2:#4b5566;--ink-3:#7d8798;
+ --rule:#dee2e9;--accent:#2a78d6;--warn:#b4541f;--ok:#157a55;
+ --warn-bg:#fdf1ea;--ok-bg:#e7f4ee;--acc-bg:#dbe8f9;
+ --s1:#2a78d6;--s2:#eb6834;--bar:#b9c1cc;
+ --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+ --serif:Georgia,"Times New Roman",serif;
+ --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+ --ground:#13161b;--surface:#1a1e25;--surface-2:#21262e;
+ --ink:#eef1f5;--ink-2:#aeb8c6;--ink-3:#78828f;
+ --rule:#2c323c;--accent:#5b9ff0;--warn:#e58a5a;--ok:#4cc79a;
+ --warn-bg:#2a1f19;--ok-bg:#152620;--acc-bg:#1d2c40;
+ --s1:#3987e5;--s2:#d95926;--bar:#4a525e}}
+:root[data-theme="dark"]{color-scheme:dark;
+ --ground:#13161b;--surface:#1a1e25;--surface-2:#21262e;
+ --ink:#eef1f5;--ink-2:#aeb8c6;--ink-3:#78828f;
+ --rule:#2c323c;--accent:#5b9ff0;--warn:#e58a5a;--ok:#4cc79a;
+ --warn-bg:#2a1f19;--ok-bg:#152620;--acc-bg:#1d2c40;
+ --s1:#3987e5;--s2:#d95926;--bar:#4a525e}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--serif);font-size:17px;line-height:1.65}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px 80px}
+h1,h2,h3{font-family:var(--sans);line-height:1.2;margin:0}
+h1{font-size:clamp(28px,5vw,40px);letter-spacing:-.02em}
+h2{font-size:clamp(21px,3.2vw,27px);margin-top:48px;padding-top:28px;border-top:1px solid var(--rule)}
+h3{font-size:17px;margin-top:24px;margin-bottom:6px}
+p{margin:0 0 1em}
+a{color:var(--accent)}
+header{padding:48px 0 20px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px}
+.lede{font-size:19px;color:var(--ink-2);margin-top:16px}
+.box{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:16px 18px;margin:18px 0}
+.verdict{border-left:4px solid var(--warn);background:var(--warn-bg)}
+.good{border-left:4px solid var(--ok);background:var(--ok-bg)}
+.note{border-left:4px solid var(--accent);background:var(--acc-bg)}
+.tag{font-family:var(--mono);font-size:11px;padding:2px 6px;border-radius:4px;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+.m{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok)}
+.i{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn)}
+code,.mono{font-family:var(--mono);font-size:.88em}
+pre{font-family:var(--mono);font-size:13px;background:var(--surface-2);padding:12px;border-radius:8px;overflow-x:auto;line-height:1.5}
+.tw{overflow-x:auto;margin:14px 0;border:1px solid var(--rule);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--rule);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+thead th{background:var(--surface-2);font-weight:600}
+tr.base td{font-weight:600}
+td.w{color:var(--warn)} td.b{color:var(--ok)}
+details{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:10px 14px;margin:10px 0}
+summary{font-family:var(--sans);font-weight:600;cursor:pointer}
+dl{margin:0}dt{font-family:var(--sans);font-weight:600;margin-top:12px}dd{margin:2px 0 0 0;color:var(--ink-2)}
+.small{font-size:14px;color:var(--ink-2)}
+figure{margin:18px 0;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:12px 12px 8px}
+figcaption{font-family:var(--sans);font-size:13px;color:var(--ink-2);margin-top:6px}
+.legend{font-family:var(--sans);font-size:13px;color:var(--ink-2);display:flex;flex-wrap:wrap;gap:14px;margin-bottom:6px}
+.sw{display:inline-block;width:14px;height:4px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto}
+.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:6px 8px;font-family:var(--sans);font-size:12px;color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.12);display:none;white-space:nowrap;z-index:2}
+.demo{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:620px){.demo{grid-template-columns:1fr}}
+.demo fieldset{border:1px solid var(--rule);border-radius:8px;padding:8px 12px;margin:0;font-family:var(--sans);font-size:14px}
+.demo legend{font-weight:600;padding:0 4px}
+.demo label{display:grid;grid-template-columns:1fr 56px;gap:2px 8px;align-items:center;margin:4px 0}
+.demo input[type=range]{grid-column:1/3;width:100%}
+.ctl{font-family:var(--sans);font-size:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0}
+button{font-family:var(--sans);font-size:14px;padding:6px 14px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+select{font-family:var(--sans);font-size:14px;padding:4px;border-radius:6px;border:1px solid var(--rule);background:var(--surface);color:var(--ink)}
+.out{font-family:var(--mono);font-size:14px;background:var(--surface-2);border-radius:8px;padding:10px 12px}
+.flow{font-family:var(--sans);font-size:12px}
+
+.small{font-size:14px;color:var(--ink-2)}
+.ci{color:var(--ink-3);font-size:.9em}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+figure{margin:0;background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:8px}
+figcaption{font-family:var(--sans);font-size:13px;color:var(--ink-2);text-align:center}
+svg.rel{width:100%;height:auto}
+.rel .diag{stroke:var(--ink-3);stroke-dasharray:4 4}.rel .ax{stroke:var(--rule)}
+.rel .tk{fill:var(--ink-3);font:11px var(--sans)}
+.rel .s1{stroke:var(--s2);stroke-width:1.5}.rel .s2{stroke:var(--s1);stroke-width:2}
+.rel .d1{fill:var(--s2);opacity:.75}.rel .d2{fill:var(--s1);opacity:.85}
+.legend{font-family:var(--sans);font-size:13px;color:var(--ink-2)}
+.legend span{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:middle}
+.legend .k1{background:var(--s2)}.legend .k2{background:var(--s1)}
+ul{padding-left:1.2em}
+</style>
+<link rel="stylesheet" href="learn.css">
+</head>
+<body>
+<nav class="lh-bar" aria-label="Site">
+ <div class="lh-in">
+  <a class="lh-brand" href="/"><span class="lh-mark" aria-hidden="true">HT</span><span class="lh-name">Hank&rsquo;s Tank</span></a>
+  <span class="lh-sep" aria-hidden="true">/</span>
+  <a class="lh-learn" href="/learn">Learn</a>
+  <span class="lh-sep" aria-hidden="true">/</span>
+  <span class="lh-topic">Football</span>
+  <button type="button" class="lh-theme" id="lh-theme" aria-label="Switch theme" title="Switch theme">&#9790;</button>
+ </div>
+</nav>
+<div class="wrap">
+<header>
+<div class="eyebrow">Hank's Tank &middot; football experiment &middot; 2026-09-28 &middot; shadow, not a prediction product</div>
+<h1>Simulating the rest of the football season, 10,000 times</h1>
+<p class="lede">Games already played stay fixed. Every remaining game is simulated from our best-measured
+game model, then standings, tiebreakers, conference title games and playoff brackets are worked out in
+each simulated season. Counting how often something happens gives a probability. This page is about
+whether those probabilities are <em>honest</em>: we re-ran the simulator from week 3, 6 and 9 of past seasons
+and scored it against what actually happened.</p>
+</header>
+
+<div class="box good"><b>Short version.</b> The simulator clearly beats naive baselines (current-record
+extrapolation and coin flips) on every season-level question we scored. Drawing each team's rating from its
+uncertainty is what makes the probabilities calibrated; without it, 85&ndash;95% playoff odds came true only
+77% of the time. Letting ratings "react" to simulated results adds nothing once ratings are drawn, and doing
+both makes the odds too wide. It still loses clearly to a simulator fed the betting market's closing lines
+(which is an unfair, look-ahead comparison). Treat every number as a probability with real spread, not a call.</div>
+
+<h2>Current projections</h2>
+<p><span class="tag m">measured</span> NFL as of week 3 (Monday night PHI@CHI still to play, so it is simulated),
+college as of week 4. 10,000 simulated seasons each, computed 2026-09-28T15:03:10Z.</p>
+<h3>NFL: Super Bowl odds, top 8</h3>
+<div class="tw"><table><thead><tr><th>Team</th><th>Now</th><th>Mean W</th><th>80% range</th><th>Division</th>
+<th>Playoffs</th><th>#1 seed</th><th>Reach SB</th><th>Win SB</th></tr></thead><tbody><tr><td>Seattle Seahawks</td><td>2-1</td><td>12.1</td><td>9&ndash;15</td><td>54%</td><td>89%</td><td>28%</td><td>31%</td><td><b>19.2%</b></td></tr><tr><td>Jacksonville Jaguars</td><td>2-1</td><td>12.2</td><td>9&ndash;15</td><td>81%</td><td>91%</td><td>26%</td><td>29%</td><td><b>16.7%</b></td></tr><tr><td>Buffalo Bills</td><td>3-0</td><td>12.0</td><td>9&ndash;15</td><td>70%</td><td>90%</td><td>28%</td><td>19%</td><td><b>9.6%</b></td></tr><tr><td>San Francisco 49ers</td><td>3-0</td><td>11.2</td><td>8&ndash;14</td><td>33%</td><td>80%</td><td>18%</td><td>14%</td><td><b>6.8%</b></td></tr><tr><td>Minnesota Vikings</td><td>3-0</td><td>11.7</td><td>9&ndash;15</td><td>56%</td><td>85%</td><td>23%</td><td>14%</td><td><b>6.1%</b></td></tr><tr><td>Los Angeles Rams</td><td>1-2</td><td>9.7</td><td>7&ndash;13</td><td>13%</td><td>60%</td><td>5%</td><td>10%</td><td><b>5.4%</b></td></tr><tr><td>Kansas City Chiefs</td><td>3-0</td><td>10.9</td><td>8&ndash;14</td><td>52%</td><td>79%</td><td>14%</td><td>11%</td><td><b>5.0%</b></td></tr><tr><td>Philadelphia Eagles</td><td>2-0</td><td>10.2</td><td>7&ndash;13</td><td>60%</td><td>69%</td><td>9%</td><td>8%</td><td><b>4.0%</b></td></tr></tbody></table></div>
+<h3>College (FBS): CFP and title odds, top 10</h3>
+<div class="tw"><table><thead><tr><th>Team</th><th>Conf.</th><th>Now</th><th>Mean W</th><th>Conf. title</th>
+<th>CFP</th><th>Bye</th><th>Semis</th><th>Title</th><th>Exp. rank</th></tr></thead><tbody><tr><td>Notre Dame Fighting Irish</td><td>FBS Independents</td><td>4-0</td><td>11.1</td><td>0%</td><td>95%</td><td>72%</td><td>56%</td><td><b>18.9%</b></td><td>4.0</td></tr><tr><td>Indiana Hoosiers</td><td>Big Ten</td><td>4-0</td><td>10.6</td><td>43%</td><td>91%</td><td>55%</td><td>51%</td><td><b>17.4%</b></td><td>5.4</td></tr><tr><td>Miami Hurricanes</td><td>ACC</td><td>4-0</td><td>10.5</td><td>64%</td><td>84%</td><td>49%</td><td>40%</td><td><b>9.3%</b></td><td>6.8</td></tr><tr><td>Utah Utes</td><td>Big 12</td><td>4-0</td><td>10.6</td><td>49%</td><td>83%</td><td>49%</td><td>39%</td><td><b>9.3%</b></td><td>6.9</td></tr><tr><td>Georgia Bulldogs</td><td>SEC</td><td>4-0</td><td>10.0</td><td>31%</td><td>72%</td><td>31%</td><td>33%</td><td><b>9.2%</b></td><td>9.9</td></tr><tr><td>Ohio State Buckeyes</td><td>Big Ten</td><td>3-1</td><td>8.8</td><td>26%</td><td>53%</td><td>17%</td><td>25%</td><td><b>8.8%</b></td><td>14.7</td></tr><tr><td>Texas Longhorns</td><td>SEC</td><td>4-0</td><td>9.6</td><td>22%</td><td>57%</td><td>21%</td><td>22%</td><td><b>5.4%</b></td><td>13.7</td></tr><tr><td>Alabama Crimson Tide</td><td>SEC</td><td>4-0</td><td>9.4</td><td>18%</td><td>51%</td><td>16%</td><td>19%</td><td><b>4.5%</b></td><td>15.0</td></tr><tr><td>Texas Tech Red Raiders</td><td>Big 12</td><td>4-0</td><td>10.2</td><td>27%</td><td>65%</td><td>24%</td><td>19%</td><td><b>3.0%</b></td><td>11.9</td></tr><tr><td>Florida Gators</td><td>SEC</td><td>4-0</td><td>8.8</td><td>11%</td><td>33%</td><td>8%</td><td>9%</td><td><b>1.7%</b></td><td>21.8</td></tr></tbody></table></div>
+<p class="small">Mean W = final regular-season wins (college excludes the title game and postseason). "Exp. rank" = the
+expected spot in our committee proxy. Notre Dame's conference-title chance is 0 because it is independent.
+The favourite wins the Super Bowl in fewer than one season in five: that spread is the point of the exercise.</p>
+
+<h2>How it works</h2>
+<h3>1. A rating for every team</h3>
+<p>The game model is the <b>margin ridge</b>: each team gets one number (points better than an average team),
+fitted to scoring margins from the last two seasons with older games weighted down. Home field is one more
+number; college adds an FBS-versus-FCS term. It is the best winner model we have measured (NFL 2017&ndash;24 log
+loss 0.634 vs 0.646 for our production XGBoost; college 2025 0.480 vs 0.531). A remaining game's margin is drawn
+from a normal curve centred on the rating difference plus home field, with the spread (&sigma; = 12.5 points NFL,
+15.6 college) fitted so single-game win probabilities are calibrated.</p>
+<h3>2. Rating uncertainty, once per simulated season</h3>
+<p>After three games nobody knows exactly how good a team is. The ridge is secretly a Bayesian estimate, so
+it comes with a posterior: a covariance for all the ratings at once. Each simulated season first draws its own
+"true" ratings from that posterior (a team's rating SD is about &plusmn;3.8 points in the NFL and &plusmn;5 in
+college right now), then plays every game with those. So a team that is secretly good tends to win many of its
+games <em>in the same simulated season</em>. That within-season correlation is what widens the win distributions
+and title odds. To avoid double-counting, the per-game noise is shrunk so a single game is exactly as uncertain as
+before (NFL &sigma; 12.5 &rarr; 11.2).</p>
+<h3>3. The rules</h3>
+<p><b>NFL</b>: 17-game standings, then the league's tiebreaker ladder: head-to-head, division record, common games,
+conference record, strength of victory, strength of schedule, net points in conference games, net points in all
+games, coin toss. For wild cards with three or more teams, first keep each division's best, then head-to-head
+<em>sweep</em> only, and so on; whenever a step eliminates a team, the rest restart at step 1. We skip the
+"combined ranking in points scored and allowed" and "net touchdowns" steps because we simulate margins, not
+scores. Seeded from the real results, this reproduces <b>all 48 real conference playoff fields, byes and wild-card
+pairings, 2002&ndash;2025</b>. Then the 14-team bracket: #1 seed bye, 2v7/3v6/4v5, reseeding (the #1 seed hosts the
+lowest survivor), Super Bowl at a neutral site.</p>
+<p><b>College</b>: conference records from conference games; the top two meet in the title game (the Sun Belt
+still uses its East and West winners). The tiebreak is an <em>approximation</em>: head-to-head, then record against
+common conference opponents, then our rating (standing in for the analytics composites the SEC, ACC and Big 12
+actually use), then a coin. The CFP uses the <b>2026 rules</b> (confirmed against the CFP's January 2026
+announcement): 12 teams, automatic bids for the Big Ten, SEC, ACC and Big 12 champions plus the highest-ranked
+Group of Six team (champion or not), seven at-large, seeded straight by ranking, top four get byes, first round
+on campus. Backtests use each season's own format (4 teams through 2023; 2024's "top four champions get byes";
+2025's straight seeding with five champions).</p>
+<h3>4. The committee is not a formula</h3>
+<p>We rank teams with a <b>committee proxy</b>: end-of-season rating &minus; 8 points per loss + 4 for a
+conference title &minus; 12 for Group of Six membership. The weights were fitted to the committee's real final
+top 25 in 2021&ndash;2025. Rating alone orders 94.0% of pairs the way the committee did; adding losses and
+titles gives 97.2%; the Group of Six term 98.3%, and each step improved every season when that season was held
+out. It picks the real field exactly in 2024 (12/12) and 10 of 12 in 2025. Without the Group of Six term it had
+2025 James Madison 9th (the committee: 24th). It is still a proxy: it knows nothing about injuries, "eye test"
+or arguments made in the room.</p>
+<h3>5. The most-likely bracket</h3>
+<p>A single most-likely full bracket barely exists (each exact outcome is rare). We show a consensus: the NFL's
+most likely division winners plus the three most likely wild cards, and college's 12 teams most likely to make
+the CFP, each ordered by expected seed, with the probability next to every slot and the alternatives underneath.</p>
+
+<h2>Does it work? The backtest</h2>
+<p><span class="tag m">measured</span> For every season and as-of week (3, 6, 9) the simulator saw only results up to
+that week plus the two previous seasons, simulated 4,000&ndash;5,000 seasons, and its probabilities were scored
+against reality. The variant was chosen on NFL 2010&ndash;2017, then scored once on NFL 2018&ndash;2025
+(8 seasons &times; 3 weeks &times; 32 teams = 768 team-weeks) and college 2022&ndash;2025 (1,602 FBS team-weeks).
+Seasons before 2020 use the 12-team NFL format. Confidence intervals are paired bootstraps over team-seasons.</p>
+<h3>NFL 2018&ndash;2025</h3>
+<div class='tw'><table><thead><tr><th>Brier score (lower is better)</th><th>P(playoffs)</th><th>P(division)</th><th>P(bye)</th><th>P(reach SB)</th><th>P(win SB)</th><th>Wins MAE</th><th>80% interval covers</th></tr></thead><tbody><tr class="base"><td>Our sim (ratings drawn) &mdash; production</td><td>0.1490</td><td>0.1240</td><td>0.0526</td><td>0.0511</td><td>0.0297</td><td>1.67</td><td>84%</td></tr><tr><td>Our sim, point ratings</td><td>0.1504</td><td>0.1264</td><td>0.0533</td><td>0.0510</td><td>0.0304</td><td>1.67</td><td>76%</td></tr><tr><td>Our sim, weekly refit (&ldquo;hot hand&rdquo;)</td><td>0.1478</td><td>0.1233</td><td>0.0524</td><td>0.0506</td><td>0.0295</td><td>1.67</td><td>83%</td></tr><tr><td>Both draw + refit</td><td>0.1492</td><td>0.1237</td><td>0.0528</td><td>0.0517</td><td>0.0292</td><td>1.68</td><td>92%</td></tr><tr><td>Naive: current record, log5</td><td>0.1656</td><td>0.1475</td><td>0.0591</td><td>0.0513</td><td>0.0339</td><td>1.86</td><td>69%</td></tr><tr><td>Naive: every game 50/50</td><td>0.1573</td><td>0.1342</td><td>0.0550</td><td>0.0535</td><td>0.0295</td><td>1.94</td><td>71%</td></tr><tr><td>Closing spreads (LEAKY upper bound)</td><td>0.1136</td><td>0.0955</td><td>0.0418</td><td>0.0475</td><td>0.0291</td><td>1.26</td><td>86%</td></tr><tr><td>Constant base rate (no information)</td><td>0.2439</td><td>0.1875</td><td>0.0720</td><td>0.0586</td><td>0.0303</td><td></td><td></td></tr></tbody></table></div>
+<h3>College 2022&ndash;2025 (FBS teams)</h3>
+<div class='tw'><table><thead><tr><th>Brier score (lower is better)</th><th>P(conf. title)</th><th>P(CFP)</th><th>P(bye, 2024-25)</th><th>P(title)</th><th>Wins MAE</th><th>80% interval covers</th></tr></thead><tbody><tr class="base"><td>Our sim (ratings drawn) &mdash; production</td><td>0.0543</td><td>0.0319</td><td>0.0233</td><td>0.0057</td><td>1.10</td><td>90%</td></tr><tr><td>Our sim, point ratings</td><td>0.0553</td><td>0.0322</td><td>0.0238</td><td>0.0056</td><td>1.10</td><td>85%</td></tr><tr><td>Our sim, weekly refit (&ldquo;hot hand&rdquo;)</td><td>0.0541</td><td>0.0320</td><td>0.0231</td><td>0.0057</td><td>1.10</td><td>91%</td></tr><tr><td>Both draw + refit</td><td>0.0538</td><td>0.0323</td><td>0.0231</td><td>0.0060</td><td>1.11</td><td>94%</td></tr><tr><td>Naive: current record, log5</td><td>0.0629</td><td>0.0409</td><td>0.0264</td><td>0.0067</td><td>1.31</td><td>78%</td></tr><tr><td>Naive: every game 50/50</td><td>0.0576</td><td>0.0382</td><td>0.0249</td><td>0.0068</td><td>1.44</td><td>71%</td></tr><tr><td>Constant base rate (no information)</td><td>0.0661</td><td>0.0563</td><td>0.0288</td><td>0.0074</td><td></td><td></td></tr></tbody></table></div>
+<p>Paired differences in mean log loss across the scored events (negative = our sim is better):</p>
+<div class="tw"><table><thead><tr><th>Comparison</th><th>NFL 2010&ndash;17 (tune)</th><th>NFL 2018&ndash;25</th><th>College 2022&ndash;25</th></tr></thead><tbody>
+<tr><td>ours &minus; current-record extrapolation</td><td>-0.0677 <span class='ci'>[-0.0985, -0.0381]</span></td><td>-0.0638 <span class='ci'>[-0.0955, -0.0356]</span></td><td>-0.0296 <span class='ci'>[-0.0432, -0.0166]</span></td></tr>
+<tr><td>ours &minus; coin flips</td><td>-0.0319 <span class='ci'>[-0.0492, -0.0154]</span></td><td>-0.0188 <span class='ci'>[-0.0337, -0.0046]</span></td><td>-0.0149 <span class='ci'>[-0.0252, -0.0038]</span></td></tr>
+<tr><td>ours &minus; closing-line sim (leaky)</td><td>+0.0412 <span class='ci'>[+0.0288, +0.0534]</span></td><td>+0.0512 <span class='ci'>[+0.0409, +0.0629]</span></td><td>n/a</td></tr>
+<tr><td>rating draws &minus; point ratings</td><td>-0.0028 <span class='ci'>[-0.0089, +0.0028]</span></td><td>-0.0051 <span class='ci'>[-0.0106, +0.0003]</span></td><td>-0.0032 <span class='ci'>[-0.0082, -0.0000]</span></td></tr>
+<tr><td>&hellip; on the wins distribution (RPS)</td><td>-0.0013 <span class='ci'>[-0.0020, -0.0007]</span></td><td>-0.0013 <span class='ci'>[-0.0019, -0.0007]</span></td><td>-0.0008 <span class='ci'>[-0.0011, -0.0005]</span></td></tr>
+<tr><td>weekly refit &minus; point ratings</td><td>-0.0024 <span class='ci'>[-0.0099, +0.0045]</span></td><td>-0.0069 <span class='ci'>[-0.0142, +0.0004]</span></td><td>-0.0031 <span class='ci'>[-0.0085, +0.0005]</span></td></tr>
+<tr><td>draws + refit &minus; draws alone</td><td>+0.0077 <span class='ci'>[+0.0012, +0.0142]</span></td><td>+0.0024 <span class='ci'>[-0.0039, +0.0091]</span></td><td>+0.0000 <span class='ci'>[-0.0038, +0.0031]</span></td></tr>
+<tr><td>record extrapolation &minus; coin flips</td><td>+0.0358 <span class='ci'>[+0.0088, +0.0648]</span></td><td>+0.0450 <span class='ci'>[+0.0195, +0.0731]</span></td><td>+0.0148 <span class='ci'>[+0.0042, +0.0256]</span></td></tr>
+</tbody></table></div>
+
+<h3>Calibration: when it says 80%, does it happen 80% of the time?</h3>
+<div class="charts">
+<figure><svg viewBox='0 0 320 240' role='img' aria-label='Reliability diagram' class='rel'><line x1='34' y1='206' x2='310' y2='10' class='diag'/><line x1='34' y1='206' x2='310' y2='206' class='ax'/><line x1='34' y1='206' x2='34' y2='10' class='ax'/><text x='34' y='226' class='tk' text-anchor='middle'>0%</text><text x='28' y='210' class='tk' text-anchor='end'>0%</text><text x='172.0' y='226' class='tk' text-anchor='middle'>50%</text><text x='28' y='112.0' class='tk' text-anchor='end'>50%</text><text x='310' y='226' class='tk' text-anchor='middle'>100%</text><text x='28' y='14' class='tk' text-anchor='end'>100%</text><text x='177.0' y='239' class='tk' text-anchor='middle'>predicted</text><path d='M38.1,199.9 L61.4,175.8 L96.2,144.6 L145.5,136.4 L200.1,81.6 L248.0,59.0 L283.7,55.4 L304.9,20.7' class='s1' fill='none'/><circle cx='38.1' cy='199.9' r='4.5' class='d1'><title>point: predicted 1.5%, observed 3.1%, n=160</title></circle><circle cx='61.4' cy='175.8' r='4.0' class='d1'><title>point: predicted 9.9%, observed 15.4%, n=104</title></circle><circle cx='96.2' cy='144.6' r='3.8' class='d1'><title>point: predicted 22.5%, observed 31.3%, n=83</title></circle><circle cx='145.5' cy='136.4' r='4.1' class='d1'><title>point: predicted 40.4%, observed 35.5%, n=107</title></circle><circle cx='200.1' cy='81.6' r='4.0' class='d1'><title>point: predicted 60.2%, observed 63.5%, n=104</title></circle><circle cx='248.0' cy='59.0' r='3.6' class='d1'><title>point: predicted 77.5%, observed 75.0%, n=68</title></circle><circle cx='283.7' cy='55.4' r='3.7' class='d1'><title>point: predicted 90.5%, observed 76.8%, n=69</title></circle><circle cx='304.9' cy='20.7' r='3.7' class='d1'><title>point: predicted 98.2%, observed 94.5%, n=73</title></circle><path d='M39.0,206.0 L60.1,181.8 L91.8,158.9 L142.6,134.5 L198.8,76.9 L249.8,58.4 L282.2,43.7 L304.0,18.7' class='s2' fill='none'/><circle cx='39.0' cy='206.0' r='4.2' class='d2'><title>draw: predicted 1.8%, observed 0.0%, n=118</title></circle><circle cx='60.1' cy='181.8' r='4.0' class='d2'><title>draw: predicted 9.5%, observed 12.4%, n=97</title></circle><circle cx='91.8' cy='158.9' r='4.0' class='d2'><title>draw: predicted 20.9%, observed 24.0%, n=104</title></circle><circle cx='142.6' cy='134.5' r='4.3' class='d2'><title>draw: predicted 39.3%, observed 36.5%, n=137</title></circle><circle cx='198.8' cy='76.9' r='4.2' class='d2'><title>draw: predicted 59.7%, observed 65.9%, n=126</title></circle><circle cx='249.8' cy='58.4' r='3.8' class='d2'><title>draw: predicted 78.2%, observed 75.3%, n=77</title></circle><circle cx='282.2' cy='43.7' r='3.6' class='d2'><title>draw: predicted 89.9%, observed 82.8%, n=64</title></circle><circle cx='304.0' cy='18.7' r='3.3' class='d2'><title>draw: predicted 97.8%, observed 95.6%, n=45</title></circle></svg><figcaption>NFL 2018&ndash;25, P(playoffs)</figcaption></figure>
+<figure><svg viewBox='0 0 320 240' role='img' aria-label='Reliability diagram' class='rel'><line x1='34' y1='206' x2='310' y2='10' class='diag'/><line x1='34' y1='206' x2='310' y2='206' class='ax'/><line x1='34' y1='206' x2='34' y2='10' class='ax'/><text x='34' y='226' class='tk' text-anchor='middle'>0%</text><text x='28' y='210' class='tk' text-anchor='end'>0%</text><text x='172.0' y='226' class='tk' text-anchor='middle'>50%</text><text x='28' y='112.0' class='tk' text-anchor='end'>50%</text><text x='310' y='226' class='tk' text-anchor='middle'>100%</text><text x='28' y='14' class='tk' text-anchor='end'>100%</text><text x='177.0' y='239' class='tk' text-anchor='middle'>predicted</text><path d='M36.1,203.2 L59.2,185.4 L93.2,163.2 L138.4,149.2 L192.0,115.5' class='s1' fill='none'/><circle cx='36.1' cy='203.2' r='5.5' class='d1'><title>point: predicted 0.7%, observed 1.4%, n=1122</title></circle><circle cx='59.2' cy='185.4' r='4.8' class='d1'><title>point: predicted 9.1%, observed 10.5%, n=200</title></circle><circle cx='93.2' cy='163.2' r='4.5' class='d1'><title>point: predicted 21.5%, observed 21.9%, n=151</title></circle><circle cx='138.4' cy='149.2' r='4.0' class='d1'><title>point: predicted 37.8%, observed 29.0%, n=100</title></circle><circle cx='192.0' cy='115.5' r='3.0' class='d1'><title>point: predicted 57.2%, observed 46.2%, n=26</title></circle><path d='M36.5,203.6 L58.8,189.9 L92.3,160.9 L136.4,142.6 L195.5,95.8' class='s2' fill='none'/><circle cx='36.5' cy='203.6' r='5.5' class='d2'><title>draw: predicted 0.9%, observed 1.2%, n=1076</title></circle><circle cx='58.8' cy='189.9' r='5.1' class='d2'><title>draw: predicted 9.0%, observed 8.2%, n=244</title></circle><circle cx='92.3' cy='160.9' r='4.6' class='d2'><title>draw: predicted 21.1%, observed 23.0%, n=165</title></circle><circle cx='136.4' cy='142.6' r='4.0' class='d2'><title>draw: predicted 37.1%, observed 32.3%, n=99</title></circle><circle cx='195.5' cy='95.8' r='2.8' class='d2'><title>draw: predicted 58.5%, observed 56.2%, n=16</title></circle></svg><figcaption>College 2022&ndash;25, P(conference title)</figcaption></figure>
+</div>
+<p class="legend"><span class="k1"></span> point ratings &nbsp; <span class="k2"></span> ratings drawn (production).
+Dots on the diagonal are perfectly calibrated; dot size shows how many team-weeks fall in the bin.</p>
+<p>The point-rating version is overconfident at both ends: NFL teams it gave 85&ndash;95% made the playoffs 77% of
+the time, and 3% of teams it gave under 5% got in anyway. With drawn ratings those become 83% and 0%.
+80% win intervals cover 84% of NFL outcomes (76% without draws) and 90% in college (85%); discrete win totals make
+an inclusive 10th&ndash;90th percentile interval cover a bit more than 80% by construction.</p>
+
+<h2>What we learned</h2>
+<div class="box note"><b>Rating uncertainty matters, mostly for spreads.</b> It gives clearly better win
+distributions in every sample (RPS CIs clear of zero) and fixes the overconfident tails. On single events the gain
+is small and its CI touches zero in the NFL. On the champion alone it is mixed: point ratings scored slightly better
+in NFL 2010&ndash;17 and college, but that rests on only 24 and 12 season-weeks.</div>
+<div class="box note"><b>The "hot hand" is the same thing twice.</b> Refitting ratings on each path's simulated results
+(the way 538 lets Elo react inside a simulation) ties drawing ratings up front: both are ways of making a team's games
+correlated within one season. Doing both double-counts it, which made the odds too wide (NFL 2010&ndash;17 worse by
++0.0077 <span class='ci'>[+0.0012, +0.0142]</span>; 92% of outcomes inside 80% intervals). Production keeps the draw:
+it is cheaper and keeps single-game calibration by construction.</div>
+<div class="box verdict"><b>Records lie early.</b> Extrapolating the current record is worse than flipping coins
+(+0.0450 <span class='ci'>[+0.0195, +0.0731]</span> in the NFL). A 3&ndash;0 team is not an .800 team.</div>
+<div class="box verdict"><b>The market knows more.</b> A simulator fed each remaining game's closing spread beats ours by a
+wide margin. That comparison cheats (a week-15 line is not known in week 3; it contains later injuries and form),
+so it is an upper bound, not a fair baseline. Preseason market win totals would be the fair market benchmark, but they
+are not in the public nflverse data, so that comparison was not run.</div>
+
+<h2>Caveats</h2>
+<ul>
+<li>No injuries, quarterback changes, coaching changes, or rest. Ratings change within a simulated season only through the up-front draw.</li>
+<li>College tiebreakers are approximate, and the CFP committee is a fitted proxy. Bowls are not simulated.</li>
+<li>Division movers (North Dakota State and Sacramento State joined FBS conferences in 2026) are rated on one scale across their FCS history; their ratings rest on few FBS-level games.</li>
+<li>The simulation stops once the postseason starts; it would otherwise re-simulate playoff games already played.</li>
+<li>The backtest is small where it matters most: 8 NFL seasons and 4 college seasons, so champion-odds calibration cannot be pinned down.</li>
+<li>This is an experiment running in shadow. Nothing else on the site uses it.</li>
+</ul>
+
+<h2>Q&amp;A</h2>
+<details><summary>Why is the favourite's title chance only ~19%?</summary><p>Because a single-elimination bracket
+is brutal: even a team that wins each playoff game 65% of the time wins four in a row about 18% of the time, and
+it first has to get there. Most "title favourite" talk ignores this.</p></details>
+<details><summary>Why use the margin ridge and not the drive simulator?</summary><p>They carry the same information
+(their margins correlate 0.96), the ridge is thousands of times cheaper, and the ridge is at least as good on winners.
+The drive sim's only measured advantage is the exact shape of the margin distribution, which barely matters for who
+wins a season.</p></details>
+<details><summary>Does a 60% playoff chance mean the model "picked" them?</summary><p>No. It means that in 6 of 10
+simulated seasons they got in. Across many 60% teams, about 6 in 10 should get in; the calibration charts check exactly that.</p></details>
+<details><summary>Why can a team with a better record have lower odds?</summary><p>Ratings come from margins over two
+seasons, not just wins, and the remaining schedule matters. Early in a season a lucky 3&ndash;0 and a strong 2&ndash;1
+are hard to tell apart; the simulator weights both what happened and how.</p></details>
+<details><summary>How long does it take?</summary><p>10,000 seasons take about 0.6 seconds for the NFL and 3 seconds
+for college (plus ~25 seconds fetching the schedule), well inside the weekly job's limits.</p></details>
+
+</div>
+<script>/* Theme toggle for the learn pages; shares the site's stored choice. */
+(function(){var b=document.getElementById('lh-theme');if(!b)return;var r=document.documentElement;
+function cur(){var t=r.getAttribute('data-theme');if(t)return t;return window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+function lab(){var n=cur()==='dark'?'light':'dark';b.textContent=n==='light'?'\u2600':'\u263E';b.setAttribute('aria-label','Switch to '+n+' theme');b.title='Switch to '+n+' theme';}
+lab();b.addEventListener('click',function(){var n=cur()==='dark'?'light':'dark';try{localStorage.setItem('ht-theme',n);}catch(e){}
+r.setAttribute('data-theme',n);location.reload();});})();
+</script>
+</body>
+</html>
