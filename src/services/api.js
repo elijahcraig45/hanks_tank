@@ -450,6 +450,35 @@ class ApiService {
     return unwrapApiEnvelope(raw);
   }
 
+  /**
+   * Football rest-of-season Monte Carlo (shadow): /api/season-sim/:sport (nfl | cfb).
+   * Returns { teams, bracket, meta }; meta carries as_of_week, computed_at, n_sims and
+   * available_weeks. A 404 means no simulation has been published for that slice.
+   */
+  async getSeasonSim(sport, { season, week } = {}) {
+    const qs = new URLSearchParams();
+    if (season) qs.set('season', String(season));
+    if (week) qs.set('week', String(week));
+    const q = qs.toString();
+    const raw = await this.get(`/season-sim/${sport}${q ? `?${q}` : ''}`, { cacheTTL: 10 });
+    const data = unwrapApiEnvelope(raw) || {};
+    return {
+      teams: data.teams || [],
+      bracket: data.bracket || [],
+      meta: raw?.meta || data.meta || {},
+    };
+  }
+
+  /** Download URL for the season-sim export (table = team | bracket, format = csv | json). */
+  seasonSimExportUrl(sport, { season, week, table = 'team', format = 'csv' } = {}) {
+    const qs = new URLSearchParams();
+    if (season) qs.set('season', String(season));
+    if (week) qs.set('week', String(week));
+    qs.set('table', table);
+    qs.set('format', format);
+    return `${API_BASE_URL}/season-sim/${encodeURIComponent(sport)}/export?${qs.toString()}`;
+  }
+
   async getMlbTotalsProps(date) {
     const qs = date ? `?date=${date}` : '';
     return unwrapApiEnvelope(await this.get(`/models/mlb/totals-props${qs}`, { cacheTTL: 10 }));
