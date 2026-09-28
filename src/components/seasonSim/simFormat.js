@@ -202,3 +202,114 @@ export function compareBy(key, dir) {
     return sign * (na - nb) || String(a.team).localeCompare(String(b.team));
   };
 }
+
+/* ── remaining schedule ──────────────────────────────────────────────── */
+
+/**
+ * P(win) -> the schedule label. Likely W at .65 and up, Lean W .55-.65, Toss-up between
+ * .45 and .55, then Lean L and Likely L mirrored. The backend sends the same label; this
+ * is the fallback when it does not.
+ */
+export const WIN_LABELS = [
+  { min: 0.65, label: 'Likely W', tone: 'w2' },
+  { min: 0.55, label: 'Lean W', tone: 'w1' },
+  { min: 0.45, label: 'Toss-up', tone: 'even', open: true },
+  { min: 0.35, label: 'Lean L', tone: 'l1', open: true },
+  { min: -Infinity, label: 'Likely L', tone: 'l2' },
+];
+
+export function winLabel(p) {
+  if (!isNum(p)) return null;
+  const x = Number(p);
+  return WIN_LABELS.find((b) => (b.open ? x > b.min : x >= b.min)) || null;
+}
+
+/** 'YYYY-MM-DD' -> 'Sat, Oct 10' without a timezone shift (the date is already local). */
+export function fmtGameDate(d) {
+  if (!d || typeof d !== 'string') return '—';
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d);
+  if (!m) return d;
+  const dt = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+  return dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
+}
+
+/** 'vs' at home or on a neutral field, 'at' away. */
+export const sitePrefix = (g) => (g.site === 'away' ? 'at' : 'vs');
+
+/** A game from the team's side, whether or not the backend already derived it. */
+export function teamGame(g, team) {
+  if (g.p_win != null && g.site) return g;
+  const home = g.home === team;
+  const pHome = isNum(g.p_home_win) ? Number(g.p_home_win) : null;
+  const m = isNum(g.margin_mean) ? Number(g.margin_mean) : null;
+  return {
+    ...g,
+    opponent: home ? g.away : g.home,
+    opponent_name: home ? g.away_name : g.home_name,
+    site: g.neutral === true ? 'neutral' : home ? 'home' : 'away',
+    p_win: pHome == null ? null : home ? pHome : 1 - pHome,
+    margin: m == null ? null : home ? m : -m,
+  };
+}
+
+/** JSON-array-of-ids column (or a real array) -> array of strings, or null. */
+export function parseIdList(v) {
+  let arr = v;
+  if (typeof v === 'string') {
+    try { arr = JSON.parse(v); } catch { return null; }
+  }
+  return Array.isArray(arr) ? arr.map(String) : null;
+}
+
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+const oppShort = (g) => g.opponent_name || g.opponent;
+
+/**
+ * The drill-down's summary, built only from the numbers:
+ *   "Projected 4.1–7.9: the 3 likeliest remaining wins are vs X (81%), vs Y (49%) and
+ *    vs Z (43%). Most common exact finish: 4-8 (25% of simulations)."
+ * plus the honest caveat that expected wins are not a claim about which games.
+ * Returns { lead, caveat } strings, or null when nothing is left to play.
+ */
+export function scheduleCallout(team, games) {
+  if (!games?.length) return null;
+  const mean = isNum(team.rem_wins_mean)
+    ? Number(team.rem_wins_mean)
+    : games.reduce((a, g) => a + (Number(g.p_win) || 0), 0);
+  const k = Math.floor(mean + 0.5);
+  const ranked = [...games].sort((a, b) => Number(b.p_win) - Number(a.p_win));
+  const ids = parseIdList(team.projected_wins_games);
+  const byId = new Map(games.map((g) => [String(g.game_id), g]));
+  const top = (ids && ids.length === k && ids.every((i) => byId.has(String(i))))
+    ? ids.map((i) => byId.get(String(i)))
+    : ranked.slice(0, k);
+  const list = top.map((g) => `${sitePrefix(g)} ${oppShort(g)} (${fmtPct(g.p_win)})`);
+  const joined = list.length > 1 ? `${list.slice(0, -1).join(', ')} and ${list[list.length - 1]}` : list[0];
+  const proj = `Projected ${fmtMeanRecord(team)}`;
+  let lead;
+  if (k === 0) {
+    const best = ranked[0];
+    lead = `${proj}: the expected ${fmtNum(mean)} remaining wins round to none; the likeliest is ${sitePrefix(best)} ${oppShort(best)} (${fmtPct(best.p_win)}).`;
+  } else {
+    lead = `${proj}: the ${k === 1 ? 'likeliest remaining win is' : `${k} likeliest remaining wins are`} ${joined}.`;
+  }
+  const dist = parseDist(team.rem_wins_dist);
+  if (dist.length) {
+    const mode = dist.indexOf(Math.max(...dist));
+    const w = Number(team.wins) + mode;
+    const l = Number(team.losses) + (games.length - mode);
+    lead += ` Most common exact finish: ${fmtRecord(w, l, team.ties)} (${fmtPct(dist[mode])} of simulations).`;
+  }
+  const favoured = top.filter((g) => Number(g.p_win) > 0.5).length;
+  const parts = [`That is not a forecast of those exact games: ${fmtNum(mean)} wins from ${plural(games.length, 'game', 'games')} can come from any mix of them`];
+  if (k > 0 && favoured < k) {
+    parts.push(favoured === 0
+      ? `and none of these ${k === 1 ? 'is' : 'are'} better than a coin flip`
+      : `and only ${favoured} of the ${k} ${favoured === 1 ? 'is' : 'are'} better than a coin flip`);
+  }
+  let caveat = `${parts.join(', ')}.`;
+  if (team.modal_sequence && isNum(team.modal_sequence_freq)) {
+    caveat += ` The single most common win-loss sequence (${team.modal_sequence.split('').join('\u2011')}) came up in only ${fmtPct(team.modal_sequence_freq)} of simulations.`;
+  }
+  return { lead, caveat };
+}
