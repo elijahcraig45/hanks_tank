@@ -127,9 +127,12 @@ export default function SeasonSimSection({ sport, season }) {
       <section className="ft-panel ssim-panel">
         <div className="ssim-head"><h2 className="ssim-h2">Most likely bracket</h2></div>
         <p className="ssim-note">
-          The single likeliest field and path, built seed by seed. Each percentage is how
-          often that team filled that spot across simulations; the likeliest bracket as a
-          whole is still unlikely. Open a slot to see who else could be there.
+          {sport === 'nfl'
+            ? 'A consensus field: each division\'s most likely winner plus the three most likely wild cards per conference, '
+            : 'A consensus field: the 12 teams most likely to make the CFP, '}
+          ordered by expected seed, then the likeliest winner of each game. Each percentage
+          is how often that team filled that spot across simulations; this bracket as a whole
+          is still unlikely. Open a slot to see who else could be there.
         </p>
         {meta.note && <p className="ssim-note">{meta.note}</p>}
         <BracketView bracket={data.bracket} onSelect={select} />
