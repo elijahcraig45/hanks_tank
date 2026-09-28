@@ -141,7 +141,7 @@ export default function SeasonSimSection({ sport, season }) {
       <section className="ft-panel ssim-panel">
         <div className="ssim-head"><h2 className="ssim-h2">Download</h2></div>
         <div className="ssim-export" role="toolbar" aria-label="Export season projections">
-          {[['team', 'Teams'], ['bracket', 'Bracket']].map(([table, label]) => (
+          {[['team', 'Teams'], ['bracket', 'Bracket'], ['games', 'Games']].map(([table, label]) => (
             ['csv', 'json'].map((format) => (
               <a
                 key={`${table}-${format}`}
@@ -158,7 +158,13 @@ export default function SeasonSimSection({ sport, season }) {
       </section>
 
       {selected && teamsByAbbr.get(selected) && (
-        <TeamDrilldown sport={sport} team={teamsByAbbr.get(selected)} onClose={close} />
+        <TeamDrilldown
+          sport={sport}
+          team={teamsByAbbr.get(selected)}
+          season={meta.season || season}
+          week={shownWeek}
+          onClose={close}
+        />
       )}
     </div>
   );
