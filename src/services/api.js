@@ -480,7 +480,25 @@ class ApiService {
     };
   }
 
-  /** Download URL for the season-sim export (table = team | bracket, format = csv | json). */
+  /**
+   * One team's remaining games from the season sim: /api/season-sim/:sport/team/:team.
+   * Returns { team, games, meta }; each game carries the team's side (opponent, site,
+   * p_win, margin, label, projected_win).
+   */
+  async getSeasonSimTeam(sport, team, { season, week } = {}) {
+    const qs = new URLSearchParams();
+    if (season) qs.set('season', String(season));
+    if (week) qs.set('week', String(week));
+    const q = qs.toString();
+    const raw = await this.get(
+      `/season-sim/${encodeURIComponent(sport)}/team/${encodeURIComponent(team)}${q ? `?${q}` : ''}`,
+      { cacheTTL: 10 },
+    );
+    const data = unwrapApiEnvelope(raw) || {};
+    return { team: data.team || null, games: data.games || [], meta: raw?.meta || {} };
+  }
+
+  /** Download URL for the season-sim export (table = team | bracket | games, format = csv | json). */
   seasonSimExportUrl(sport, { season, week, table = 'team', format = 'csv' } = {}) {
     const qs = new URLSearchParams();
     if (season) qs.set('season', String(season));
