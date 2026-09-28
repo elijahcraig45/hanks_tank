@@ -18,13 +18,13 @@
 }
 
 .year-selector-dropdown:hover:not(:disabled) {
-  border-color: #0d6efd;
-  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.2rem rgba(var(--brand-rgb), 0.15);
 }
 
 .year-selector-dropdown:focus {
-  border-color: #0d6efd;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.25rem rgba(var(--brand-rgb), 0.25);
 }
 
 .year-selector-hint {

@@ -433,22 +433,22 @@ function SplitExplorerPage() {
                 <div className="split-explorer-chart">
                   <ResponsiveContainer width="100%" height={340}>
                     <BarChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 116, 139, 0.2)" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--viz-grid)" />
                       <XAxis dataKey="metric" />
                       <YAxis />
                       <Tooltip />
                       <Legend />
-                      <Bar dataKey="baseline" name="Baseline" fill="#93c5fd" radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="baseline" name="Baseline" fill="var(--viz-muted)" radius={[6, 6, 0, 0]} />
                       <Bar
                         dataKey="splitA"
                         name={splitData.splits?.[0]?.split?.description || 'Split A'}
-                        fill="#16a34a"
+                        fill="var(--viz-1)"
                         radius={[6, 6, 0, 0]}
                       />
                       <Bar
                         dataKey="splitB"
                         name={splitData.splits?.[1]?.split?.description || 'Split B'}
-                        fill="#f59e0b"
+                        fill="var(--viz-2)"
                         radius={[6, 6, 0, 0]}
                       />
                     </BarChart>

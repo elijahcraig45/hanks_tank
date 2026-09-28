@@ -7,7 +7,7 @@
 }
 
 .analytics-summary-card--blue {
-  background: linear-gradient(180deg, var(--mlb-soft) 0%, var(--surface) 100%);
+  background: linear-gradient(180deg, var(--accent-soft) 0%, var(--surface) 100%);
 }
 
 .analytics-summary-card--green {

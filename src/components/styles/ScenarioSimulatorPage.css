@@ -64,8 +64,8 @@
 }
 
 .scenario-simulator-game-chip--active {
-  border-color: rgba(37, 99, 235, 0.35);
-  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(var(--brand-rgb), 0.35);
+  background: rgba(var(--brand-rgb), 0.08);
 }
 
 .scenario-simulator-sliders {

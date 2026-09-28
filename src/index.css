@@ -8,63 +8,107 @@
    inline script in public/index.html (stored choice, else the OS setting).
    Bootstrap follows through data-bs-theme on the same element.
 
-   Sport accent: the shell sets data-sport="mlb|nfl|cfb|all" and --accent
-   resolves from it, so a component never hardcodes which sport it is in.
-   Every accent clears 4.5:1 as text on both the page and a card surface,
-   in both themes, and white text clears 4.5:1 on the light-theme accent:
+   Colour model (docs/REDESIGN.md, "Colour"):
+   - Neutrals: charcoal/near-black and gray surfaces, gray text.
+   - Brand: one green (--brand) is the only UI accent — links, active nav,
+     focus rings, primary buttons, key highlights. --accent is the brand
+     green in every sport; data-sport no longer changes it.
+   - Sport identity: the sport icon plus a secondary tint (--sport, from
+     --mlb / --nfl / --cfb), used only as a thin trim and where sports sit
+     side by side in one chart. The three tints pass the dataviz validator
+     all-pairs in both themes.
+   - Data: --viz-1…6 is the categorical order for multi-series charts
+     (validated adjacent-pairs in both themes; slots 1–2 all-pairs).
+     Status (--pos/--neg/--warn/--live) is reserved and always ships with an
+     icon, sign or label, never colour alone.
 
-                light bg/surface   dark bg/surface
-     MLB        6.3 / 6.7          7.9 / 7.2
-     NFL        6.6 / 7.1          8.3 / 7.6
-     CFB        5.3 / 5.7          9.0 / 8.3
-     muted      5.8 / 6.3          7.7 / 7.0
+   WCAG contrast (computed; text needs 4.5, UI/large text 3.0):
+                         light bg / surface / surface-2   dark bg / surface / surface-2
+     --text              16.1 / 17.7 / 15.6               16.6 / 15.2 / 14.1
+     --text-2             9.5 / 10.4 /  9.2               12.0 / 11.0 / 10.2
+     --text-muted         7.0 /  7.7 /  6.8                7.8 /  7.2 /  6.7
+     --text-faint         5.3 /  5.8 /  5.1                6.0 /  5.6 /  5.1
+     --accent (brand)     4.9 /  5.4 /  4.8               11.2 / 10.3 /  9.5
+     --neg                5.0 /  5.5 /  4.8                6.5 /  6.0 /  5.5
+     --warn               5.0 /  5.5 /  4.8               11.7 / 10.8 / 10.0
+     text on accent       5.4 (white on green)             11.2 (ink on green)
+     accent on accent-soft 4.7                             8.0
+     chrome accent on chrome 11.2 (the bars stay dark in both themes)
+   See docs/REDESIGN.md for the full table and the validator output.
    ═══════════════════════════════════════════════════════════════════════ */
 
 :root {
   color-scheme: light;
 
-  /* Surfaces and text */
-  --bg:            #f6f7f9;
+  /* Surfaces and text — neutral grays */
+  --bg:            #f4f4f5;
   --surface:       #ffffff;
-  --surface-2:     #f1f3f6;
-  --surface-3:     #e6e9ef;
-  --text:          #0f172a;
-  --text-2:        #334155;
-  --text-muted:    #566173;
-  --text-faint:    #6b7486;
+  --surface-2:     #f0f0f1;
+  --surface-3:     #e4e4e7;
+  --text:          #18181b;
+  --text-2:        #3f3f46;
+  --text-muted:    #52525b;
+  --text-faint:    #65656d;
   --text-on-accent: #ffffff;
-  --border:        #e2e6ec;
-  --border-strong: #cbd2dc;
+  --border:        #e4e4e7;
+  --border-strong: #cfcfd4;
 
-  /* Status — hits, misses, warnings. Kept distinct from every sport accent. */
-  --pos:        #0f7a4d;
-  --pos-soft:   #dcf5e8;
-  --neg:        #b42318;
-  --neg-soft:   #fde4e1;
-  --warn:       #9a6700;
-  --warn-soft:  #fff4d6;
-  --live:       #d92d20;
+  /* Brand — the one accent colour */
+  --brand:         #157a3c;
+  --brand-strong:  #0f6130;
+  --brand-soft:    #e3f3e8;
+  --brand-rgb:     21, 122, 60;
 
-  /* Sport accents */
-  --mlb:       #1d4ed8;
-  --mlb-soft:  #e3ebff;
-  --nfl:       #6d28d9;
-  --nfl-soft:  #efe7ff;
-  --cfb:       #b93c0a;
-  --cfb-soft:  #ffeadd;
-  --all:       #0f172a;
-  --all-soft:  #e8ebf0;
+  /* Status — hits, misses, warnings, live. Reserved; never a series colour. */
+  --pos:        #157a3c;
+  --pos-soft:   #e3f3e8;
+  --neg:        #c4312a;
+  --neg-soft:   #fde6e3;
+  --warn:       #8f6000;
+  --warn-soft:  #fff3d1;
+  --live:       #c4312a;
 
-  --accent:      var(--all);
-  --accent-soft: var(--all-soft);
+  /* Sport tints — identity trim only; the accent stays green. */
+  --mlb:       #d6457a;
+  --mlb-soft:  #fbe7ee;
+  --nfl:       #4a3aa7;
+  --nfl-soft:  #ecebf8;
+  --cfb:       #b07400;
+  --cfb-soft:  #f8eed9;
+  --all:       #52525b;
+  --all-soft:  #ececee;
 
-  /* Chrome — the navigation bars stay dark in both themes. */
-  --chrome:        #0b1220;
-  --chrome-2:      #141d31;
-  --chrome-text:   #e5e9f0;
-  --chrome-muted:  #a3aec0;
+  --accent:        var(--brand);
+  --accent-strong: var(--brand-strong);
+  --accent-soft:   var(--brand-soft);
+  --sport:         var(--all);
+  --sport-soft:    var(--all-soft);
+
+  /* Data colours. Categorical order, fixed (never cycled): green, violet,
+     rose, gold, blue, orange. --viz-muted is the "other side" / baseline
+     neutral beside a single coloured series. */
+  --viz-1: #157a3c;
+  --viz-2: #4a3aa7;
+  --viz-3: #d6457a;
+  --viz-4: #b07400;
+  --viz-5: #2a78d6;
+  --viz-6: #eb6834;
+  --viz-muted: #71717a;
+  --viz-grid:  #e4e4e7;
+  --viz-axis:  #52525b;
+  /* Fills that carry white text (probability bars with the % inside). The
+     same in both themes, so the label contrast never changes. */
+  --viz-fill-1: #157a3c;
+  --viz-fill-2: #4a3aa7;
+  --viz-fill-muted: #52525b;
+
+  /* Chrome — the navigation bars stay near-black in both themes. */
+  --chrome:        #0b0c0c;
+  --chrome-2:      #161818;
+  --chrome-text:   #e7e9e8;
+  --chrome-muted:  #a3a8a6;
   --chrome-border: rgba(255, 255, 255, .09);
-  --chrome-accent: #cfd6e3;
+  --chrome-accent: #4ade80;
 
   /* Type */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
@@ -91,19 +135,20 @@
   --radius-sm: 6px;
   --radius:    10px;
   --radius-lg: 14px;
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, .06), 0 1px 3px rgba(15, 23, 42, .06);
-  --shadow:    0 4px 14px rgba(15, 23, 42, .08);
-  --shadow-lg: 0 12px 32px rgba(15, 23, 42, .14);
+  --shadow-sm: 0 1px 2px rgba(24, 24, 27, .06), 0 1px 3px rgba(24, 24, 27, .06);
+  --shadow:    0 4px 14px rgba(24, 24, 27, .08);
+  --shadow-lg: 0 12px 32px rgba(24, 24, 27, .14);
 
   --page-max: 1320px;
   --gutter:   16px;
   --topbar-h: 56px;
   --bottombar-h: 60px;
 
-  /* ── Legacy aliases (pre-redesign stylesheets use these) ── */
-  --ht-blue:       var(--mlb);
-  --ht-blue-dark:  #1740b0;
-  --ht-blue-light: var(--mlb-soft);
+  /* ── Legacy aliases (pre-redesign stylesheets use these) ──
+     The --ht-blue* names predate the recolour; they now carry the brand. */
+  --ht-blue:       var(--brand);
+  --ht-blue-dark:  var(--brand-strong);
+  --ht-blue-light: var(--brand-soft);
   --ht-green:      var(--pos);
   --ht-red:        var(--neg);
   --ht-navy:       var(--chrome);
@@ -120,66 +165,78 @@
   --ht-shadow-lg:  var(--shadow-lg);
   --ht-font-mono:  var(--font-mono);
 
-  --sport-mlb:       var(--mlb);
-  --sport-mlb-soft:  var(--mlb-soft);
-  --sport-mlb-on:    #8ab8ff;
-  /* Football pages were written against one "football" colour. It now follows
-     whichever football sport is active (NFL violet or CFB orange). */
-  --sport-ftbl:      var(--cfb);
-  --sport-ftbl-soft: var(--cfb-soft);
-  --sport-ftbl-on:   #ffa36b;
+  /* Per-sport page accents from before the recolour. Every sport's pages
+     now wear the brand green; "-on" is the accent on the dark chrome. */
+  --sport-mlb:       var(--brand);
+  --sport-mlb-soft:  var(--brand-soft);
+  --sport-mlb-on:    var(--chrome-accent);
+  --sport-ftbl:      var(--brand);
+  --sport-ftbl-soft: var(--brand-soft);
+  --sport-ftbl-on:   var(--chrome-accent);
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --bg:            #0b1020;
-  --surface:       #131a2b;
-  --surface-2:     #1a2236;
-  --surface-3:     #222c43;
-  --text:          #e8ecf3;
-  --text-2:        #c3cad6;
-  --text-muted:    #9aa6b8;
-  --text-faint:    #8591a5;
-  --text-on-accent: #0b1020;
-  --border:        #263049;
-  --border-strong: #34405c;
+  --bg:            #0b0c0c;
+  --surface:       #151717;
+  --surface-2:     #1c1f1e;
+  --surface-3:     #262a28;
+  --text:          #ececed;
+  --text-2:        #c8cbca;
+  --text-muted:    #a0a5a3;
+  --text-faint:    #8b908e;
+  --text-on-accent: #0b0c0c;
+  --border:        #292d2b;
+  --border-strong: #3a3f3c;
+
+  --brand:         #4ade80;
+  --brand-strong:  #86efac;
+  --brand-soft:    rgba(74, 222, 128, .13);
+  --brand-rgb:     74, 222, 128;
 
   --pos:        #4ade80;
-  --pos-soft:   rgba(74, 222, 128, .14);
-  --neg:        #f87171;
-  --neg-soft:   rgba(248, 113, 113, .14);
+  --pos-soft:   rgba(74, 222, 128, .13);
+  --neg:        #f26a5f;
+  --neg-soft:   rgba(242, 106, 95, .14);
   --warn:       #fbbf24;
   --warn-soft:  rgba(251, 191, 36, .14);
   --live:       #ff6b5e;
 
-  --mlb:       #6ea8ff;
-  --mlb-soft:  rgba(110, 168, 255, .14);
-  --nfl:       #b69cff;
-  --nfl-soft:  rgba(182, 156, 255, .15);
-  --cfb:       #ff9a5c;
-  --cfb-soft:  rgba(255, 154, 92, .14);
-  --all:       #e8ecf3;
-  --all-soft:  rgba(232, 236, 243, .10);
+  --mlb:       #e0668f;
+  --mlb-soft:  rgba(224, 102, 143, .15);
+  --nfl:       #9085e9;
+  --nfl-soft:  rgba(144, 133, 233, .16);
+  --cfb:       #c98500;
+  --cfb-soft:  rgba(201, 133, 0, .16);
+  --all:       #a0a5a3;
+  --all-soft:  rgba(236, 236, 237, .08);
 
-  --chrome:        #070b16;
-  --chrome-2:      #10182b;
+  --viz-1: #1f9d55;
+  --viz-2: #9085e9;
+  --viz-3: #e0668f;
+  --viz-4: #c98500;
+  --viz-5: #3987e5;
+  --viz-6: #d95926;
+  --viz-muted: #5b605e;
+  --viz-grid:  #292d2b;
+  --viz-axis:  #a0a5a3;
+
+  --chrome:        #070808;
+  --chrome-2:      #121414;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
   --shadow:    0 4px 14px rgba(0, 0, 0, .45);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, .55);
-
-  --ht-blue-dark: #9cc3ff;
 }
 
 /* Sport context. Set on the shell and on any element that is about one sport
-   (a homepage card, a pick row), so the accent can differ inside one page. */
-[data-sport='mlb'] { --accent: var(--mlb); --accent-soft: var(--mlb-soft); --chrome-accent: #8ab8ff; }
-[data-sport='nfl'] { --accent: var(--nfl); --accent-soft: var(--nfl-soft); --chrome-accent: #c4b0ff;
-  --sport-ftbl: var(--nfl); --sport-ftbl-soft: var(--nfl-soft); --sport-ftbl-on: #c4b0ff; }
-[data-sport='cfb'] { --accent: var(--cfb); --accent-soft: var(--cfb-soft); --chrome-accent: #ffa36b;
-  --sport-ftbl: var(--cfb); --sport-ftbl-soft: var(--cfb-soft); --sport-ftbl-on: #ffa36b; }
-[data-sport='all'] { --accent: var(--all); --accent-soft: var(--all-soft); --chrome-accent: #cfd6e3; }
+   (a homepage card, a pick row). The accent stays the brand green; only the
+   secondary tint (--sport) follows the sport. */
+[data-sport='mlb'] { --sport: var(--mlb); --sport-soft: var(--mlb-soft); }
+[data-sport='nfl'] { --sport: var(--nfl); --sport-soft: var(--nfl-soft); }
+[data-sport='cfb'] { --sport: var(--cfb); --sport-soft: var(--cfb-soft); }
+[data-sport='all'] { --sport: var(--all); --sport-soft: var(--all-soft); }
 
 /* ── Base ─────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
@@ -222,7 +279,12 @@ html, body { overflow-x: hidden; max-width: 100vw; }
    bootstrap.min.css is imported after this file (src/index.js), so its
    :root variables would win a tie. html[data-theme] outranks :root and
    [data-bs-theme], which keeps Bootstrap cards, tables and forms on the
-   same surfaces as everything else in both themes. */
+   same surfaces as everything else in both themes.
+
+   Primary is the brand green and info is a neutral charcoal: nothing in
+   Bootstrap renders its default blue or cyan. The component rules below
+   exist because Bootstrap compiles those colours as literals rather than
+   reading --bs-primary. */
 html[data-theme] {
   --bs-body-bg: var(--bg);
   --bs-body-color: var(--text);
@@ -234,15 +296,106 @@ html[data-theme] {
   --bs-border-color: var(--border);
   --bs-border-color-translucent: var(--border);
   --bs-heading-color: inherit;
-  --bs-link-color: var(--mlb);
-  --bs-link-color-rgb: 29, 78, 216;
-  --bs-link-hover-color: var(--ht-blue-dark);
   --bs-font-sans-serif: var(--font-sans);
   --bs-font-monospace: var(--font-mono);
+
+  --bs-blue: var(--brand);
+  --bs-primary: var(--brand);
+  --bs-primary-rgb: var(--brand-rgb);
+  --bs-primary-text-emphasis: var(--brand-strong);
+  --bs-primary-bg-subtle: var(--brand-soft);
+  --bs-primary-border-subtle: color-mix(in srgb, var(--brand) 40%, var(--surface));
+  --bs-link-color: var(--brand);
+  --bs-link-color-rgb: var(--brand-rgb);
+  --bs-link-hover-color: var(--brand-strong);
+  --bs-link-hover-color-rgb: var(--brand-rgb);
+  --bs-focus-ring-color: rgba(var(--brand-rgb), .3);
+
+  --bs-cyan: #52525b;
+  --bs-info: #52525b;
+  --bs-info-rgb: 82, 82, 91;
+  --bs-info-text-emphasis: var(--text);
+  --bs-info-bg-subtle: var(--surface-2);
+  --bs-info-border-subtle: var(--border-strong);
 }
-html[data-theme='dark'] {
-  --bs-link-color-rgb: 110, 168, 255;
+html[data-theme] .btn-primary {
+  --bs-btn-color: var(--text-on-accent);
+  --bs-btn-bg: var(--brand);
+  --bs-btn-border-color: var(--brand);
+  --bs-btn-hover-color: var(--text-on-accent);
+  --bs-btn-hover-bg: var(--brand-strong);
+  --bs-btn-hover-border-color: var(--brand-strong);
+  --bs-btn-focus-shadow-rgb: var(--brand-rgb);
+  --bs-btn-active-color: var(--text-on-accent);
+  --bs-btn-active-bg: var(--brand-strong);
+  --bs-btn-active-border-color: var(--brand-strong);
+  --bs-btn-disabled-color: var(--text-on-accent);
+  --bs-btn-disabled-bg: var(--brand);
+  --bs-btn-disabled-border-color: var(--brand);
 }
+html[data-theme] .btn-outline-primary {
+  --bs-btn-color: var(--brand);
+  --bs-btn-border-color: var(--brand);
+  --bs-btn-hover-color: var(--text-on-accent);
+  --bs-btn-hover-bg: var(--brand);
+  --bs-btn-hover-border-color: var(--brand);
+  --bs-btn-focus-shadow-rgb: var(--brand-rgb);
+  --bs-btn-active-color: var(--text-on-accent);
+  --bs-btn-active-bg: var(--brand);
+  --bs-btn-active-border-color: var(--brand);
+  --bs-btn-disabled-color: var(--brand);
+  --bs-btn-disabled-border-color: var(--brand);
+}
+html[data-theme] .btn-info {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #52525b;
+  --bs-btn-border-color: #52525b;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #3f3f46;
+  --bs-btn-hover-border-color: #3f3f46;
+  --bs-btn-focus-shadow-rgb: 82, 82, 91;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #3f3f46;
+  --bs-btn-active-border-color: #3f3f46;
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: #52525b;
+  --bs-btn-disabled-border-color: #52525b;
+}
+html[data-theme] .btn-outline-info {
+  --bs-btn-color: var(--text-2);
+  --bs-btn-border-color: var(--border-strong);
+  --bs-btn-hover-color: var(--text);
+  --bs-btn-hover-bg: var(--surface-3);
+  --bs-btn-hover-border-color: var(--border-strong);
+  --bs-btn-focus-shadow-rgb: 82, 82, 91;
+  --bs-btn-active-color: var(--text);
+  --bs-btn-active-bg: var(--surface-3);
+  --bs-btn-active-border-color: var(--border-strong);
+  --bs-btn-disabled-color: var(--text-muted);
+  --bs-btn-disabled-border-color: var(--border);
+}
+/* In dark the brand green is light, so text on it is ink, not white. */
+html[data-theme='dark'] .badge.bg-primary,
+html[data-theme='dark'] .bg-primary,
+html[data-theme='dark'] .text-bg-primary { color: var(--text-on-accent) !important; }
+html[data-theme] .nav-pills { --bs-nav-pills-link-active-bg: var(--brand); --bs-nav-pills-link-active-color: var(--text-on-accent); }
+html[data-theme] .dropdown-menu { --bs-dropdown-link-active-bg: var(--brand); --bs-dropdown-link-active-color: var(--text-on-accent); }
+html[data-theme] .pagination { --bs-pagination-active-bg: var(--brand); --bs-pagination-active-border-color: var(--brand); --bs-pagination-active-color: var(--text-on-accent); --bs-pagination-focus-box-shadow: 0 0 0 .25rem rgba(var(--brand-rgb), .3); }
+html[data-theme] .progress, html[data-theme] .progress-stacked { --bs-progress-bar-bg: var(--brand); --bs-progress-bar-color: var(--text-on-accent); }
+html[data-theme] .list-group { --bs-list-group-active-bg: var(--brand); --bs-list-group-active-border-color: var(--brand); --bs-list-group-active-color: var(--text-on-accent); }
+html[data-theme] .accordion { --bs-accordion-btn-focus-box-shadow: 0 0 0 .25rem rgba(var(--brand-rgb), .3); --bs-accordion-active-color: var(--brand-strong); --bs-accordion-active-bg: var(--brand-soft); }
+html[data-theme] .btn-close { --bs-btn-close-focus-shadow: 0 0 0 .25rem rgba(var(--brand-rgb), .3); }
+html[data-theme] .form-control:focus,
+html[data-theme] .form-select:focus,
+html[data-theme] .form-check-input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 .25rem rgba(var(--brand-rgb), .3);
+}
+html[data-theme] .form-check-input:checked { background-color: var(--brand); border-color: var(--brand); }
+html[data-theme] .form-range::-webkit-slider-thumb { background-color: var(--brand); }
+html[data-theme] .form-range::-moz-range-thumb { background-color: var(--brand); }
+html[data-theme] .table-primary { --bs-table-bg: var(--brand-soft); --bs-table-color: var(--text); --bs-table-border-color: var(--border); }
+html[data-theme] .table-info { --bs-table-bg: var(--surface-2); --bs-table-color: var(--text); --bs-table-border-color: var(--border); }
 html[data-theme] .card { --bs-card-bg: var(--surface); --bs-card-cap-bg: var(--surface); }
 html[data-theme] .table {
   --bs-table-bg: transparent;

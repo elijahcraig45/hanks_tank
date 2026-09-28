@@ -298,7 +298,7 @@ const TeamTransactions = ({ teamId: teamIdProp, teamName: teamNameProp }) => {
           padding: 12px;
           background: #f8f9fa;
           border-radius: 6px;
-          border-left: 3px solid #007bff;
+          border-left: 3px solid var(--accent);
         }
 
         .breakdown-icon {
@@ -315,7 +315,7 @@ const TeamTransactions = ({ teamId: teamIdProp, teamName: teamNameProp }) => {
         .breakdown-count {
           font-size: 18px;
           font-weight: 700;
-          color: #007bff;
+          color: var(--accent);
         }
 
         .transactions-timeline {
@@ -358,7 +358,7 @@ const TeamTransactions = ({ teamId: teamIdProp, teamName: teamNameProp }) => {
           width: 32px;
           height: 32px;
           background: white;
-          border: 2px solid #007bff;
+          border: 2px solid var(--accent);
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -373,7 +373,7 @@ const TeamTransactions = ({ teamId: teamIdProp, teamName: teamNameProp }) => {
           background: #f8f9fa;
           padding: 16px;
           border-radius: 6px;
-          border-left: 3px solid #007bff;
+          border-left: 3px solid var(--accent);
         }
 
         .timeline-header {
@@ -385,7 +385,7 @@ const TeamTransactions = ({ teamId: teamIdProp, teamName: teamNameProp }) => {
 
         .timeline-type {
           font-weight: 600;
-          color: #007bff;
+          color: var(--accent);
           font-size: 14px;
         }
 

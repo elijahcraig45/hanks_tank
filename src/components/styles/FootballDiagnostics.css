@@ -77,7 +77,7 @@
 .fd-chip--on {
   background: var(--sport-ftbl);
   border-color: var(--sport-ftbl);
-  color: #fff;
+  color: var(--text-on-accent);
 }
 .fd-field select, .fd-field input {
   border: 1px solid var(--ht-gray-200);

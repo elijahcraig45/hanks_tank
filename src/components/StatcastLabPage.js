@@ -386,15 +386,15 @@ function StatcastLabPage() {
                 <div className="statcast-lab-chart">
                   <ResponsiveContainer width="100%" height={320}>
                     <LineChart data={rollingTrend}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 116, 139, 0.2)" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--viz-grid)" />
                       <XAxis dataKey="date" />
                       <YAxis yAxisId="left" />
                       <YAxis yAxisId="right" orientation="right" />
                       <Tooltip />
                       <Legend />
-                      <Line yAxisId="left" type="monotone" dataKey="avgReleaseSpeed" name="Avg velo" stroke="#2563eb" strokeWidth={2} />
-                      <Line yAxisId="left" type="monotone" dataKey="avgExitVelo" name="Avg EV" stroke="#f97316" strokeWidth={2} />
-                      <Line yAxisId="right" type="monotone" dataKey="whiffRate" name="Whiff rate %" stroke="#16a34a" strokeWidth={2} />
+                      <Line yAxisId="left" type="monotone" dataKey="avgReleaseSpeed" name="Avg velo" stroke="var(--viz-1)" strokeWidth={2} />
+                      <Line yAxisId="left" type="monotone" dataKey="avgExitVelo" name="Avg EV" stroke="var(--viz-2)" strokeWidth={2} />
+                      <Line yAxisId="right" type="monotone" dataKey="whiffRate" name="Whiff rate %" stroke="var(--viz-3)" strokeWidth={2} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -408,11 +408,11 @@ function StatcastLabPage() {
                 <div className="statcast-lab-chart">
                   <ResponsiveContainer width="100%" height={320}>
                     <BarChart data={contactQuality}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 116, 139, 0.2)" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--viz-grid)" />
                       <XAxis dataKey="label" />
                       <YAxis />
                       <Tooltip />
-                      <Bar dataKey="count" fill="#0d6efd" radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="count" fill="var(--viz-1)" radius={[6, 6, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -480,7 +480,7 @@ function StatcastLabPage() {
                     <div
                       key={cell.id}
                       className="statcast-lab-zone-cell"
-                      style={{ backgroundColor: `rgba(37, 99, 235, ${0.12 + cell.intensity * 0.48})` }}
+                      style={{ backgroundColor: `rgba(var(--brand-rgb), ${0.12 + cell.intensity * 0.48})` }}
                     >
                       <div className="statcast-lab-zone-count">{cell.count}</div>
                       <div className="statcast-lab-zone-meta">{formatPercent(cell.whiffRate)}</div>

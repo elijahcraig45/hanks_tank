@@ -303,7 +303,7 @@
   line-height: 1.3;
 }
 .live-sz-pitch-row:hover,
-.live-sz-pitch-row--active { background: #eef2ff; }
+.live-sz-pitch-row--active { background: var(--accent-soft); }
 
 .live-sz-pitch-num {
   width: 15px;

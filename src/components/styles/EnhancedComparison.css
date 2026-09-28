@@ -50,7 +50,7 @@
 }
 
 .enhanced-comparison-widget .table tbody tr:hover {
-  background-color: rgba(13, 110, 253, 0.05);
+  background-color: rgba(var(--brand-rgb), 0.05);
 }
 
 /* Scrollbar Styling */

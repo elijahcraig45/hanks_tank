@@ -255,7 +255,7 @@ function TeamPage() {
     setFavorite(next.some((team) => team.abbreviation === normalizedTeamAbbr));
   };
 
-  const accentColor = teamMeta?.primaryColor || '#0d6efd';
+  const accentColor = teamMeta?.primaryColor || '#157a3c';
   const secondaryColor = teamMeta?.secondaryColor || '#0f172a';
   const logoUrl = teamMeta ? getTeamLogoUrl(teamMeta.id) : '';
   const displayName = teamProfile?.name || teamMeta?.name || `${normalizedTeamAbbr} Team`;
