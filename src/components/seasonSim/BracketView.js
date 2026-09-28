@@ -9,8 +9,8 @@ function Occupant({ row, isSeed, onSelect }) {
   return (
     <li className="ssim-occ">
       <button type="button" className="ssim-occ-team" onClick={() => onSelect(row.team)} title={row.team_name}>
-        <span className="ssim-team-abbr">{row.team}</span>
-        <span className="ssim-occ-name">{row.team_name}</span>
+        {row.team_name && row.team_name !== row.team && <span className="ssim-team-abbr">{row.team}</span>}
+        <span className="ssim-occ-name">{row.team_name || row.team}</span>
       </button>
       <span className="ssim-occ-p" title={isSeed ? 'Chance of holding this seed' : 'Chance of playing in this game'}>
         {fmtPct(row.p_slot)}

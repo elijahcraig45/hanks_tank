@@ -107,8 +107,8 @@ export default function ProjectionTable({ sport, teams, onSelect }) {
                 <tr key={t.team} data-testid={`ssim-row-${t.team}`}>
                   <th scope="row" className="ssim-col-team">
                     <button type="button" className="ssim-team-btn" onClick={() => onSelect(t.team)}>
-                      <span className="ssim-team-abbr">{t.team}</span>
-                      <span className="ssim-team-name">{t.team_name}</span>
+                      {t.team_name && t.team_name !== t.team && <span className="ssim-team-abbr">{t.team}</span>}
+                      <span className="ssim-team-name">{t.team_name || t.team}</span>
                     </button>
                   </th>
                   <td className="ssim-num">{fmtRecord(t.wins, t.losses, t.ties)}</td>
