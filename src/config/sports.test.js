@@ -44,3 +44,18 @@ test('paths and context round-trip', () => {
   expect(sportContext('/pickem').sport).toBe('cfb');
   expect(sportContext('/')).toEqual({ sport: 'all', league: null });
 });
+
+test('season projections sit in the Rankings group, and only where the sim runs', () => {
+  const withProj = [
+    ...SECTIONS,
+    { key: 'projections', label: 'Season projections', availableFor: (l) => l.key !== 'fcs' },
+  ];
+  const nfl = footballNav('nfl', withProj).find((n) => n.key === 'rankings');
+  expect(nfl.to).toBe('/nfl/rankings');
+  expect(nfl.children.map((c) => [c.label, c.to])).toEqual([
+    ['Power rankings', '/nfl/rankings'], ['Season projections', '/nfl/projections'],
+  ]);
+  expect(footballNav('fbs', withProj).find((n) => n.key === 'rankings').children.map((c) => c.to))
+    .toEqual(['/cfb/fbs/rankings', '/cfb/fbs/projections']);
+  expect(footballNav('fcs', withProj).find((n) => n.key === 'rankings').children).toBeNull();
+});
