@@ -5,6 +5,7 @@ import ScoreboardSection from './football/ScoreboardSection';
 import RankingsBoard from './RankingsBoard';
 import FootballDiagnostics from './FootballDiagnostics';
 import ModelsPage from './models/ModelsPage';
+import SeasonSimSection from './seasonSim/SeasonSimSection';
 import './styles/FootballPage.css';
 
 /**
@@ -32,6 +33,9 @@ export const SECTIONS = [
   // College only for now: the live feed behind it publishes no NFL data.
   { key: 'scoreboard', label: 'Scores', availableFor: (l) => l.sport === 'cfb' },
   { key: 'rankings', label: 'Power Rankings' },
+  // Rest-of-season Monte Carlo (shadow). NFL and FBS only: the sim fills the CFP field,
+  // which FCS does not feed.
+  { key: 'projections', label: 'Season projections', availableFor: (l) => l.key !== 'fcs' },
   // Every model's pregame call side by side, with an honest scoreboard (Models section).
   { key: 'models', label: 'Models' },
   { key: 'diagnostics', label: 'Diagnostics' },
@@ -1145,6 +1149,9 @@ export default function FootballPage() {
             accent="ftbl"
             title={league.label}
           />
+        )}
+        {section === 'projections' && (
+          <SeasonSimSection key={`${league.sport}-${season}`} sport={league.sport} season={season} />
         )}
         {section === 'leaders' && (
           <LeadersSection league={league} season={season} setSeason={setSeason} />
