@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#0b1220" />
+    <meta name="theme-color" content="#0b0c0c" />
     <meta
       name="description"
       content="Hank's Tank is a multi-sport analytics site for MLB, NFL and college football: daily model predictions, power rankings with uncertainty, live game detail, and model scoreboards."
@@ -25,13 +25,8 @@
     <link rel="canonical" href="https://hankstank.com/" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
 
-    <!-- Bootstrap CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
-      crossorigin="anonymous"
-    />
+    <!-- Bootstrap CSS comes from the npm package (imported in src/index.js), not a CDN:
+         loading both shipped two copies of different versions. -->
 
     <!--
       manifest.json provides metadata used when your web app is installed on a
@@ -66,12 +61,8 @@
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
 
-    <!-- Bootstrap Bundle with Popper -->
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
-      crossorigin="anonymous"
-    ></script>
+    <!-- No Bootstrap JS bundle: react-bootstrap renders the interactive parts and
+         nothing in the app uses data-bs-* attributes. -->
     <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.

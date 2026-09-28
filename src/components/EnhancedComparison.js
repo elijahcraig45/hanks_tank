@@ -55,7 +55,7 @@ const EnhancedComparison = ({ players = [] }) => {
     });
   };
   
-  const COLORS = ['#0d6efd', '#198754', '#ffc107', '#dc3545'];
+  const COLORS = ['var(--viz-1)', 'var(--viz-2)', 'var(--viz-3)', 'var(--viz-4)'];
   
   return (
     <Card className="enhanced-comparison-widget">
@@ -94,7 +94,7 @@ const EnhancedComparison = ({ players = [] }) => {
           <Col lg={8}>
             <ResponsiveContainer width="100%" height={250}>
               <RadarChart data={getRadarData()}>
-                <PolarGrid stroke="#dee2e6" />
+                <PolarGrid stroke="var(--viz-grid)" />
                 <PolarAngleAxis 
                   dataKey="stat" 
                   tick={{ fill: '#6c757d', fontSize: 11 }}

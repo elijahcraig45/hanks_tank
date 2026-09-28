@@ -104,7 +104,7 @@
 }
 .player-tabs .nav-link.active {
   color: var(--accent);
-  border-bottom: 2px solid #0d6efd;
+  border-bottom: 2px solid var(--accent);
 }
 
 /* Header alias for legacy code */
@@ -136,9 +136,9 @@
 }
 
 .player-page .nav-tabs .nav-link.active {
-  color: #ffffff !important;
-  background-color: #007bff !important;
-  border-color: #007bff !important;
+  color: var(--text-on-accent) !important;
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
 }
 
 /* Card styling */
@@ -173,9 +173,9 @@
 }
 
 .player-page .alert-info {
-  background-color: #d1ecf1 !important;
-  border-color: #bee5eb !important;
-  color: #0c5460 !important;
+  background-color: var(--surface-2) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
 }
 
 .player-page .spinner-border {
@@ -196,7 +196,7 @@
   font-weight: 600 !important;
   font-size: 1.1rem !important;
   margin-bottom: 0.5rem;
-  border-bottom: 2px solid #007bff;
+  border-bottom: 2px solid var(--accent);
   padding-bottom: 0.5rem;
 }
 

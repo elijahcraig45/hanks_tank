@@ -230,7 +230,7 @@ const EnhancedTeamDashboard = ({
             <Card.Body>
               <ResponsiveContainer width="100%" height={300}>
                 <RadarChart data={getRadarData()}>
-                  <PolarGrid stroke="#dee2e6" />
+                  <PolarGrid stroke="var(--viz-grid)" />
                   <PolarAngleAxis 
                     dataKey="stat" 
                     tick={{ fill: '#6c757d', fontSize: 12 }}
@@ -243,8 +243,8 @@ const EnhancedTeamDashboard = ({
                   <Radar 
                     name="Team" 
                     dataKey="value" 
-                    stroke="#0d6efd" 
-                    fill="#0d6efd" 
+                    stroke="var(--viz-1)" 
+                    fill="var(--viz-1)" 
                     fillOpacity={0.6} 
                   />
                   <Tooltip />
@@ -263,11 +263,11 @@ const EnhancedTeamDashboard = ({
             <Card.Body>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={getStrengthComparison()} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#dee2e6" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--viz-grid)" />
                   <XAxis type="number" domain={[0, 100]} />
                   <YAxis type="category" dataKey="category" width={80} />
                   <Tooltip />
-                  <Bar dataKey="score" fill="#0d6efd" radius={[0, 8, 8, 0]} />
+                  <Bar dataKey="score" fill="var(--viz-1)" radius={[0, 8, 8, 0]} />
                 </BarChart>
               </ResponsiveContainer>
               <div className="text-center mt-2 small text-muted">
