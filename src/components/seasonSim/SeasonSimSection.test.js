@@ -1,12 +1,15 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import SeasonSimSection from './SeasonSimSection';
 import ApiService from '../../services/api';
-import { fmtPct, parseDist, shapeBracket } from './simFormat';
+import {
+  fmtGameDate, fmtPct, parseDist, scheduleCallout, shapeBracket, winLabel,
+} from './simFormat';
 
 jest.mock('../../services/api', () => ({
   __esModule: true,
   default: {
     getSeasonSim: jest.fn(),
+    getSeasonSimTeam: jest.fn(),
     seasonSimExportUrl: jest.fn(),
   },
 }));
@@ -58,8 +61,34 @@ const cfb = {
   meta: { ...base, sport: 'cfb', available_weeks: [4], source: 'fixture', method_url: '/learn/season-sim.html' },
 };
 
+// Georgia Tech, CFB 2026 as of week 4 (the local run): 1-3 now, 3.13 expected remaining wins.
+const gt = {
+  ...base, sport: 'cfb', team: 'GT', team_name: 'Georgia Tech Yellow Jackets', conference: 'ACC',
+  division: null, wins: 1, losses: 3, ties: 0, mean_wins: 4.13, mean_losses: 7.87,
+  remaining_games: 8, rem_wins_mean: 3.13,
+  rem_wins_dist: JSON.stringify([0.024, 0.115, 0.214, 0.251, 0.216, 0.121, 0.047, 0.011, 0.001]),
+  projected_wins_games: JSON.stringify(['8', '12', '10']),
+  modal_sequence: 'LLWLLLLL', modal_sequence_freq: 0.063, modal_sequence_record_p: 0.115,
+};
+const gtGame = (id, week, date, site, opp, p, margin) => ({
+  game_id: id, week, game_date: date, site, opponent: opp.slice(0, 4).toUpperCase(),
+  opponent_name: opp, p_win: p, margin, margin_p10: margin - 18, margin_p90: margin + 18,
+  projected_win: ['8', '12', '10'].includes(id),
+});
+const gtGames = [
+  gtGame('6', 6, '2026-10-10', 'home', 'Duke Blue Devils', 0.408, -3.8),
+  gtGame('7', 7, '2026-10-17', 'away', 'Virginia Tech Hokies', 0.39, -4.4),
+  gtGame('8', 8, '2026-10-24', 'home', 'Boston College Eagles', 0.811, 13.9),
+  gtGame('9', 9, '2026-10-31', 'away', 'Pittsburgh Panthers', 0.228, -11.5),
+  gtGame('10', 10, '2026-11-07', 'home', 'Louisville Cardinals', 0.431, -2.6),
+  gtGame('11', 11, '2026-11-14', 'away', 'Clemson Tigers', 0.315, -7.8),
+  gtGame('12', 12, '2026-11-21', 'neutral', 'Wake Forest Demon Deacons', 0.494, -0.3),
+  gtGame('13', 13, '2026-11-28', 'away', 'Georgia Bulldogs', 0.056, -24.6),
+];
+
 beforeEach(() => {
   jest.clearAllMocks();
+  ApiService.getSeasonSimTeam.mockResolvedValue({ team: null, games: [], meta: { note: 'Per-game table not available yet.' } });
   ApiService.getSeasonSim.mockImplementation(async (sport) => (sport === 'cfb' ? cfb : nfl));
   ApiService.seasonSimExportUrl.mockImplementation((sport, { season, week, table, format }) => (
     `http://api.test/api/season-sim/${sport}/export?season=${season}&week=${week}&table=${table}&format=${format}`
@@ -202,4 +231,71 @@ test('format helpers stay honest about extremes', () => {
   const shaped = shapeBracket(nfl.bracket);
   expect(shaped.map((b) => b.bracket)).toEqual(['AFC', 'NFC', 'NFL']);
   expect(shaped[0].rounds[1].slots[0].modal.map((r) => r.team)).toEqual(['KC', 'DEN']);
+});
+
+
+test('the drill-down lists the remaining schedule with P(win), margin, label and a summary', async () => {
+  ApiService.getSeasonSim.mockResolvedValue({ ...cfb, teams: [gt] });
+  ApiService.getSeasonSimTeam.mockResolvedValue({ team: gt, games: gtGames, meta: cfb.meta });
+  render(<SeasonSimSection sport="cfb" season={2026} />);
+  await screen.findByTestId('ssim-table');
+  fireEvent.click(within(screen.getByTestId('ssim-row-GT')).getByRole('button'));
+  const dlg = screen.getByRole('dialog');
+  const sched = await within(dlg).findByTestId('ssim-schedule');
+  expect(ApiService.getSeasonSimTeam).toHaveBeenCalledWith('cfb', 'GT', { season: 2026, week: 4 });
+  const rows = within(sched).getAllByTestId('ssim-game');
+  expect(rows).toHaveLength(8);
+  expect(rows[0]).toHaveTextContent('Sat, Oct 10');
+  expect(rows[0]).toHaveTextContent('vs Duke Blue Devils');
+  expect(rows[0]).toHaveTextContent('41%');
+  expect(rows[0]).toHaveTextContent('−3.8');
+  expect(rows[0]).toHaveTextContent('Lean L');
+  expect(rows[1]).toHaveTextContent('at Virginia Tech Hokies');
+  expect(rows[2]).toHaveTextContent('Likely W');
+  expect(rows[2]).toHaveClass('ssim-game--top');
+  expect(rows[6]).toHaveTextContent('(neutral)');
+  expect(rows[6]).toHaveTextContent('Toss-up');
+  expect(rows[7]).toHaveTextContent('Likely L');
+  const callout = within(dlg).getByTestId('ssim-callout');
+  expect(callout).toHaveTextContent(
+    'Projected 4.1-7.9: the 3 likeliest remaining wins are vs Boston College Eagles (81%), '
+    + 'vs Wake Forest Demon Deacons (49%) and vs Louisville Cardinals (43%).'
+  );
+  expect(callout).toHaveTextContent('Most common exact finish: 4-8 (25% of simulations).');
+  expect(callout).toHaveTextContent('not a forecast of those exact games');
+  expect(callout).toHaveTextContent('only 1 of the 3 is better than a coin flip');
+  expect(callout).toHaveTextContent('L\u2011L\u2011W\u2011L\u2011L\u2011L\u2011L\u2011L) came up in only 6% of simulations');
+});
+
+test('the drill-down says so when there are no per-game rows', async () => {
+  render(<SeasonSimSection sport="nfl" season={2026} />);
+  await screen.findByTestId('ssim-table');
+  fireEvent.click(within(screen.getByTestId('ssim-row-KC')).getByRole('button'));
+  expect(await screen.findByTestId('ssim-sched-empty')).toHaveTextContent('Per-game table not available yet.');
+});
+
+test('export includes the games table', async () => {
+  render(<SeasonSimSection sport="nfl" season={2026} />);
+  await screen.findByTestId('ssim-table');
+  expect(screen.getByTestId('ssim-export-games-csv'))
+    .toHaveAttribute('href', 'http://api.test/api/season-sim/nfl/export?season=2026&week=4&table=games&format=csv');
+});
+
+test('schedule helpers: labels, dates, and the callout edge cases', () => {
+  expect([0.9, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.1].map((p) => winLabel(p).label)).toEqual([
+    'Likely W', 'Likely W', 'Lean W', 'Lean W', 'Toss-up', 'Lean L', 'Lean L', 'Likely L', 'Likely L']);
+  expect(winLabel(null)).toBeNull();
+  expect(fmtGameDate('2026-11-28')).toBe('Sat, Nov 28');
+  expect(fmtGameDate(null)).toBe('—');
+  expect(scheduleCallout(gt, [])).toBeNull();
+  // Expected wins round to zero: name the single likeliest win instead of an empty list.
+  const lone = scheduleCallout({ ...gt, rem_wins_mean: 0.3, projected_wins_games: '[]',
+    rem_wins_dist: '[0.7,0.3]', wins: 1, losses: 10 }, [gtGames[7]]);
+  expect(lone.lead).toMatch(/round to none; the likeliest is at Georgia Bulldogs \(6%\)/);
+  expect(lone.lead).toMatch(/Most common exact finish: 1-11 \(70% of simulations\)/);
+  // All favoured: no coin-flip clause.
+  const fav = scheduleCallout({ ...gt, rem_wins_mean: 1, projected_wins_games: '["8"]', modal_sequence: null },
+    [gtGames[2], gtGames[3]]);
+  expect(fav.lead).toMatch(/the likeliest remaining win is vs Boston College Eagles \(81%\)/);
+  expect(fav.caveat).not.toMatch(/coin flip/);
 });
