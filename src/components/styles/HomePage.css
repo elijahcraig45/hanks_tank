@@ -20,9 +20,10 @@
   width: 30px;
   height: 30px;
   border: 3px solid var(--border);
-  border-top-color: var(--mlb);
-  border-right-color: var(--nfl);
-  border-bottom-color: var(--cfb);
+  border-top-color: var(--accent);
+  border-right-color: var(--mlb);
+  border-bottom-color: var(--nfl);
+  border-left-color: var(--cfb);
   border-radius: 50%;
   animation: homeSpin .8s linear infinite;
 }
@@ -90,7 +91,7 @@
 .sc {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-top: 3px solid var(--accent);
+  border-top: 3px solid var(--sport);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
   padding: var(--space-4);
@@ -104,7 +105,8 @@
   width: 30px; height: 30px;
   display: grid; place-items: center;
   border-radius: 8px;
-  background: var(--accent-soft);
+  background: var(--sport-soft);
+  box-shadow: inset 0 -2px 0 var(--sport);
   font-size: 1rem;
 }
 .sc-name { margin: 0; font-size: var(--text-lg); font-weight: 750; color: var(--text); letter-spacing: -0.01em; }
@@ -379,7 +381,8 @@
   width: 30px; height: 30px; flex-shrink: 0;
   display: grid; place-items: center;
   border-radius: 8px;
-  background: var(--accent-soft);
+  background: var(--sport-soft);
+  box-shadow: inset 0 -2px 0 var(--sport);
   font-size: 0.9rem;
 }
 .pick-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -428,7 +431,7 @@
 }
 .ms-row:last-child { border-bottom: 0; }
 .ms-label { grid-area: label; display: flex; flex-direction: column; }
-.ms-sport { font-weight: 750; font-size: var(--text-sm); color: var(--accent); }
+.ms-sport { font-weight: 750; font-size: var(--text-sm); color: var(--text); }
 .ms-window { font-size: var(--text-2xs); color: var(--text-muted); }
 .ms-value { grid-area: value; display: flex; flex-direction: column; }
 .ms-value strong { font-size: var(--text-xl); font-weight: 800; font-variant-numeric: tabular-nums; color: var(--text); line-height: 1.1; }
@@ -449,7 +452,7 @@
   position: absolute;
   top: 5px; bottom: 5px;
   border-radius: 4px;
-  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  background: color-mix(in srgb, var(--sport) 30%, transparent);
 }
 .ms-dot {
   position: absolute;
@@ -457,7 +460,7 @@
   width: 11px; height: 11px;
   margin: -5.5px 0 0 -5.5px;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--sport);
   box-shadow: 0 0 0 2px var(--surface);
 }
 .ms-mark {
@@ -571,7 +574,7 @@
   color: inherit;
 }
 .news-item:last-child { border-bottom: 0; }
-.news-item:hover .news-title { color: var(--mlb); }
+.news-item:hover .news-title { color: var(--accent); }
 .news-title { font-size: var(--text-sm); font-weight: 600; color: var(--text); line-height: 1.35; }
 .news-src { font-size: var(--text-2xs); color: var(--text-muted); margin-top: 2px; }
 
@@ -619,9 +622,9 @@
 .std-table th:first-child, .std-table td:first-child { text-align: left; }
 .std-table td { text-align: right; padding: 4px; border-bottom: 1px solid var(--border); color: var(--text); font-variant-numeric: tabular-nums; }
 .std-table--rank th:nth-child(2), .std-table--rank td:nth-child(2) { text-align: left; }
-.std-fav td { background: var(--mlb-soft); }
+.std-fav td { background: var(--accent-soft); }
 .std-team { display: inline-flex; align-items: center; gap: 6px; color: var(--text); text-decoration: none; font-weight: 600; }
-.std-team:hover { color: var(--mlb); }
+.std-team:hover { color: var(--accent); }
 .std-logo { width: 16px; height: 16px; object-fit: contain; }
 .rk { font-family: var(--font-mono); font-weight: 700; }
 

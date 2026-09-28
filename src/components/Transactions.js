@@ -101,7 +101,7 @@ const Transactions = () => {
       'Signed': '#4ECDC4',
       'Released': '#95A5A6',
       'Selected off waivers': '#F39C12',
-      'Returned': '#3498DB',
+      'Returned': '#d6457a',
       'Recalled': '#9B59B6',
       'Optioned': '#E67E22',
       'Designated for assignment': '#E74C3C',

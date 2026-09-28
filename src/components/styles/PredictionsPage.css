@@ -117,9 +117,9 @@
   background: var(--surface-3);
   color: var(--text-2);
 }
-.pred-chip--high   { background: #d1e7dd; color: #0f5132; }
-.pred-chip--med    { background: #fff3cd; color: #664d03; }
-.pred-chip--lineup { background: #cff4fc; color: #055160; }
+.pred-chip--high   { background: var(--pos-soft); color: var(--pos); }
+.pred-chip--med    { background: var(--warn-soft); color: var(--warn); }
+.pred-chip--lineup { background: var(--surface-2); color: var(--text-2); }
 
 /* Group header */
 .pred-group-header {

@@ -71,11 +71,11 @@ function drawBatter(svg_g, scaleX, scaleY, batSide) {
     .attr("class", "batter-silhouette")
     .attr("opacity", 0.70);
 
-  const bodySt  = "#8fa3b8";
-  const helmetC = "#1e293b";
+  const bodySt  = "#9ca3a0";
+  const helmetC = "#27272a";
   const batC    = "#7c4a1e";
   const skinC   = "#f0c4a0";
-  const uniformC = "#6b84a0";
+  const uniformC = "#7a817e";
 
   const W = 9;   // stroke-width for limbs
 

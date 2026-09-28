@@ -120,8 +120,8 @@
   /* A 2px surface ring keeps adjacent/overlapping spans legible. */
   box-shadow: 0 0 0 1px #fff;
 }
-.fg-drive--home { background: #c2410c; }   /* --sport-ftbl */
-.fg-drive--away { background: #2a78d6; }   /* validated pair: CVD ΔE 27.9 */
+.fg-drive--home { background: var(--viz-1); }
+.fg-drive--away { background: var(--viz-2); }   /* validated pair: CVD ΔE 23.2 light / 20.5 dark */
 
 .fg-res--score    { color: var(--ht-green); font-weight: 700; }
 .fg-res--turnover { color: var(--ht-red); }
