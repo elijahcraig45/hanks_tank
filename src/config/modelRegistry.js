@@ -309,8 +309,8 @@ const NFL_CARDS = {
   },
   drive_sim: {
     name: 'Drive simulator',
-    role: 'Backtest only — margin and total distributions',
-    status: 'backtest',
+    role: 'Shadow — margin and total distributions',
+    status: 'shadow',
     what: 'Plays each NFL game out drive by drive thousands of times and counts wins, margins '
       + 'and totals.',
     inputs: [
@@ -321,7 +321,7 @@ const NFL_CARDS = {
       + 'drive starts where the last one left the ball; a pace model sets how many drives a '
       + 'game has. Frozen on 2010-16 before anything was scored.',
     record: {
-      live: 'No live writer: research only.',
+      live: 'Shadow since 2026 week 3: written before kickoff and scored like the other models.',
       backtest: 'Winners: ties the ridge (0.6331 vs 0.6342, 2017-24; its margin correlates '
         + '0.958 with the ridge). Its margin shape, centred on the spread, beats a normal '
         + 'curve by 0.061 nats. Totals: loses to the market (MAE 10.85 vs 10.53).',
@@ -329,7 +329,7 @@ const NFL_CARDS = {
     strengths: ['The only model here with a realistic distribution of exact margins.'],
     weaknesses: ['Same information as the ridge, reparameterised: no gain on winners.'],
     caveats: ['Puts 9.7% of games at exactly 3 points vs 14.9% actual — end-game decisions '
-      + 'are not modelled.', 'NFL only: college drives need a paid data key.'],
+      + 'are not modelled.'],
     learn: [LEARN.driveSim],
   },
 };
@@ -382,6 +382,29 @@ const CFB_CARDS = {
     caveats: ['Scheduled to be replaced by the margin ridge once the shadow earns it.'],
     learn: [LEARN.footballModels],
   },
+  drive_sim: {
+    name: 'Drive simulator',
+    role: 'Shadow (experimental) — margin and total distributions',
+    status: 'shadow',
+    what: 'The NFL drive simulator refit on college drives: plays each game out drive by '
+      + 'drive thousands of times and counts wins, margins and totals.',
+    inputs: [
+      'College drives from the two seasons before the game week',
+      'Team offence and defence, home field, an FBS-vs-FCS division term, clock, field position',
+    ],
+    how: 'Same engine as the NFL version, with college overtime rules; frozen on 2022 '
+      + 'before 2023-25 were simulated.',
+    record: {
+      live: 'Shadow since 2026 week 4: written before kickoff and scored like the other models.',
+      backtest: 'Loses to the margin ridge on winners (2025 log loss +0.034, CI +0.025 to '
+        + '+0.044) and to the market on totals. Its one measured gain is the exact-margin '
+        + 'shape centred on the spread (log score 0.087 better than a normal curve, 2025).',
+    },
+    strengths: ['A full distribution of exact margins and totals.'],
+    weaknesses: ['Weaker than the ridge, FPI and the market at picking winners.'],
+    caveats: ['Experimental: not a candidate for production on winners.'],
+    learn: [LEARN.driveSim],
+  },
 };
 
 export const MODEL_CARDS = { mlb: MLB_CARDS, nfl: NFL_CARDS, cfb: CFB_CARDS };
@@ -389,7 +412,7 @@ export const MODEL_CARDS = { mlb: MLB_CARDS, nfl: NFL_CARDS, cfb: CFB_CARDS };
 export const MODEL_ORDER = {
   mlb: ['v10', 'logit3', 'sim_blend', 'elo', 'market'],
   nfl: ['market', 'ridge', 'xgb', 'fpi', 'drive_sim'],
-  cfb: ['market', 'fpi', 'ridge', 'xgb'],
+  cfb: ['market', 'fpi', 'ridge', 'xgb', 'drive_sim'],
 };
 
 /** Short names for chart legends and table columns. */

@@ -93,11 +93,37 @@ function OverLines({ byLine, unit }) {
 }
 
 /** P(margin = k) for k in −21..21, with the NFL key numbers 3 and 7 called out. */
-function MarginExact({ exact, game }) {
-  const entries = Object.entries(exact || {})
-    .map(([k, p]) => [Number(k), Number(p)])
-    .filter(([k, p]) => Number.isFinite(k) && Number.isFinite(p))
-    .sort((a, b) => a[0] - b[0]);
+/** Bars cover this window; the key numbers (3, 7) sit well inside it. */
+const MARGIN_WINDOW = 21;
+
+/**
+ * Split a stored margin pmf into the bars inside +/-MARGIN_WINDOW and the mass beyond it.
+ * Rows written since 2026-09-28 hold every margin in -60..60 plus the tail buckets
+ * "<=-61" and ">=61" and sum to 1. Older rows hold -21..21 only: their mass beyond the
+ * window was never stored, so `beyond` is null (unknown), not 0.
+ */
+export function splitMarginExact(exact) {
+  let away = 0; let home = 0; let stored = false;
+  const entries = [];
+  Object.entries(exact || {}).forEach(([key, raw]) => {
+    const p = Number(raw);
+    if (!Number.isFinite(p)) return;
+    const tail = /^(<=|>=)\s*(-?\d+)$/.exec(String(key).trim());
+    if (tail) {
+      stored = true;
+      if (tail[1] === '<=') away += p; else home += p;
+      return;
+    }
+    const k = Number(key);
+    if (!Number.isFinite(k)) return;
+    if (k < -MARGIN_WINDOW) { away += p; stored = true; } else if (k > MARGIN_WINDOW) { home += p; stored = true; } else entries.push([k, p]);
+  });
+  entries.sort((a, b) => a[0] - b[0]);
+  return { entries, beyond: stored ? { away, home } : null };
+}
+
+export function MarginExact({ exact, game }) {
+  const { entries, beyond } = splitMarginExact(exact);
   if (!entries.length) return null;
   const get = (k) => entries.find(([x]) => x === k)?.[1] ?? null;
   const top = Math.max(...entries.map(([, p]) => p), 1e-9);
@@ -116,7 +142,7 @@ function MarginExact({ exact, game }) {
       <div
         className="up-pmf"
         role="img"
-        aria-label={`Probability of each exact final margin from ${game.away.abbr} by 21 to ${game.home.abbr} by 21. Key numbers: ${keys.map((k) => `home by ${k} ${fmtPct(get(k), 1)}, away by ${k} ${fmtPct(get(-k), 1)}`).join('; ')}`}
+        aria-label={`Probability of each exact final margin from ${game.away.abbr} by ${MARGIN_WINDOW} to ${game.home.abbr} by ${MARGIN_WINDOW}. Key numbers: ${keys.map((k) => `home by ${k} ${fmtPct(get(k), 1)}, away by ${k} ${fmtPct(get(-k), 1)}`).join('; ')}`}
       >
         {entries.map(([k, p]) => (
           <span
@@ -128,8 +154,17 @@ function MarginExact({ exact, game }) {
         ))}
       </div>
       <div className="up-pmf-axis" aria-hidden="true">
-        <span>{game.away.abbr} by 21</span><span>0</span><span>{game.home.abbr} by 21</span>
+        <span>{game.away.abbr} by {MARGIN_WINDOW}</span><span>0</span><span>{game.home.abbr} by {MARGIN_WINDOW}</span>
       </div>
+      {beyond ? (
+        <p className="up-pmf-beyond" data-testid="margin-beyond">
+          {game.away.abbr} by {MARGIN_WINDOW + 1}+: {fmtPct(beyond.away, 1)} · {game.home.abbr} by {MARGIN_WINDOW + 1}+: {fmtPct(beyond.home, 1)}
+        </p>
+      ) : (
+        <p className="up-pmf-beyond" data-testid="margin-beyond">
+          Margins beyond {MARGIN_WINDOW} were not stored for this prediction.
+        </p>
+      )}
     </section>
   );
 }
@@ -145,9 +180,9 @@ export default function SimDetail({ game, sport, models, initialModel }) {
   if (!simModels.length) {
     return (
       <p className="up-empty">
-        No simulation distribution for this game. {sport === 'cfb'
-          ? 'College football has no simulator yet: its models give a winner and a margin only.'
-          : 'The simulator writes its distributions shortly before the start, once lineups are known.'}
+        No simulation distribution for this game. {sport === 'mlb'
+          ? 'The simulator writes its distributions shortly before the start, once lineups are known.'
+          : 'The drive simulator writes its distributions before kickoff; games that kicked off before it ran have none.'}
       </p>
     );
   }
