@@ -23,6 +23,35 @@ export function signed(v, digits = 1) {
 
 const pct = (p) => (p == null ? '—' : `${Math.round(p * 100)}%`);
 
+/**
+ * Plain-language band for a resample share: how often the bootstrap keeps one team
+ * above the other. Mirrors order_label() in the ML repo's rankings/explain.py (and the
+ * backend compare endpoint), banded on the displayed whole percentage:
+ *   under 60% "a coin flip"; 60-74% "a slight edge"; 75-89% "a clear edge";
+ *   90%+ "separated". 40% and under reads as the mirrored band "the other way".
+ * Only used when a stored pair predates the `order_label` field.
+ */
+export function orderLabel(p) {
+  if (p == null) return null;
+  const shown = Math.round(p * 100);
+  const stronger = Math.max(shown, 100 - shown);
+  const bands = [[90, 'separated'], [75, 'a clear edge'], [60, 'a slight edge']];
+  for (const [floor, label] of bands) {
+    if (stronger >= floor) return shown >= 50 ? label : `${label} the other way`;
+  }
+  return 'a coin flip';
+}
+
+/** The resample share as a small chip, with its band spelled out for hover and readers. */
+export function OrderChip({ pair }) {
+  if (!pair || pair.p_order == null) return null;
+  const label = pair.order_label || orderLabel(pair.p_order);
+  const text = `${pair.a} ahead of ${pair.b} in ${pct(pair.p_order)} of resamples (${label})`;
+  return (
+    <span className="rr-chip" title={text} aria-label={text}>{pct(pair.p_order)}</span>
+  );
+}
+
 function ordinal(n) {
   if (n == null) return '—';
   const s = n % 100 >= 11 && n % 100 <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' }[n % 10] || 'th');
@@ -243,14 +272,17 @@ export function PairExplanation({ pair, sport }) {
         <dd>{pct(pair.p_a_wins_neutral)}</dd>
         {pair.p_order != null && (
           <>
-            <dt title="Share of bootstrap resamples that rate them in this order">Same order in resamples</dt>
-            <dd>{pct(pair.p_order)}{pair.tied && <span className="rr-tag">statistically tied</span>}</dd>
+            <dt title="Share of bootstrap resamples that rate them in this order">Ahead in resamples</dt>
+            <dd>
+              <OrderChip pair={pair} />
+              <span className="rr-tag">{pair.order_label || orderLabel(pair.p_order)}</span>
+            </dd>
           </>
         )}
         {pair.p_order == null && pair.tied && (
           <>
-            <dt>Rank ranges</dt>
-            <dd>overlap<span className="rr-tag">statistically tied</span></dd>
+            <dt title="Resample shares are stored only for adjacent teams">Rank ranges</dt>
+            <dd>overlap</dd>
           </>
         )}
         <dt>Gap from last season</dt>
