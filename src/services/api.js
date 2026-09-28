@@ -375,6 +375,17 @@ class ApiService {
   }
 
   /**
+   * Why one team rates above another, for any two teams on a board. The backend
+   * computes it from the two rows' stored rationale fields; the higher-rated team
+   * always comes back as `a`.
+   */
+  async compareRankings(sport, { a, b, season } = {}) {
+    const qs = new URLSearchParams({ a, b });
+    if (season) qs.set('season', String(season));
+    return this.get(`/rankings/${sport}/compare?${qs.toString()}`, { cacheTTL: 60 });
+  }
+
+  /**
    * Scored football predictions joined with results, one row per game.
    *
    * `seasons` is a list so the page can compare years in a single request rather than
