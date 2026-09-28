@@ -85,7 +85,7 @@
 }
 
 .table tbody tr:hover {
-  background-color: rgba(13, 110, 253, 0.05) !important;
+  background-color: rgba(var(--brand-rgb), 0.05) !important;
 }
 
 .table tbody td {
@@ -105,8 +105,8 @@
 
 /* Primary Rows */
 .table-primary td {
-  background-color: rgba(13, 110, 253, 0.1) !important;
-  border-color: rgba(13, 110, 253, 0.2);
+  background-color: rgba(var(--brand-rgb), 0.1) !important;
+  border-color: rgba(var(--brand-rgb), 0.2);
 }
 
 .table-success td {

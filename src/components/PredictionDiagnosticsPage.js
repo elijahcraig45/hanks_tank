@@ -373,7 +373,7 @@ function PredictionDiagnosticsPage() {
                     <div className="prediction-diagnostics-chart">
                       <ResponsiveContainer width="100%" height={320}>
                         <LineChart data={trendData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 116, 139, 0.2)" />
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--viz-grid)" />
                           <XAxis dataKey="shortDate" />
                           <YAxis tickFormatter={(value) => `${Math.round(value * 100)}%`} />
                           <Tooltip
@@ -383,8 +383,8 @@ function PredictionDiagnosticsPage() {
                             ]}
                           />
                           <Legend />
-                          <Line type="monotone" dataKey="accuracy" name="Accuracy" stroke="#0d6efd" strokeWidth={2.5} />
-                          <Line type="monotone" dataKey="avgEdge" name="Avg edge" stroke="#f59e0b" strokeWidth={2.5} />
+                          <Line type="monotone" dataKey="accuracy" name="Accuracy" stroke="var(--viz-1)" strokeWidth={2.5} />
+                          <Line type="monotone" dataKey="avgEdge" name="Avg edge" stroke="var(--viz-2)" strokeWidth={2.5} />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
@@ -398,7 +398,7 @@ function PredictionDiagnosticsPage() {
                     <div className="prediction-diagnostics-chart">
                       <ResponsiveContainer width="100%" height={320}>
                         <BarChart data={calibrationData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 116, 139, 0.2)" />
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--viz-grid)" />
                           <XAxis dataKey="label" />
                           <YAxis tickFormatter={(value) => `${Math.round(value * 100)}%`} />
                           <Tooltip
@@ -409,8 +409,8 @@ function PredictionDiagnosticsPage() {
                             labelFormatter={(value) => `Bucket ${value}`}
                           />
                           <Legend />
-                          <Bar dataKey="predictedRate" name="Predicted rate" fill="#93c5fd" radius={[6, 6, 0, 0]} />
-                          <Bar dataKey="observedRate" name="Observed rate" fill="#1d4ed8" radius={[6, 6, 0, 0]} />
+                          <Bar dataKey="predictedRate" name="Predicted rate" fill="var(--viz-muted)" radius={[6, 6, 0, 0]} />
+                          <Bar dataKey="observedRate" name="Observed rate" fill="var(--viz-1)" radius={[6, 6, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>

@@ -131,11 +131,11 @@ export const DATE_FORMATS = {
 
 // Colors (for charts and visualizations)
 export const CHART_COLORS = {
-  PRIMARY: '#0d6efd',
+  PRIMARY: '#157a3c',
   SUCCESS: '#198754',
   DANGER: '#dc3545',
   WARNING: '#ffc107',
-  INFO: '#0dcaf0',
+  INFO: '#52525b',
   LIGHT: '#f8f9fa',
   DARK: '#212529',
   BRAVES: {

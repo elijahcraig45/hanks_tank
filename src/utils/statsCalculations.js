@@ -88,7 +88,7 @@ export const getOPSRating = (ops) => {
   const opsValue = parseFloat(ops) || 0;
   
   if (opsValue >= 0.900) return { label: 'Elite', color: '#198754', tier: 'A+' };
-  if (opsValue >= 0.800) return { label: 'Excellent', color: '#0d6efd', tier: 'A' };
+  if (opsValue >= 0.800) return { label: 'Excellent', color: '#2f9e44', tier: 'A' };
   if (opsValue >= 0.750) return { label: 'Above Average', color: '#20c997', tier: 'B+' };
   if (opsValue >= 0.700) return { label: 'Average', color: '#ffc107', tier: 'B' };
   if (opsValue >= 0.650) return { label: 'Below Average', color: '#fd7e14', tier: 'C' };
@@ -102,7 +102,7 @@ export const getERARating = (era) => {
   const eraValue = parseFloat(era) || 99;
   
   if (eraValue <= 2.50) return { label: 'Elite', color: '#198754', tier: 'A+' };
-  if (eraValue <= 3.50) return { label: 'Excellent', color: '#0d6efd', tier: 'A' };
+  if (eraValue <= 3.50) return { label: 'Excellent', color: '#2f9e44', tier: 'A' };
   if (eraValue <= 4.00) return { label: 'Above Average', color: '#20c997', tier: 'B+' };
   if (eraValue <= 4.50) return { label: 'Average', color: '#ffc107', tier: 'B' };
   if (eraValue <= 5.00) return { label: 'Below Average', color: '#fd7e14', tier: 'C' };

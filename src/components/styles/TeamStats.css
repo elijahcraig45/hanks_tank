@@ -72,7 +72,7 @@ a.fw-bold:hover {
 }
 
 .dropdown-toggle:focus {
-  box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+  box-shadow: 0 0 0 0.2rem rgba(var(--brand-rgb), 0.25);
 }
 
 /* Ensure controls section has proper spacing and doesn't clip dropdowns */
@@ -99,7 +99,7 @@ a.fw-bold:hover {
 }
 
 .table tbody tr:hover {
-  background-color: rgba(0,123,255,0.1);
+  background-color: rgba(var(--brand-rgb), 0.1);
 }
 
 /* Sortable column headers */
@@ -199,8 +199,8 @@ div[style*="overflowX"] {
 }
 
 .search-input:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.2rem rgba(var(--brand-rgb), 0.25);
 }
 
 /* Responsive adjustments */
@@ -278,7 +278,7 @@ div[style*="overflowX"] {
 }
 
 .alert-info-custom {
-  background-color: #d1ecf1;
-  color: #0c5460;
-  border-left: 4px solid #17a2b8;
+  background-color: var(--surface-2);
+  color: var(--text);
+  border-left: 4px solid var(--accent);
 }

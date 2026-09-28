@@ -74,9 +74,9 @@
 }
 
 .status-chip--active {
-  background: #0d6efd;
-  border-color: #0d6efd;
-  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--text-on-accent);
 }
 
 /* ── Date picker ── */
@@ -95,8 +95,8 @@
   cursor: pointer;
 }
 .date-input:focus {
-  outline: 2px solid #0d6efd40;
-  border-color: #0d6efd;
+  outline: 2px solid rgba(var(--brand-rgb), .25);
+  border-color: var(--accent);
 }
 .date-nav-btn {
   background: none;
@@ -112,8 +112,8 @@
   background: var(--surface-2);
 }
 .date-today-btn {
-  background: #0d6efd;
-  color: #fff;
+  background: var(--accent);
+  color: var(--text-on-accent);
   border: none;
   border-radius: 6px;
   padding: 3px 10px;
@@ -122,7 +122,7 @@
   cursor: pointer;
 }
 .date-today-btn:hover {
-  background: #0b5ed7;
+  background: var(--accent-strong);
 }
 
 .game-card {
@@ -159,19 +159,19 @@
 
 .game-quick-link:hover {
   color: var(--accent);
-  border-color: rgba(13, 110, 253, 0.35);
+  border-color: rgba(var(--brand-rgb), 0.35);
 }
 
 .game-quick-link--primary {
-  background: #0d6efd;
-  border-color: #0d6efd;
-  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--text-on-accent);
 }
 
 .game-quick-link--primary:hover {
-  color: #fff;
-  background: #0b5ed7;
-  border-color: #0b5ed7;
+  color: var(--text-on-accent);
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
 }
 
 .game-grid-col {
@@ -336,10 +336,10 @@
   transition: width 0.4s ease;
 }
 
-.away-prob { background: #6c757d; }
-.home-prob { background: #0d6efd; }
-.prob-segment.predicted-winner.away-prob { background: #198754; }
-.prob-segment.predicted-winner.home-prob { background: #198754; }
+.away-prob { background: var(--viz-fill-muted); }
+.home-prob { background: var(--viz-fill-2); }
+.prob-segment.predicted-winner.away-prob { background: var(--viz-fill-1); }
+.prob-segment.predicted-winner.home-prob { background: var(--viz-fill-1); }
 
 .prob-label {
   color: #fff;

@@ -438,11 +438,11 @@ function ComparisonWorkbenchPage() {
                 <div className="comparison-workbench-chart">
                   <ResponsiveContainer width="100%" height={340}>
                     <BarChart data={leaderboardChartData} layout="vertical" margin={{ left: 8, right: 8 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(100, 116, 139, 0.2)" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--viz-grid)" />
                       <XAxis type="number" domain={[0, 100]} />
                       <YAxis type="category" dataKey="name" width={80} />
                       <Tooltip />
-                      <Bar dataKey="compositePercentile" name="Composite percentile" fill="#2563eb" radius={[0, 6, 6, 0]} />
+                      <Bar dataKey="compositePercentile" name="Composite percentile" fill="var(--viz-1)" radius={[0, 6, 6, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -564,6 +564,7 @@ function ComparisonWorkbenchPage() {
   );
 }
 
-const RADAR_COLORS = ['#2563eb', '#16a34a', '#f59e0b', '#7c3aed', '#dc2626'];
+// Categorical order from src/index.css (--viz-1…5), assigned in sequence, never cycled past 5.
+const RADAR_COLORS = ['var(--viz-1)', 'var(--viz-2)', 'var(--viz-3)', 'var(--viz-4)', 'var(--viz-5)'];
 
 export default ComparisonWorkbenchPage;
