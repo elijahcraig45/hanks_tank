@@ -7,6 +7,7 @@ import {
   CONFIDENCE_FILTERS, DISAGREEMENT_FILTERS, SORTS, disagreementOf, filterSortGames, hasDist,
   loadSportFavorites, toggleSportFavorite,
 } from '../../utils/unifiedPredictions';
+import StandInNotice from '../StandInNotice';
 import SaveResearchViewButton from '../analytics/SaveResearchViewButton';
 import UnifiedGameCard from './UnifiedGameCard';
 import { modelName } from './ModelRows';
@@ -191,6 +192,7 @@ export default function UnifiedSlatePage({ sport }) {
         </div>
       </header>
 
+      <StandInNotice sport={sport} data={data} />
       <div className="up-body">
         <div className="up-topbar">
           <SlateNav

@@ -1,0 +1,13 @@
+/* Automatic stand-in notice. Uses the same status tokens as SiteBanner (--warn), so it
+   works in both themes; the left border and the text carry the meaning, not colour alone. */
+.ht-standin {
+  padding: var(--space-3) var(--gutter);
+  border-bottom: 1px solid var(--border-strong);
+  border-left: 4px solid var(--warn);
+  background: var(--warn-soft);
+  color: var(--text);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+.ht-standin p { margin: 0; }
+.ht-standin-detail { margin-top: var(--space-1); opacity: .85; }

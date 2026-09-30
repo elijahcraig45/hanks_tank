@@ -5,6 +5,7 @@ import { SEASONS } from '../../config/constants';
 import {
   ROLE_LABEL, SPORT_INTRO, resolveModels, shortName,
 } from '../../config/modelRegistry';
+import StandInNotice from '../StandInNotice';
 import CalibrationChart, { sharedDomain } from './CalibrationChart';
 import TotalsPropsPanel from './TotalsPropsPanel';
 import { formatDate, formatTime, num, pct, signed, withCi } from './format';
@@ -463,6 +464,7 @@ export default function ModelsPage({
         </header>
       )}
 
+      <StandInNotice sport={sport} data={data} />
       <div className="mdl-body">
         {embedded && <p className="mdl-intro">{SPORT_INTRO[sport]}</p>}
 
