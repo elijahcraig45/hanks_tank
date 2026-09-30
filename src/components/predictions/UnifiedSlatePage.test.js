@@ -90,3 +90,32 @@ test('sorting by disagreement puts the widest spread first', async () => {
   const spreads = cards.map((c) => slate.games.find((g) => c.id === `game-${g.game_id}`).consensus.spread);
   expect([...spreads].sort((a, b) => b - a)).toEqual(spreads);
 });
+
+test('a model with no known short name shows by its API label in the selector and filter', async () => {
+  const zeta = { key: 'zeta', label: 'Zeta net', role: 'shadow', available: true };
+  apiService.getPredictionsSlate.mockResolvedValue({
+    ...slate,
+    models: [...slate.models, zeta],
+    games: slate.games.map((g) => ({ ...g, predictions: { ...g.predictions, zeta: { home_win_prob: 0.6, pregame: true } } })),
+  });
+  renderPage();
+  const cards = await screen.findAllByTestId('game-card');
+  expect(within(screen.getByLabelText('Featured model')).getByRole('option', { name: 'Zeta net' })).toBeInTheDocument();
+  expect(screen.getByRole('checkbox', { name: 'Zeta net' })).toBeInTheDocument();
+  expect(within(cards[0]).getByTestId('model-row-zeta')).toBeInTheDocument();
+});
+
+test('legacy prediction rows marked hidden (null fields) do not break the slate', async () => {
+  apiService.getPredictions.mockResolvedValue({
+    predictions: slate.games.map((g) => ({
+      game_pk: g.game_id, hidden: true, home_win_probability: null, away_win_probability: null,
+      predicted_winner: null, confidence_tier: null, lineup_confirmed: null,
+      home_starter_name: null, away_starter_name: null,
+    })),
+  });
+  renderPage();
+  const cards = await screen.findAllByTestId('game-card');
+  expect(cards).toHaveLength(slate.games.length);
+  expect(apiService.getPredictions).toHaveBeenCalled();
+  expect(screen.queryByText(/could not load/i)).toBeNull();
+});

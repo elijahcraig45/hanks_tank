@@ -32,7 +32,7 @@ export function FeaturedSelect({ models, value, onChange }) {
       <select value={value || ''} onChange={(e) => onChange(e.target.value)} aria-label="Featured model">
         {models.map((m) => (
           <option key={m.key} value={m.key} disabled={m.available === false}>
-            {m.label}{m.role === 'production' && !/production/i.test(m.label || '') ? ' (production)' : ''}{m.available === false ? ' — not available' : ''}
+            {m.label || m.key}{m.role === 'production' && !/production/i.test(m.label || '') ? ' (production)' : ''}{m.available === false ? ' — not available' : ''}
           </option>
         ))}
       </select>

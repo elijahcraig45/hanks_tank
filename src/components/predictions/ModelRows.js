@@ -88,8 +88,8 @@ export default function ModelRows({ rows, game, sport, featured, onOpenDetail })
             <span className="up-model-name">
               {isFeatured && <span className="up-star" title="Featured model" aria-label="Featured">★</span>}
               {model.learn
-                ? <a href={model.learn} title={`${model.label}: how it works`}>{name}</a>
-                : <span title={model.label}>{name}</span>}
+                ? <a href={model.learn} title={`${model.label || model.key}: how it works`}>{name}</a>
+                : <span title={model.label || model.key}>{name}</span>}
               <RoleTag role={model.role} />
             </span>
             {state === 'ok' ? (
