@@ -77,3 +77,18 @@ test('football margins read as "TEAM by N"', () => {
   render(<ModelRows rows={modelRowsFor(g, models.slice(0, 1))} game={g} sport="nfl" featured="v10" />);
   expect(screen.getByText('NYM by 3.5')).toBeInTheDocument();
 });
+
+test('a model with no known short name is named by its API label, then by its key', () => {
+  const unknown = [
+    { key: 'zeta', label: 'Zeta net', role: 'shadow', available: true },
+    { key: 'omega', role: 'shadow', available: true },
+  ];
+  const g = {
+    ...game,
+    predictions: { zeta: { home_win_prob: 0.6, pregame: true }, omega: { home_win_prob: 0.4, pregame: true } },
+  };
+  render(<ModelRows rows={modelRowsFor(g, unknown)} game={g} sport="mlb" featured="zeta" />);
+  expect(within(screen.getByTestId('model-row-zeta')).getByText('Zeta net')).toBeInTheDocument();
+  expect(within(screen.getByTestId('model-row-omega')).getByText('omega')).toBeInTheDocument();
+  expect(screen.queryByText('undefined')).toBeNull();
+});

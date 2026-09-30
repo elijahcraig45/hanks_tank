@@ -47,8 +47,24 @@ const formatDateLabel = (value) =>
     year: "numeric",
   });
 
+/**
+ * A short description of the model behind a board, for the page header. Only versions
+ * this page knows are described; anything else (a new or renamed model) prints nothing
+ * rather than a wrong description.
+ */
+export function modelVersionNote(version) {
+  const v = typeof version === "string" ? version.toLowerCase() : "";
+  if (v.includes("v10")) return " (lineup-aware matchup stack)";
+  if (v.includes("v8")) return " (Elo + Pythagorean ensemble)";
+  if (v.includes("v7")) return " (pitcher-venue stacked ensemble)";
+  return "";
+}
+
+/** The control plane hid this game's model: the game is listed with no prediction. */
+const isHiddenPrediction = (pred) => pred?.hidden === true;
+
 function generateWhyText(pred) {
-  if (!pred) return [];
+  if (!pred || isHiddenPrediction(pred)) return [];
   const isV8 = pred.model_version?.toLowerCase().includes("v8");
   return isV8 ? generateWhyV8(pred) : generateWhyV7(pred);
 }
@@ -385,6 +401,7 @@ function PredictionCard({ pred, game, favoriteTeams, onToggleFavorite }) {
   const awayLogoUrl = getTeamLogoUrl(awayId || awayMeta?.id);
   const homeLogoUrl = getTeamLogoUrl(homeId || homeMeta?.id);
 
+  const hidden = isHiddenPrediction(pred);
   const reasons = generateWhyText(pred);
 
   return (
@@ -393,7 +410,7 @@ function PredictionCard({ pred, game, favoriteTeams, onToggleFavorite }) {
         {/* Header: matchup + predicted winner */}
         <div className="pred-matchup-row">
           {/* Away */}
-          <div className={`pred-team-cell ${awayWins ? "pred-team-winner" : "pred-team-loser"}`}>
+          <div className={`pred-team-cell ${awayWins ? "pred-team-winner" : hidden ? "" : "pred-team-loser"}`}>
             {awayAbbr && (
               <button
                 type="button"
@@ -440,7 +457,7 @@ function PredictionCard({ pred, game, favoriteTeams, onToggleFavorite }) {
           <div className="pred-at text-muted">@</div>
 
           {/* Home */}
-          <div className={`pred-team-cell pred-team-cell--home ${homeWins ? "pred-team-winner" : "pred-team-loser"}`}>
+          <div className={`pred-team-cell pred-team-cell--home ${homeWins ? "pred-team-winner" : hidden ? "" : "pred-team-loser"}`}>
             {homeWins && <span className="pred-winner-crown">👑</span>}
             <div className="text-end">
               {homeAbbr ? (
@@ -532,18 +549,26 @@ function PredictionCard({ pred, game, favoriteTeams, onToggleFavorite }) {
             {pred.home_starter_name?.split(" ").slice(-1)[0] || "—"}
             {pred.home_starter_hand ? ` (${pred.home_starter_hand})` : ""}
           </div>
-          <ConfidencePill tier={pred.confidence_tier} lineupConfirmed={pred.lineup_confirmed} />
+          {!hidden && <ConfidencePill tier={pred.confidence_tier} lineupConfirmed={pred.lineup_confirmed} />}
         </div>
 
-        {/* Why / toggle */}
-        <button
-          className="pred-why-toggle mt-2 w-100 text-start"
-          onClick={() => setExpanded((e) => !e)}
-        >
-          {expanded ? "▲ Hide analysis" : "▼ Why this prediction?"}
-        </button>
+        {hidden && (
+          <div className="pred-hidden-note text-muted mt-2" style={{ fontSize: "0.875rem" }}>
+            No prediction is published for this game right now.
+          </div>
+        )}
 
-        {expanded && (
+        {/* Why / toggle */}
+        {!hidden && (
+          <button
+            className="pred-why-toggle mt-2 w-100 text-start"
+            onClick={() => setExpanded((e) => !e)}
+          >
+            {expanded ? "▲ Hide analysis" : "▼ Why this prediction?"}
+          </button>
+        )}
+
+        {!hidden && expanded && (
           <div className="pred-why-body mt-2">
             {reasons.map((r, i) => (
               <div key={i} className={`pred-reason pred-reason--${r.type}`}>
@@ -724,6 +749,10 @@ const PredictionsPage = () => {
       });
   }, [confidenceFilter, favoritesOnly, favoriteTeamSet, games, lineupOnly, predictions, searchTerm, sortMode]);
 
+  // The header names the model behind the first prediction that has one; games whose
+  // model is hidden carry no version, so they cannot name it.
+  const headerPrediction = filteredPredictions.find((p) => !isHiddenPrediction(p));
+
   // Summary stats
   const highConf = filteredPredictions.filter(
     (p) => p.confidence_tier?.toUpperCase() === "HIGH"
@@ -758,14 +787,8 @@ const PredictionsPage = () => {
           <div>
             <h3 className="fw-bold mb-0">Predictions</h3>
             <p className="text-muted mb-0" style={{ fontSize: "0.875rem" }}>
-              {filteredPredictions.length > 0
-                ? `Daily game outcome forecasts · ${filteredPredictions[0].model_version ?? "—"}${
-                    filteredPredictions[0].model_version?.toLowerCase().includes("v10")
-                      ? " (lineup-aware matchup stack)"
-                      : filteredPredictions[0].model_version?.toLowerCase().includes("v8")
-                        ? " (Elo + Pythagorean ensemble)"
-                        : " (pitcher-venue stacked ensemble)"
-                  }`
+              {headerPrediction
+                ? `Daily game outcome forecasts · ${headerPrediction.model_version ?? "—"}${modelVersionNote(headerPrediction.model_version)}`
                 : "Daily game outcome forecasts"}
             </p>
           </div>
