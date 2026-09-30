@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import PredictionsPage, { countActiveFilters } from './PredictionsPage';
+import PredictionsPage, { countActiveFilters, modelVersionNote } from './PredictionsPage';
 import apiService from '../services/api';
 
 jest.mock('../services/api', () => ({
@@ -136,4 +136,54 @@ describe('PredictionsPage filters on phones', () => {
 test('countActiveFilters ignores whitespace-only search', () => {
   expect(countActiveFilters({ searchTerm: '  ', confidenceFilter: 'all', lineupOnly: false, favoritesOnly: false })).toBe(0);
   expect(countActiveFilters({ searchTerm: 'BOS', confidenceFilter: 'LOW', lineupOnly: true, favoritesOnly: true })).toBe(4);
+});
+
+describe('PredictionsPage model description', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  const load = async (predictions) => {
+    apiService.getPredictions.mockResolvedValue({ predictions });
+    apiService.getGames.mockResolvedValue(mockSchedule);
+    renderPredictionsPage();
+    await waitFor(() => expect(screen.getByText('1 game')).toBeInTheDocument());
+  };
+
+  test('describes the versions it knows', () => {
+    expect(modelVersionNote('v10')).toBe(' (lineup-aware matchup stack)');
+    expect(modelVersionNote('V8_elo')).toBe(' (Elo + Pythagorean ensemble)');
+    expect(modelVersionNote('v7')).toBe(' (pitcher-venue stacked ensemble)');
+  });
+
+  test.each([undefined, null, '', 'zeta_2027', 'v9'])('prints nothing model-specific for %p', (version) => {
+    expect(modelVersionNote(version)).toBe('');
+  });
+
+  test('an unknown model_version is shown as-is, with no description', async () => {
+    await load([{ ...mockPrediction, model_version: 'zeta_2027' }]);
+    const head = screen.getByText(/Daily game outcome forecasts/);
+    expect(head).toHaveTextContent('Daily game outcome forecasts · zeta_2027');
+    expect(head.textContent).not.toMatch(/\(/);
+  });
+
+  test('v10 still gets its description', async () => {
+    await load([mockPrediction]);
+    expect(screen.getByText(/lineup-aware matchup stack/)).toBeInTheDocument();
+  });
+
+  test('a game whose model is hidden is listed with no numbers, pill or analysis', async () => {
+    await load([{
+      game_pk: 824776, hidden: true, model_version: null, confidence_tier: null,
+      home_win_probability: null, away_win_probability: null, predicted_winner: null,
+      lineup_confirmed: null,
+      away_team_name: 'Detroit Tigers', home_team_name: 'Boston Red Sox',
+    }]);
+    expect(screen.getByText('Boston Red Sox')).toBeInTheDocument();
+    expect(screen.getByText(/No prediction is published for this game/)).toBeInTheDocument();
+    expect(screen.queryByText(/Why this prediction/)).toBeNull();
+    expect(screen.queryByText('PROBABLE')).toBeNull();
+    expect(screen.queryByText(/0%/)).toBeNull();
+    expect(screen.getByText('Daily game outcome forecasts').tagName).toBe('P');
+  });
 });

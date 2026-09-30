@@ -422,6 +422,20 @@ class ApiService {
     return unwrapApiEnvelope(await this.get(`/models/${sport}/compare?${qs.toString()}`, { cacheTTL: 10 }));
   }
 
+  /**
+   * Site-wide status (per-sport banner set by the model control plane). Optional: an
+   * older backend has no such route, and any failure resolves to null so callers show
+   * nothing rather than an error.
+   */
+  // cacheTTL is in minutes: 0.5 = 30 s, matching the backend's control cache.
+  async getSiteStatus() {
+    try {
+      return unwrapApiEnvelope(await this.get('/site-status', { cacheTTL: 0.5 })) || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   /** MLB simulator run totals and starter strikeouts for one date (shadow). */
   /**
    * Unified predictions (contract v1): every model for every game on a slate, with the
