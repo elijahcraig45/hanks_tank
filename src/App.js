@@ -11,6 +11,7 @@ import PlayerBatting from './components/PlayerBatting';
 import PlayerPitching from './components/PlayerPitching';
 import AssistedAnalysis from './components/AssistedAnalysis';
 import Navbar from './components/Navbar';
+import SiteBanner from './components/SiteBanner';
 import TeamPitching from './components/TeamPitching';
 import TeamPage from './components/TeamPage';
 import PlayerPage from './components/PlayerPage';
@@ -77,6 +78,7 @@ function AppShell() {
       <RouteMetadata />
       <RecentViewTracker />
       <Navbar />
+      <SiteBanner />
       <main id="main" className="ht-main">
         <Routes>
           <Route path="/" element={<HomePage />} />

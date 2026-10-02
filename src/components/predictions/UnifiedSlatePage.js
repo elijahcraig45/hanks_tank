@@ -7,6 +7,7 @@ import {
   CONFIDENCE_FILTERS, DISAGREEMENT_FILTERS, SORTS, disagreementOf, filterSortGames, hasDist,
   loadSportFavorites, toggleSportFavorite,
 } from '../../utils/unifiedPredictions';
+import StandInNotice from '../StandInNotice';
 import SaveResearchViewButton from '../analytics/SaveResearchViewButton';
 import UnifiedGameCard from './UnifiedGameCard';
 import { modelName } from './ModelRows';
@@ -32,7 +33,7 @@ export function FeaturedSelect({ models, value, onChange }) {
       <select value={value || ''} onChange={(e) => onChange(e.target.value)} aria-label="Featured model">
         {models.map((m) => (
           <option key={m.key} value={m.key} disabled={m.available === false}>
-            {m.label}{m.role === 'production' && !/production/i.test(m.label || '') ? ' (production)' : ''}{m.available === false ? ' — not available' : ''}
+            {m.label || m.key}{m.role === 'production' && !/production/i.test(m.label || '') ? ' (production)' : ''}{m.available === false ? ' — not available' : ''}
           </option>
         ))}
       </select>
@@ -191,6 +192,7 @@ export default function UnifiedSlatePage({ sport }) {
         </div>
       </header>
 
+      <StandInNotice sport={sport} data={data} />
       <div className="up-body">
         <div className="up-topbar">
           <SlateNav

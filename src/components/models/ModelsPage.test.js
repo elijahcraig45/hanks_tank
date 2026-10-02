@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import ModelsPage from './ModelsPage';
 import CalibrationChart, { sharedDomain } from './CalibrationChart';
 import ApiService from '../../services/api';
-import { MODEL_CARDS, MODEL_ORDER } from '../../config/modelRegistry';
+import { MODEL_CARDS, MODEL_ORDER, resolveModels } from '../../config/modelRegistry';
 
 jest.mock('../../services/api', () => ({
   __esModule: true,
@@ -23,6 +23,7 @@ const mlbData = {
   models: [
     { key: 'v10', label: 'V10', role: 'production', available: true, rows: 80 },
     { key: 'elo', label: 'Elo', role: 'reference', available: true, rows: 80 },
+    { key: 'sim_blend', label: 'Blend', role: 'shadow', available: true, rows: 80 },
     { key: 'logit3', label: 'Logit', role: 'shadow', available: false, note: 'game_predictions_logit3 has not been created yet' },
     { key: 'market', label: 'Market', role: 'benchmark', available: false, backtest_only: true, note: 'No live MLB odds' },
   ],
@@ -103,6 +104,133 @@ describe('ModelsPage', () => {
     expect(links.some((h) => h === '/learn/mlb-pa-simulator.html')).toBe(true);
     expect(links).toContain('/mlb/models/diagnostics');
     expect(links).toContain('/mlb/models/scenario-simulator');
+  });
+});
+
+const withModels = (models, extra = {}) => ({ ...mlbData, ...extra, models });
+const cardIds = () => Array.from(document.querySelectorAll('.mdl-card')).map((el) => el.id);
+const headers = () => screen.getAllByRole('columnheader').map((h) => h.textContent);
+
+describe('ModelsPage driven by the API model list', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    ApiService.getMlbTotalsProps.mockResolvedValue({ available: false, note: 'n', games: [] });
+  });
+
+  test('a model the API omits (hidden) is not shown anywhere', async () => {
+    // elo is hidden: gone from the models list, the grid columns, calibration and cards.
+    ApiService.getModelsCompare.mockResolvedValue(withModels([
+      { key: 'v10', label: 'V10', role: 'production', available: true },
+    ], {
+      games: [{ ...mlbData.games[0], predictions: { v10: mlbData.games[0].predictions.v10 } }],
+    }));
+    renderPage({ sport: 'mlb' });
+    await screen.findByText(/Live scoreboard/);
+    expect(cardIds()).toEqual(['model-v10']);
+    expect(document.getElementById('model-elo')).toBeNull();
+    const grid = screen.getByTitle('New York Mets at Atlanta Braves').closest('table');
+    expect(within(grid).queryByRole('columnheader', { name: 'Elo' })).toBeNull();
+    expect(within(grid).getByRole('columnheader', { name: 'V10' })).toBeInTheDocument();
+  });
+
+  test('an unknown model gets a generic card from its API label, note and role', async () => {
+    ApiService.getModelsCompare.mockResolvedValue(withModels([
+      { key: 'v10', label: 'V10', role: 'production', available: true },
+      { key: 'zeta', label: 'Zeta net', role: 'shadow', available: true, note: 'An experiment <b>x</b>' },
+    ], {
+      games: [{ ...mlbData.games[0], predictions: {
+        v10: { home_win_probability: 0.56, pregame: true }, zeta: { home_win_probability: 0.6, pregame: true },
+      } }],
+    }));
+    renderPage({ sport: 'mlb' });
+    await screen.findByText(/Live scoreboard/);
+    const card = document.getElementById('model-zeta');
+    expect(card).not.toBeNull();
+    expect(within(card).getByRole('heading', { name: 'Zeta net' })).toBeInTheDocument();
+    expect(card).toHaveTextContent('An experiment <b>x</b>');
+    expect(card.querySelector('b')).toBeNull();
+    expect(within(card).getByText('Shadow')).toBeInTheDocument();
+    // The game grid names the column by the API label, not the raw key.
+    expect(headers()).toContain('Zeta net');
+  });
+
+  test('order follows the API, in cards and in the game grid', async () => {
+    ApiService.getModelsCompare.mockResolvedValue(withModels([
+      { key: 'elo', label: 'Elo', role: 'reference', available: true },
+      { key: 'sim_blend', label: 'Blend', role: 'shadow', available: true },
+      { key: 'v10', label: 'V10', role: 'production', available: true },
+    ]));
+    renderPage({ sport: 'mlb' });
+    await screen.findByText(/Live scoreboard/);
+    expect(cardIds()).toEqual(['model-elo', 'model-sim_blend', 'model-v10']);
+    const grid = screen.getByTitle('New York Mets at Atlanta Braves').closest('table');
+    const cols = within(grid).getAllByRole('columnheader').map((h) => h.textContent);
+    expect(cols.indexOf('Elo')).toBeLessThan(cols.indexOf('V10'));
+  });
+
+  test('API label and note override the card defaults for a known model', async () => {
+    ApiService.getModelsCompare.mockResolvedValue(withModels([
+      { key: 'v10', label: 'Main model', labelOverride: 'Main model', role: 'production', available: true, note: 'Temporarily on last month artifact', noteOverride: 'Temporarily on last month artifact' },
+    ]));
+    renderPage({ sport: 'mlb' });
+    await screen.findByText(/Live scoreboard/);
+    const card = document.getElementById('model-v10');
+    expect(within(card).getByRole('heading', { name: 'Main model' })).toBeInTheDocument();
+    expect(card).toHaveTextContent('Temporarily on last month artifact');
+    expect(card).toHaveTextContent('Inputs'); // still the full registry card
+  });
+
+  test('a default API label does not rename a known card (only an override does)', async () => {
+    ApiService.getModelsCompare.mockResolvedValue(withModels([
+      { key: 'v10', label: 'V10 (production)', role: 'production', available: true, note: 'default registry note' },
+    ]));
+    renderPage({ sport: 'mlb' });
+    await screen.findByText(/Live scoreboard/);
+    const card = document.getElementById('model-v10');
+    expect(within(card).queryByRole('heading', { name: 'V10 (production)' })).toBeNull();
+    expect(card).not.toHaveTextContent('default registry note');
+  });
+
+  test('an unavailable model keeps its card text; its note is the off-list reason', async () => {
+    ApiService.getModelsCompare.mockResolvedValue(mlbData);
+    renderPage({ sport: 'mlb' });
+    await screen.findByText(/game_predictions_logit3 has not been created yet/);
+    const card = document.getElementById('model-logit3');
+    expect(card).toHaveTextContent(MODEL_CARDS.mlb.logit3.role);
+    expect(card).not.toHaveTextContent('has not been created yet');
+  });
+
+  test('an empty API list shows no model cards; a missing one falls back to the registry', async () => {
+    ApiService.getModelsCompare.mockResolvedValue(withModels([]));
+    const { unmount } = renderPage({ sport: 'mlb' });
+    await screen.findByText(/Live scoreboard/);
+    expect(cardIds()).toEqual([]);
+    unmount();
+
+    const { models, ...noModels } = mlbData; // an old payload with no models[]
+    ApiService.getModelsCompare.mockResolvedValue(noModels);
+    renderPage({ sport: 'mlb' });
+    await screen.findByText(/Live scoreboard/);
+    expect(cardIds()).toEqual(MODEL_ORDER.mlb.map((k) => `model-${k}`));
+  });
+
+  test('resolveModels: registry order without an API list, API order and cards with one', () => {
+    expect(resolveModels('nfl', undefined).map((m) => m.key)).toEqual(MODEL_ORDER.nfl);
+    const r = resolveModels('nfl', [{ key: 'xgb' }, { key: 'nope', label: 'N' }, { key: 'xgb' }]);
+    expect(r.map((m) => m.key)).toEqual(['xgb', 'nope']);
+    expect(r[0].card).toBe(MODEL_CARDS.nfl.xgb);
+    expect(r[1].card).toBeNull();
+  });
+
+  test('the market keeps its benchmark badge and stays out of the live grid', async () => {
+    ApiService.getModelsCompare.mockResolvedValue(mlbData);
+    renderPage({ sport: 'mlb' });
+    await screen.findByText(/Live scoreboard/);
+    const card = document.getElementById('model-market');
+    expect(card).not.toBeNull();
+    expect(within(card).getByText('Backtest only')).toBeInTheDocument();
+    const grid = screen.getByTitle('New York Mets at Atlanta Braves').closest('table');
+    expect(within(grid).queryByRole('columnheader', { name: 'Market' })).toBeNull();
   });
 });
 

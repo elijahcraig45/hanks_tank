@@ -425,6 +425,27 @@ export function shortName(sport, key) {
   return short[key] || MODEL_CARDS[sport]?.[key]?.name || key;
 }
 
+/**
+ * The models to show for a sport, in order. The API's `models[]` (already filtered and
+ * ordered by the backend's control overlay) is the source of truth for WHICH models and
+ * their ORDER; MODEL_CARDS only enriches. A model with no card gets `card: null` and is
+ * described from its API label and note; a card whose model the API does not list is
+ * not shown. When the API sent no list at all (older backend, or before the data has
+ * loaded) the registry order is used, exactly as before the control plane existed.
+ */
+export function resolveModels(sport, apiModels) {
+  const cards = MODEL_CARDS[sport] || {};
+  if (!Array.isArray(apiModels)) {
+    return (MODEL_ORDER[sport] || []).filter((k) => cards[k]).map((k) => ({
+      key: k, label: cards[k].name, role: cards[k].status, card: cards[k], fromApi: false,
+    }));
+  }
+  const seen = new Set();
+  return apiModels
+    .filter((m) => m && typeof m.key === 'string' && m.key && !seen.has(m.key) && seen.add(m.key))
+    .map((m) => ({ ...m, card: cards[m.key] || null, fromApi: true }));
+}
+
 export const SPORT_INTRO = {
   mlb: 'Baseball is close to a coin flip: the best public models pick about 58% and the '
     + 'honest gap between our models is a few thousandths of a nat. That is why every number '
