@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ApiService from '../../services/api';
 import { SEASONS } from '../../config/constants';
 import {
-  MODEL_CARDS, MODEL_ORDER, ROLE_LABEL, SPORT_INTRO, shortName,
+  ROLE_LABEL, SPORT_INTRO, resolveModels, shortName,
 } from '../../config/modelRegistry';
+import StandInNotice from '../StandInNotice';
 import CalibrationChart, { sharedDomain } from './CalibrationChart';
 import TotalsPropsPanel from './TotalsPropsPanel';
 import { formatDate, formatTime, num, pct, signed, withCi } from './format';
@@ -28,6 +29,20 @@ import '../styles/Models.css';
 
 const SMALL = 100;
 
+/**
+ * Display names for model keys. Known models keep their registry short name; a model the
+ * registry has never heard of is named by its API label, so no column or legend shows a
+ * raw key.
+ */
+const NamesContext = createContext({});
+const nameFrom = (sport, labels) => (key) => {
+  const short = shortName(sport, key);
+  return short !== key ? short : (labels[key] || key);
+};
+function useName(sport) {
+  return nameFrom(sport, useContext(NamesContext));
+}
+
 const ROLE_SHORT = { benchmark: 'Benchmark', backtest: 'Backtest' };
 
 function RoleBadge({ role, short = false }) {
@@ -49,6 +64,7 @@ function Metric({ iv, kind }) {
 /* ── Scoreboard ──────────────────────────────────────────────────────── */
 
 function ScoreTable({ sport, rows, models, showSpread, showTotal, bestKey, caption }) {
+  const name = useName(sport);
   const status = Object.fromEntries((models || []).map((m) => [m.key, m]));
   return (
     <div className="mdl-table-wrap">
@@ -72,7 +88,7 @@ function ScoreTable({ sport, rows, models, showSpread, showTotal, bestKey, capti
             return (
               <tr key={key} className={key === bestKey ? 'is-best' : ''}>
                 <th scope="row">
-                  <span className="mdl-model-name">{shortName(sport, key)}</span>
+                  <span className="mdl-model-name">{name(key)}</span>
                   <RoleBadge role={s.role || r.role} short />
                   {(r.small_sample || (r.n != null && r.n > 0 && r.n < SMALL)) && (
                     <span className="mdl-small" title={`Fewer than ${SMALL} games`}>small n</span>
@@ -101,6 +117,7 @@ function bestOf(rows) {
 }
 
 function DeltaList({ sport, deltas, reference }) {
+  const name = useName(sport);
   if (!deltas?.length) return null;
   return (
     <ul className="mdl-deltas">
@@ -110,7 +127,7 @@ function DeltaList({ sport, deltas, reference }) {
         const better = g && g.value > 0;
         return (
           <li key={d.model}>
-            <strong>{shortName(sport, d.model)}</strong> vs {shortName(sport, d.reference || reference)}:{' '}
+            <strong>{name(d.model)}</strong> vs {name(d.reference || reference)}:{' '}
             <span className={`mdl-delta ${clear ? (better ? 'is-pos' : 'is-neg') : 'is-tie'}`}>
               {g ? signed(g.value) : '—'}
             </span>
@@ -127,13 +144,14 @@ function DeltaList({ sport, deltas, reference }) {
 }
 
 function UnavailableList({ sport, models }) {
+  const name = useName(sport);
   const off = (models || []).filter((m) => !m.available);
   if (!off.length) return null;
   return (
     <ul className="mdl-off">
       {off.map((m) => (
         <li key={m.key}>
-          <span className="mdl-model-name">{shortName(sport, m.key)}</span>
+          <span className="mdl-model-name">{name(m.key)}</span>
           <RoleBadge role={m.backtest_only ? 'backtest' : m.role} />
           <span className="mdl-off-note">{m.note || 'Not live yet.'}</span>
         </li>
@@ -146,7 +164,8 @@ function UnavailableList({ sport, models }) {
 
 function GameRows({ sport, data, onWeek, onDate }) {
   const live = (data.models || []).filter((m) => m.available).map((m) => m.key);
-  const order = MODEL_ORDER[sport].filter((k) => live.includes(k));
+  const name = useName(sport);
+  const order = live; // the API's order
   const games = data.games || [];
   const w = data.window || {};
   const shift = (days) => {
@@ -188,7 +207,7 @@ function GameRows({ sport, data, onWeek, onDate }) {
               <tr>
                 <th scope="col">Game</th>
                 <th scope="col" className="num">Result</th>
-                {order.map((k) => <th key={k} scope="col" className="num">{shortName(sport, k)}</th>)}
+                {order.map((k) => <th key={k} scope="col" className="num">{name(k)}</th>)}
                 <th scope="col" className="num" title="Highest minus lowest home-win probability across the models">Range</th>
               </tr>
             </thead>
@@ -236,6 +255,7 @@ function GameRows({ sport, data, onWeek, onDate }) {
 /* ── Calibration ─────────────────────────────────────────────────────── */
 
 function CalibrationGrid({ sport, calibration, keys, note }) {
+  const name = useName(sport);
   const sets = keys.map((k) => calibration?.[k] || []);
   const domain = sharedDomain(sets);
   return (
@@ -243,7 +263,7 @@ function CalibrationGrid({ sport, calibration, keys, note }) {
       {note && <p className="mdl-note">{note}</p>}
       <div className="mdl-cal-grid">
         {keys.map((k, i) => (
-          <CalibrationChart key={k} title={shortName(sport, k)} bins={sets[i]} domain={domain} />
+          <CalibrationChart key={k} title={name(k)} bins={sets[i]} domain={domain} />
         ))}
       </div>
     </>
@@ -253,6 +273,7 @@ function CalibrationGrid({ sport, calibration, keys, note }) {
 /* ── Backtest ────────────────────────────────────────────────────────── */
 
 function BacktestBox({ sport, backtest }) {
+  const name = useName(sport);
   const windows = backtest?.windows || [];
   const [idx, setIdx] = useState(0);
   if (!windows.length) return null;
@@ -287,7 +308,7 @@ function BacktestBox({ sport, backtest }) {
       />
       {w.deltas?.length > 0 && (
         <>
-          <h3 className="mdl-h3">Paired log-loss gain vs {shortName(sport, w.reference)} (positive = better)</h3>
+          <h3 className="mdl-h3">Paired log-loss gain vs {name(w.reference)} (positive = better)</h3>
           <DeltaList sport={sport} deltas={w.deltas} reference={w.reference} />
         </>
       )}
@@ -308,17 +329,43 @@ function liveLine(sport, key, data) {
     + `accuracy ${pct(r.accuracy?.value)}${r.n < SMALL ? ' (small sample)' : ''}.`;
 }
 
-function ModelCard({ sport, k, data }) {
-  const c = MODEL_CARDS[sport][k];
-  if (!c) return null;
+/** A model the registry has no card for: built from what the API says about it. */
+function GenericCard({ m, data, sport }) {
+  const live = liveLine(sport, m.key, data);
+  return (
+    <article className="mdl-card mdl-card--generic" id={`model-${m.key}`}>
+      <header>
+        <h3>{m.label || m.key}</h3>
+        <RoleBadge role={m.backtest_only ? 'backtest' : m.role} />
+      </header>
+      {m.note && <p className="mdl-card-role">{m.note}</p>}
+      {live && (
+        <>
+          <h4>Measured record</h4>
+          <ul className="mdl-record"><li><span className="mdl-tag">live</span>{live}</li></ul>
+        </>
+      )}
+    </article>
+  );
+}
+
+function ModelCard({ sport, m, data }) {
+  if (!m.card) return <GenericCard m={m} data={data} sport={sport} />;
+  const c = m.card;
+  const k = m.key;
   const live = liveLine(sport, k, data);
+  // The API label and note carry the site's overrides, so they win where present. An
+  // unavailable model's API note is the reason it is not live (shown in the scoreboard's
+  // off-list), not a description, so it does not replace the card text.
+  const title = m.labelOverride || c.name;
+  const roleLine = m.noteOverride || c.role;
   return (
     <article className="mdl-card" id={`model-${k}`}>
       <header>
-        <h3>{c.name}</h3>
+        <h3>{title}</h3>
         <RoleBadge role={c.status} />
       </header>
-      <p className="mdl-card-role">{c.role}</p>
+      <p className="mdl-card-role">{roleLine}</p>
       <p>{c.what}</p>
       <h4>Inputs</h4>
       <ul>{c.inputs.map((x) => <li key={x}>{x}</li>)}</ul>
@@ -378,10 +425,20 @@ export default function ModelsPage({
 
   const { data, loading, error } = state;
   const sb = data?.scoreboard;
-  const liveKeys = useMemo(() => (data?.models || []).filter((m) => m.available).map((m) => m.key), [data]);
-  const ordered = (rows) => [...(rows || [])].sort(
-    (a, b) => MODEL_ORDER[sport].indexOf(a.model) - MODEL_ORDER[sport].indexOf(b.model),
+  const resolved = useMemo(() => resolveModels(sport, data?.models), [sport, data]);
+  const labels = useMemo(
+    () => Object.fromEntries((data?.models || []).filter((m) => m?.key && m.label).map((m) => [m.key, m.label])),
+    [data],
   );
+  const names = nameFrom(sport, labels);
+  const liveKeys = useMemo(() => (data?.models || []).filter((m) => m.available).map((m) => m.key), [data]);
+  // Rows follow the API's model order; anything it does not list (the 53% home-rate line)
+  // goes last, in the order received.
+  const rank = (k) => {
+    const i = resolved.findIndex((m) => m.key === k);
+    return i < 0 ? resolved.length : i;
+  };
+  const ordered = (rows) => [...(rows || [])].sort((a, b) => rank(a.model) - rank(b.model));
   const perModel = ordered(sb?.per_model);
   const h2h = sb?.head_to_head;
   const showSpread = sport !== 'mlb';
@@ -389,6 +446,7 @@ export default function ModelsPage({
   const anySmall = perModel.some((r) => r.n > 0 && r.n < SMALL) || (h2h && h2h.games > 0 && h2h.games < SMALL);
 
   return (
+    <NamesContext.Provider value={labels}>
     <div className={`mdl-page${embedded ? ' mdl-page--embedded' : ''}`} data-sport={sport}>
       {!embedded && (
         <header className="ht-page-head">
@@ -406,6 +464,7 @@ export default function ModelsPage({
         </header>
       )}
 
+      <StandInNotice sport={sport} data={data} />
       <div className="mdl-body">
         {embedded && <p className="mdl-intro">{SPORT_INTRO[sport]}</p>}
 
@@ -470,7 +529,7 @@ export default function ModelsPage({
                   showTotal={showTotal}
                   bestKey={bestOf(h2h.rows)}
                 />
-                <h3 className="mdl-h3">Log-loss gain vs {shortName(sport, h2h.reference)} (positive = better)</h3>
+                <h3 className="mdl-h3">Log-loss gain vs {names(h2h.reference)} (positive = better)</h3>
                 <DeltaList sport={sport} deltas={h2h.deltas} reference={h2h.reference} />
               </section>
             )}
@@ -481,7 +540,7 @@ export default function ModelsPage({
                 <CalibrationGrid
                   sport={sport}
                   calibration={sb.calibration}
-                  keys={MODEL_ORDER[sport].filter((k) => liveKeys.includes(k))}
+                  keys={liveKeys}
                   note="When a model says 60%, does the home team win 60% of the time? Each dot is a group of games of equal size, sorted by the predicted probability."
                 />
               </section>
@@ -498,10 +557,11 @@ export default function ModelsPage({
         <section className="mdl-section" aria-labelledby="mdl-cards-h">
           <div className="mdl-section-head"><h2 id="mdl-cards-h">The models</h2></div>
           <div className="mdl-cards">
-            {MODEL_ORDER[sport].map((k) => <ModelCard key={k} sport={sport} k={k} data={data} />)}
+            {resolved.map((m) => <ModelCard key={m.key} sport={sport} m={m} data={data} />)}
           </div>
         </section>
       </div>
     </div>
+    </NamesContext.Provider>
   );
 }

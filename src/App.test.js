@@ -8,6 +8,7 @@ jest.mock('./components/PlayerBatting', () => () => <div>PlayerBatting</div>);
 jest.mock('./components/PlayerPitching', () => () => <div>PlayerPitching</div>);
 jest.mock('./components/AssistedAnalysis', () => () => <div>AssistedAnalysis</div>);
 jest.mock('./components/Navbar', () => () => <div>Mock Navbar</div>);
+jest.mock('./components/SiteBanner', () => () => null);
 jest.mock('./components/TeamPitching', () => () => <div>TeamPitching</div>);
 jest.mock('./components/TeamPage', () => () => <div>TeamPage</div>);
 jest.mock('./components/PlayerPage', () => () => <div>PlayerPage</div>);
