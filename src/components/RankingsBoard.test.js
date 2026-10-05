@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import RankingsBoard, { asOfLabel, shortDate, ResultsCell } from './RankingsBoard';
 import { DecompositionBar, orderLabel, signed } from './RankingRationale';
 import ApiService from '../services/api';
@@ -289,5 +289,65 @@ describe('results-only column', () => {
     expect(container.textContent).toBe('10 +30');
     rerender(<ResultsCell row={{ team: 'A', rank: 40, results_rank: null }} />);
     expect(container.textContent).toBe('—');
+  });
+});
+
+describe('meta.display', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  const rows = [
+    team({ team: 'Tech', rank: 70, results_rank: 130, season_rank: 90, forecast_rank: 60, resume_rank: 112, ap_rank: 5, coaches_rank: 6 }),
+    team({ team: 'Colorado', rank: 86, results_rank: 85, season_rank: 80, forecast_rank: 88, resume_rank: 65, ap_rank: null, coaches_rank: null }),
+  ];
+  const headers = () => screen.getAllByRole('columnheader').map((h) => h.textContent);
+  const load = async (display, data = rows) => {
+    ApiService.getRankings.mockResolvedValue({
+      data, meta: { count: data.length, season: 2026, ...(display === undefined ? {} : { display }) },
+    });
+    render(<RankingsBoard sport="cfb" season={2026} division="fbs" title="CFB" accent="ftbl" />);
+    await screen.findByText('Tech');
+  };
+
+  test('no display setting draws every column the data carries', async () => {
+    await load(undefined);
+    expect(headers()).toEqual(['#', 'Team', 'Rec', 'Rating', 'Rank range',
+      'Results', 'This season', 'Forecast', 'Resume', 'AP', 'Coaches']);
+    cleanup();
+    await load(null);
+    expect(headers()).toContain('Forecast');
+  });
+
+  test('show picks the custom columns and their order', async () => {
+    await load({ show: ['season', 'results'], media: null });
+    expect(headers().slice(5, 7)).toEqual(['This season', 'Results']);
+    expect(headers()).not.toContain('Forecast');
+    expect(headers()).not.toContain('Resume');
+    expect(headers()).toContain('AP');
+    expect(screen.getByText(/nothing carried over from last year/)).toBeInTheDocument();
+  });
+
+  test('an empty show list draws none, and no note', async () => {
+    await load({ show: [], media: null });
+    for (const h of ['Results', 'This season', 'Forecast', 'Resume']) {
+      expect(headers()).not.toContain(h);
+    }
+    expect(screen.queryByText(/not a forecast/)).not.toBeInTheDocument();
+  });
+
+  test('media filters the polls', async () => {
+    await load({ show: null, media: ['ap'] });
+    expect(headers()).toContain('AP');
+    expect(headers()).not.toContain('Coaches');
+    cleanup();
+    await load({ show: null, media: [] });
+    expect(headers()).not.toContain('AP');
+  });
+
+  test('a selected column the rows do not carry is not drawn; unknown keys are ignored', async () => {
+    const old = rows.map(({ season_rank, forecast_rank, resume_rank, ...r }) => r);
+    await load({ show: ['season', 'bogus', 'results'], media: null }, old);
+    expect(headers()).toContain('Results');
+    expect(headers()).not.toContain('This season');
+    expect(headers()).not.toContain('bogus');
   });
 });
