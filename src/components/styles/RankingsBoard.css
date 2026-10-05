@@ -544,3 +544,8 @@
   .rr-contrib-track { width: 32px; }
 }
 .rr-common th, .rr-common td { white-space: normal; }
+
+/* Where the results-only order disagrees with the rating by 10+ places. */
+.rb-delta { font-size: 0.68rem; margin-left: 0.15rem; }
+.rb-delta--up { color: var(--ht-green-600, #2e7d32); }
+.rb-delta--down { color: var(--ht-red-600, #c62828); }
