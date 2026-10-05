@@ -42,8 +42,35 @@ export function asOfLabel(meta) {
 }
 const dec = (v, d = 1) => (v == null || Number.isNaN(v) ? '—' : Number(v).toFixed(d));
 
+/** Where the results-only order puts a team, and how far that is from the rating's order.
+ * "+24" means the results order has the team 24 places higher than the rating does. Shown
+ * only when the two disagree by 10 or more, so the column stays quiet where they agree. */
+export const RESULTS_DISAGREEMENT = 10;
+export function ResultsCell({ row }) {
+  if (row.results_rank == null) return '—';
+  const delta = row.rank - row.results_rank;
+  const big = Math.abs(delta) >= RESULTS_DISAGREEMENT;
+  return (
+    <>
+      {row.results_rank}
+      {big && (
+        <span className={`rb-delta rb-delta--${delta > 0 ? 'up' : 'down'}`}
+              title={`The results order puts ${row.team} ${Math.abs(delta)} places ${delta > 0 ? 'higher' : 'lower'} than the rating does`}>
+          {delta > 0 ? ` +${delta}` : ` −${-delta}`}
+        </span>
+      )}
+    </>
+  );
+}
+
 /** Optional columns, rendered only where the sport actually supplies the data. */
 const OPTIONAL_COLUMNS = [
+  {
+    key: 'results_rank',
+    label: 'Results',
+    title: 'Results-only order: the ranking that contradicts the fewest games already played. Who has beaten whom, with no scores, no last season and no schedule model. A record, not a forecast.',
+    render: (r) => <ResultsCell row={r} />,
+  },
   { key: 'conference', label: 'Conf', title: 'Conference or division', render: (r) => r.conference || '—' },
   { key: 'ap_rank', label: 'AP', title: 'Associated Press poll', render: (r) => ord(r.ap_rank) },
   { key: 'coaches_rank', label: 'Coaches', title: 'AFCA Coaches poll', render: (r) => ord(r.coaches_rank) },
@@ -239,6 +266,17 @@ export default function RankingsBoard({
       </p>
 
       {meta?.note && <p className="rb-caveat">{meta.note}</p>}
+
+      {columns.some((c) => c.key === 'results_rank') && (
+        <p className="rb-note">
+          <strong>Results</strong> is a second order beside the rating. It uses only who has
+          beaten whom this season: the order that leaves the fewest games where a lower team
+          beat a higher one. It reads as a record, not a forecast: in past seasons it fit
+          98% of the games already played and picked the winners of the next three weeks
+          about 7 points less often than the rating (64% against 71%). Where the two
+          disagree by 10 or more places the gap is shown beside it.
+        </p>
+      )}
 
       {hasRationale && (
         <p className="rb-note">

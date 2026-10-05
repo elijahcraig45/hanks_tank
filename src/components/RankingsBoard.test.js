@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import RankingsBoard, { asOfLabel, shortDate } from './RankingsBoard';
+import RankingsBoard, { asOfLabel, shortDate, ResultsCell } from './RankingsBoard';
 import { DecompositionBar, orderLabel, signed } from './RankingRationale';
 import ApiService from '../services/api';
 
@@ -252,5 +252,42 @@ describe('board freshness label', () => {
   test('does not shift a date across the UTC boundary', () => {
     expect(shortDate('2026-03-01')).toBe('Mar 1');
     expect(shortDate(undefined)).toBeNull();
+  });
+});
+
+describe('results-only column', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  const rows = [
+    team({ team: 'Tech', rank: 70, rating: 424, results_rank: 130 }),
+    team({ team: 'Colorado', rank: 86, rating: 350, results_rank: 85 }),
+    team({ team: 'Idle', rank: 90, rating: 300, results_rank: null }),
+  ];
+
+  test('shows the results order beside the rating, with the gap where they disagree', async () => {
+    ApiService.getRankings.mockResolvedValue({ data: rows, meta: { count: 3, season: 2026 } });
+    render(<RankingsBoard sport="cfb" season={2026} division="fbs" title="CFB" accent="ftbl" />);
+
+    expect(await screen.findByText('Tech')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Results' })).toBeInTheDocument();
+    expect(screen.getByText(/−60/)).toBeInTheDocument();      // 70 -> 130: 60 places lower
+    expect(screen.queryByText(/\+1\b/)).not.toBeInTheDocument(); // 86 vs 85: too close to mark
+    expect(screen.getByText(/not a forecast/)).toBeInTheDocument();
+  });
+
+  test('is absent for a sport that does not publish it', async () => {
+    ApiService.getRankings.mockResolvedValue({
+      data: [team({ team: 'Brewers' })], meta: { count: 1, season: 2026 },
+    });
+    render(<RankingsBoard sport="mlb" season={2026} title="MLB" />);
+    expect(await screen.findByText('Brewers')).toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Results' })).not.toBeInTheDocument();
+  });
+
+  test('ResultsCell marks a big move up and a null as a dash', () => {
+    const { container, rerender } = render(<ResultsCell row={{ team: 'A', rank: 40, results_rank: 10 }} />);
+    expect(container.textContent).toBe('10 +30');
+    rerender(<ResultsCell row={{ team: 'A', rank: 40, results_rank: null }} />);
+    expect(container.textContent).toBe('—');
   });
 });
