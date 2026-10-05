@@ -42,12 +42,64 @@ export function asOfLabel(meta) {
 }
 const dec = (v, d = 1) => (v == null || Number.isNaN(v) ? '—' : Number(v).toFixed(d));
 
+/** Where a custom order puts a team, and how far that is from the rating's order.
+ * "+24" means that order has the team 24 places higher than the rating does. Shown
+ * only when the two disagree by 10 or more, so the column stays quiet where they agree. */
+export const RESULTS_DISAGREEMENT = 10;
+export function RankCell({ row, field }) {
+  if (row[field] == null) return '—';
+  const delta = row.rank - row[field];
+  const big = Math.abs(delta) >= RESULTS_DISAGREEMENT;
+  return (
+    <>
+      {row[field]}
+      {big && (
+        <span className={`rb-delta rb-delta--${delta > 0 ? 'up' : 'down'}`}
+              title={`This order puts ${row.team} ${Math.abs(delta)} places ${delta > 0 ? 'higher' : 'lower'} than the rating does`}>
+          {delta > 0 ? ` +${delta}` : ` −${-delta}`}
+        </span>
+      )}
+    </>
+  );
+}
+export const ResultsCell = ({ row }) => <RankCell row={row} field="results_rank" />;
+
+/** Our own orders that can sit beside the rating. Which ones are drawn is a site setting
+ * (`meta.display.show`, an ordered list of these keys); with no setting, every one the
+ * data carries is drawn, in this order. */
+export const CUSTOM_COLUMNS = [
+  {
+    id: 'results', key: 'results_rank', label: 'Results',
+    title: 'Results-only order: the ranking that contradicts the fewest games already played. Who has beaten whom, with no scores, no last season and no schedule model. A record, not a forecast.',
+    note: 'Results is a record of who has beaten whom this season (the fewest games where a lower team beat a higher one), not a forecast.',
+  },
+  {
+    id: 'season', key: 'season_rank', label: 'This season',
+    title: "Rank by this season's games only (no carry-over from last season), schedule-adjusted, margin-based",
+    note: "This season rates teams on this year's games alone, with nothing carried over from last year.",
+  },
+  {
+    id: 'forecast', key: 'forecast_rank', label: 'Forecast',
+    title: 'Rank by the earlier forecast weighting: last season counts for more',
+    note: 'Forecast is the earlier weighting, where last season counts for more.',
+  },
+  {
+    id: 'resume', key: 'resume_rank', label: 'Resume',
+    title: 'Rank by strength of record: wins above what an average team would win against this schedule',
+    note: 'Resume ranks teams by wins above what an average team would win against the same schedule.',
+  },
+].map((c) => ({ ...c, render: (r) => <RankCell row={r} field={c.key} /> }));
+
+/** Media polls, filtered by `meta.display.media` (poll ids). */
+const MEDIA_COLUMNS = [
+  { key: 'ap_rank', media: 'ap', label: 'AP', title: 'Associated Press poll', render: (r) => ord(r.ap_rank) },
+  { key: 'coaches_rank', media: 'coaches', label: 'Coaches', title: 'AFCA Coaches poll', render: (r) => ord(r.coaches_rank) },
+  { key: 'fcs_coaches_rank', media: 'coaches', label: 'Coaches', title: 'FCS Coaches poll', render: (r) => ord(r.fcs_coaches_rank) },
+];
+
 /** Optional columns, rendered only where the sport actually supplies the data. */
 const OPTIONAL_COLUMNS = [
   { key: 'conference', label: 'Conf', title: 'Conference or division', render: (r) => r.conference || '—' },
-  { key: 'ap_rank', label: 'AP', title: 'Associated Press poll', render: (r) => ord(r.ap_rank) },
-  { key: 'coaches_rank', label: 'Coaches', title: 'AFCA Coaches poll', render: (r) => ord(r.coaches_rank) },
-  { key: 'fcs_coaches_rank', label: 'Coaches', title: 'FCS Coaches poll', render: (r) => ord(r.fcs_coaches_rank) },
   { key: 'sor_rank', label: 'SOR', title: 'Strength of record rank: wins against this schedule relative to what an average team would expect (ESPN FPI for college; computed from these ratings where ESPN publishes none)', render: (r) => ord(r.sor_rank) },
   { key: 'sos_rank', label: 'SOS', title: 'Strength of schedule rank (ESPN FPI)', render: (r) => ord(r.sos_rank) },
   { key: 'fpi', label: 'FPI', title: "ESPN's Football Power Index", render: (r) => dec(r.fpi, 1) },
@@ -98,11 +150,21 @@ export default function RankingsBoard({
     return () => { cancelled = true; };
   }, [sport, season, division, limit]);
 
-  // Only keep an optional column if some team actually has a value for it.
-  const columns = useMemo(
-    () => OPTIONAL_COLUMNS.filter((c) => rows.some((r) => r[c.key] != null)),
-    [rows]
-  );
+  // Only keep an optional column if some team actually has a value for it. The site
+  // setting `meta.display` narrows the custom orders (ordered) and the media polls; absent
+  // or null means no setting, so every column the data carries is drawn as before.
+  const display = meta?.display || null;
+  const columns = useMemo(() => {
+    const has = (c) => rows.some((r) => r[c.key] != null);
+    const show = Array.isArray(display?.show) ? display.show : null;
+    const media = Array.isArray(display?.media) ? display.media : null;
+    const custom = show
+      ? show.map((id) => CUSTOM_COLUMNS.find((c) => c.id === id)).filter(Boolean)
+      : CUSTOM_COLUMNS;
+    const polls = media ? MEDIA_COLUMNS.filter((c) => media.includes(c.media)) : MEDIA_COLUMNS;
+    const [conf, ...rest] = OPTIONAL_COLUMNS;
+    return [...custom, conf, ...polls, ...rest].filter(has);
+  }, [rows, display]);
 
   // Conferences present on this board, so the picker never offers an empty option.
   const conferences = useMemo(() => {
@@ -239,6 +301,16 @@ export default function RankingsBoard({
       </p>
 
       {meta?.note && <p className="rb-caveat">{meta.note}</p>}
+
+      {columns.some((c) => c.id) && (
+        <p className="rb-note">
+          {columns.filter((c) => c.id).map((c) => c.note).join(' ')}
+          {columns.some((c) => c.id === 'results') && (
+            ' In past seasons the results order fit 98% of the games already played and picked the winners of the next three weeks about 7 points less often than the rating (64% against 71%).'
+          )}
+          {' '}Where an order differs from the rating by 10 or more places the gap is shown beside it.
+        </p>
+      )}
 
       {hasRationale && (
         <p className="rb-note">
