@@ -459,6 +459,20 @@ class ApiService {
     return unwrapApiEnvelope(raw);
   }
 
+  /**
+   * College football scouting report for one week: per game, the pick, market, ranking
+   * context, key players and injuries. Unlike most calls this keeps `meta` (data
+   * freshness and the injury-source note), merged in beside the unwrapped data.
+   */
+  async getCfbScouting({ season, week, division } = {}) {
+    const qs = new URLSearchParams();
+    if (season) qs.set('season', season);
+    if (week) qs.set('week', week);
+    if (division) qs.set('division', division);
+    const raw = await this.get(`/football/cfb/scouting?${qs.toString()}`, { cacheTTL: 10 });
+    return { ...unwrapApiEnvelope(raw), meta: raw?.meta || {} };
+  }
+
   /** Player stat projections (MLB only for now; football answers `available: false`). */
   async getPlayerProjections(sport, { date, gameId, season, week, division } = {}) {
     if (process.env.REACT_APP_PREDICTIONS_MOCKS === 'true') {
