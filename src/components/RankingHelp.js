@@ -15,7 +15,7 @@ export const HELP = {
   record: 'Win–loss record this season.',
   resume: 'Strength of record. How this team\'s results compare with what a typical top-25 team would have managed against the '
     + 'same schedule, home and away. Above 0 is better than that. Beating strong opponents counts the most, beating weak ones '
-    + 'almost nothing, and a big margin helps a little.',
+    + 'almost nothing. The margin of victory refines each result, but a win never scores below zero.',
   range: 'How firm this rank is. After a few games, teams with very similar records cannot really be told apart. This is the '
     + 'range of places the team could reasonably hold; “firm” means no other team is close enough to swap with it. '
     + 'Head-to-head results decide the order inside a range.',

@@ -70,6 +70,6 @@ export function ResumeGames({ row }) {
 
 export const RESUME_NOTE = 'Ranked by season resume: who has earned it, not who would win next week. Each game is scored against '
   + 'what a typical top-25 team would do against that opponent, so wins over strong teams count most and beating weak ones '
-  + 'almost nothing; a small margin credit joins the result. After only a few games many records are too close to separate, '
+  + 'almost nothing; a bounded margin credit refines each result, and a win never scores below zero. After only a few games many records are too close to separate, '
   + 'so the Range column shows the places a team could reasonably hold, and head-to-head results decide the order inside it. '
   + 'The next-week rating, which is the forecast, is shown beside it.';
