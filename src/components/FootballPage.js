@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import ApiService from '../services/api';
 import ScoreboardSection from './football/ScoreboardSection';
+import CfbScoutingSection from './football/CfbScoutingSection';
 import RankingsBoard from './RankingsBoard';
 import FootballDiagnostics from './FootballDiagnostics';
 import ModelsPage from './models/ModelsPage';
@@ -32,6 +33,8 @@ export const SECTIONS = [
   { key: 'picks', label: 'Picks' },
   // College only for now: the live feed behind it publishes no NFL data.
   { key: 'scoreboard', label: 'Scores', availableFor: (l) => l.sport === 'cfb' },
+  // Per-game report: picks, rankings, key players, injuries. College only.
+  { key: 'scouting', label: 'Scouting report', availableFor: (l) => l.sport === 'cfb' },
   { key: 'rankings', label: 'Power Rankings' },
   // Rest-of-season Monte Carlo (shadow). NFL and FBS only: the sim fills the CFP field,
   // which FCS does not feed.
@@ -1162,6 +1165,7 @@ export default function FootballPage() {
         {section === 'scoreboard' && (
           <ScoreboardSection league={league} season={season} />
         )}
+        {section === 'scouting' && <CfbScoutingSection league={league} season={season} />}
         {section === 'stats' && <StatsSection league={league} season={season} />}
 
         <p className="ft-foot">

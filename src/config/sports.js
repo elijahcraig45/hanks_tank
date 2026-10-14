@@ -70,6 +70,7 @@ export const FOOTBALL_SECTION_GROUP = {
   predictions: 'predictions',
   'predictions/players': 'predictions',
   picks: 'predictions',
+  scouting: 'predictions',
   scoreboard: 'scores',
   rankings: 'rankings',
   projections: 'rankings',
