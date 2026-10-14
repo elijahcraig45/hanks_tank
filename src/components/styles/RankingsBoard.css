@@ -549,3 +549,24 @@
 .rb-delta { font-size: 0.68rem; margin-left: 0.15rem; }
 .rb-delta--up { color: var(--ht-green-600, #2e7d32); }
 .rb-delta--down { color: var(--ht-red-600, #c62828); }
+
+/* Season-resume order: toggle, tie marker, rating sub-rank, per-game credits */
+.rb-order { display: inline-flex; gap: 0; margin: 0.4rem 0 0.6rem; border: 1px solid var(--ht-gray-300, #d0d5dd); border-radius: 6px; overflow: hidden; }
+.rb-order-btn {
+  background: none; border: none; padding: 0.35rem 0.8rem; font: inherit; font-size: 0.78rem; font-weight: 600;
+  color: var(--text-muted); cursor: pointer;
+}
+.rb-order-btn + .rb-order-btn { border-left: 1px solid var(--ht-gray-300, #d0d5dd); }
+.rb-order-btn--on { background: var(--accent); color: #fff; }
+.rb-order-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.rb-tie { font-size: 0.74rem; color: var(--text-2); white-space: nowrap; }
+.rb-tie--clear { color: var(--text-muted); }
+.rb-subrank { font-size: 0.7rem; color: var(--text-muted); margin-left: 0.2rem; }
+.rb-games { margin-top: 6px; overflow-x: auto; }
+.rb-games-table { border-collapse: collapse; font-size: 0.74rem; min-width: 320px; }
+.rb-games-caption { text-align: left; font-size: 0.72rem; color: var(--text-muted); max-width: 90ch; padding-bottom: 4px; caption-side: top; }
+.rb-games-table th { text-align: left; font-weight: 600; color: var(--text-muted); padding: 2px 12px 2px 0; }
+.rb-games-table td { padding: 2px 12px 2px 0; }
+.rb-games-table tfoot td { border-top: 1px solid var(--ht-gray-300, #d0d5dd); font-weight: 600; }
+.rb-credit--up { color: var(--ht-green-600, #2e7d32); }
+.rb-credit--down { color: var(--ht-red-600, #c62828); }

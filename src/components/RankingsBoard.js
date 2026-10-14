@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import ApiService from '../services/api';
 import RankBand from './RankBand';
 import { ComparePicker, OrderChip, PairExplanation, TeamRationale } from './RankingRationale';
+import { RESUME_NOTE, ResumeGames, TieCell, sor as fmtSor } from './RankingResume';
 import './styles/RankingsBoard.css';
 
 /**
@@ -46,16 +47,16 @@ const dec = (v, d = 1) => (v == null || Number.isNaN(v) ? '—' : Number(v).toFi
  * "+24" means that order has the team 24 places higher than the rating does. Shown
  * only when the two disagree by 10 or more, so the column stays quiet where they agree. */
 export const RESULTS_DISAGREEMENT = 10;
-export function RankCell({ row, field }) {
+export function RankCell({ row, field, base = 'rank' }) {
   if (row[field] == null) return '—';
-  const delta = row.rank - row[field];
+  const delta = row[base] - row[field];
   const big = Math.abs(delta) >= RESULTS_DISAGREEMENT;
   return (
     <>
       {row[field]}
       {big && (
         <span className={`rb-delta rb-delta--${delta > 0 ? 'up' : 'down'}`}
-              title={`This order puts ${row.team} ${Math.abs(delta)} places ${delta > 0 ? 'higher' : 'lower'} than the rating does`}>
+              title={`This order puts ${row.team} ${Math.abs(delta)} places ${delta > 0 ? 'higher' : 'lower'} than ${base === 'rank' ? 'the rating does' : 'the resume does'}`}>
           {delta > 0 ? ` +${delta}` : ` −${-delta}`}
         </span>
       )}
@@ -127,6 +128,8 @@ export default function RankingsBoard({
   // Which team's rationale is open, and which "why above #N+1" panel is open.
   const [openTeam, setOpenTeam] = useState(null);
   const [openPair, setOpenPair] = useState(null);
+  // null = follow the site setting (meta.display.primary); a visitor's choice overrides it until the board changes.
+  const [order, setOrder] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -135,6 +138,7 @@ export default function RankingsBoard({
       setExpanded(false);
       setOpenTeam(null);
       setOpenPair(null);
+      setOrder(null);
       setError(null);
       try {
         const res = await ApiService.getRankings(sport, { season, division, limit });
@@ -154,17 +158,29 @@ export default function RankingsBoard({
   // setting `meta.display` narrows the custom orders (ordered) and the media polls; absent
   // or null means no setting, so every column the data carries is drawn as before.
   const display = meta?.display || null;
+  const hasResume = useMemo(() => rows.some((r) => r.resume_rank != null), [rows]);
+  const resumeMode = hasResume && (order ?? display?.primary ?? 'rating') === 'resume';
   const columns = useMemo(() => {
     const has = (c) => rows.some((r) => r[c.key] != null);
     const show = Array.isArray(display?.show) ? display.show : null;
     const media = Array.isArray(display?.media) ? display.media : null;
-    const custom = show
+    let custom = show
       ? show.map((id) => CUSTOM_COLUMNS.find((c) => c.id === id)).filter(Boolean)
       : CUSTOM_COLUMNS;
+    if (resumeMode) {
+      // The resume is the table's own order now, so it is not also a column; the others read against it.
+      custom = custom.filter((c) => c.id !== 'resume')
+        .map((c) => ({ ...c, render: (r) => <RankCell row={r} field={c.key} base="resume_rank" /> }));
+    }
     const polls = media ? MEDIA_COLUMNS.filter((c) => media.includes(c.media)) : MEDIA_COLUMNS;
     const [conf, ...rest] = OPTIONAL_COLUMNS;
     return [...custom, conf, ...polls, ...rest].filter(has);
-  }, [rows, display]);
+  }, [rows, display, resumeMode]);
+
+  // The rows in the order the table is numbered by. Teams with no game this season have no resume and go last.
+  const view = useMemo(() => (resumeMode
+    ? [...rows].sort((a, b) => (a.resume_rank ?? 1e9) - (b.resume_rank ?? 1e9) || a.rank - b.rank)
+    : rows), [rows, resumeMode]);
 
   // Conferences present on this board, so the picker never offers an empty option.
   const conferences = useMemo(() => {
@@ -173,23 +189,25 @@ export default function RankingsBoard({
   }, [rows]);
 
   const inConference = useMemo(
-    () => (conference === 'all' ? rows : rows.filter((r) => r.conference === conference)),
-    [rows, conference]
+    () => (conference === 'all' ? view : view.filter((r) => r.conference === conference)),
+    [view, conference]
   );
 
   const filtering = conference !== 'all';
   const shown = filtering
     ? inConference
-    : (expanded ? rows : rows.slice(0, 25));
-  const hasRationale = rows.some((r) => r.summary);
+    : (expanded ? view : view.slice(0, 25));
+  const hasRationale = rows.some((r) => (resumeMode ? r.resume_summary : r.summary));
 
+  const strength = (r) => (resumeMode ? r.resume_sor : r.rating);
   const scale = useMemo(() => {
-    if (!rows.length) return { top: 1, floor: 0 };
-    const top = rows[0].rating;
-    const floor = rows[Math.min(rows.length, 25) - 1].rating;
-    const pad = Math.max(Math.abs(top - floor) * 0.15, 1);
-    return { top, floor: floor - pad };
-  }, [rows]);
+    if (!view.length) return { top: 1, floor: 0 };
+    const val = (r) => (resumeMode ? r.resume_sor : r.rating);
+    const top = Math.max(...view.slice(0, 25).map((r) => val(r) ?? -Infinity));
+    const floor = view[Math.min(view.length, 25) - 1] ? val(view[Math.min(view.length, 25) - 1]) : top;
+    const pad = Math.max(Math.abs(top - floor) * 0.15, resumeMode ? 0.05 : 1);
+    return { top, floor: (floor ?? top) - pad };
+  }, [view, resumeMode]);
 
   if (loading) return <div className="rb-state">Loading rankings…</div>;
   if (error) return <div className="rb-state rb-state--error">{error}</div>;
@@ -206,20 +224,21 @@ export default function RankingsBoard({
     );
   }
 
-  const width = (r) =>
-    Math.max(3, ((r.rating - scale.floor) / (scale.top - scale.floor)) * 100);
+  const width = (r) => (strength(r) == null || scale.top === scale.floor ? 3
+    : Math.max(3, ((strength(r) - scale.floor) / (scale.top - scale.floor)) * 100));
 
-  const span = 5 + columns.length;
+  const span = (resumeMode ? 6 : 5) + columns.length;
   const nextOf = (r) => rows.find((x) => x.rank === r.rank + 1 && x.team === r.vs_next?.b);
 
   const Row = ({ r }) => {
     const isOpen = openTeam === r.team;
     const pairOpen = openPair === r.team;
-    const next = r.vs_next ? nextOf(r) || { rank: r.vs_next.b_rank, team: r.vs_next.b } : null;
+    const next = !resumeMode && r.vs_next ? nextOf(r) || { rank: r.vs_next.b_rank, team: r.vs_next.b } : null;
+    const summary = resumeMode ? r.resume_summary : r.summary;
     return (
       <>
         <tr className={`rb-row${isOpen ? ' rb-row--open' : ''}`}>
-          <td className="rb-num">{r.rank}</td>
+          <td className="rb-num">{resumeMode ? ord(r.resume_rank) : r.rank}</td>
           <td className="rb-team">
             <span className="rb-name">{r.team}</span>
             <span className="rb-strength">
@@ -228,22 +247,34 @@ export default function RankingsBoard({
             </span>
           </td>
           <td className="rb-mono">{r.record}</td>
-          <td className="rb-mono rb-rating">{Math.round(r.rating)}</td>
-          <td className="rb-mono rb-range">
-            <span className="rb-range-text">
-              {r.rank_p05 != null ? `${r.rank_p05}–${r.rank_p95}` : '—'}
-            </span>
-            <RankBand rank={r.rank} lo={r.rank_p05} hi={r.rank_p95} total={rows.length} />
-          </td>
+          {resumeMode ? (
+            <>
+              <td className="rb-mono rb-rating" title="Strength of record">{r.resume_sor == null ? '—' : fmtSor(r.resume_sor)}</td>
+              <td className="rb-mono"><TieCell row={r} /></td>
+              <td className="rb-mono rb-range" title="Next-week rating, and where it ranks this team">
+                {Math.round(r.rating)} <span className="rb-subrank">#{r.rank}</span>
+              </td>
+            </>
+          ) : (
+            <>
+              <td className="rb-mono rb-rating">{Math.round(r.rating)}</td>
+              <td className="rb-mono rb-range">
+                <span className="rb-range-text">
+                  {r.rank_p05 != null ? `${r.rank_p05}–${r.rank_p95}` : '—'}
+                </span>
+                <RankBand rank={r.rank} lo={r.rank_p05} hi={r.rank_p95} total={rows.length} />
+              </td>
+            </>
+          )}
           {columns.map((c) => (
             <td key={c.key} className="rb-mono">{c.render(r)}</td>
           ))}
         </tr>
-        {r.summary && (
+        {summary && (
           <tr className="rb-sumrow">
             <td colSpan={span}>
               <div className="rb-sum">
-                <p className="rb-summary">{r.summary}</p>
+                <p className="rb-summary">{summary}</p>
                 <div className="rb-sum-actions">
                   <button type="button" className="rb-link" aria-expanded={isOpen}
                           onClick={() => setOpenTeam(isOpen ? null : r.team)}>
@@ -258,10 +289,12 @@ export default function RankingsBoard({
                   )}
                 </div>
                 {pairOpen && <PairExplanation pair={r.vs_next} sport={sport} />}
-                {isOpen && (
-                  <TeamRationale row={r} rows={rows} season={season} model={meta?.model}
-                                 boardSize={rows.length} />
-                )}
+                {isOpen && (resumeMode
+                  ? <ResumeGames row={r} />
+                  : (
+                    <TeamRationale row={r} rows={rows} season={season} model={meta?.model}
+                                   boardSize={rows.length} />
+                  ))}
               </div>
             </td>
           </tr>
@@ -288,6 +321,20 @@ export default function RankingsBoard({
         </div>
       )}
 
+      {hasResume && (
+        <div className="rb-order" role="group" aria-label="Order the table by">
+          <button type="button" className={`rb-order-btn${resumeMode ? ' rb-order-btn--on' : ''}`}
+                  aria-pressed={resumeMode} onClick={() => setOrder('resume')}
+                  title="Who has earned it: results against schedule strength">Season resume</button>
+          <button type="button" className={`rb-order-btn${!resumeMode ? ' rb-order-btn--on' : ''}`}
+                  aria-pressed={!resumeMode} onClick={() => setOrder('rating')}
+                  title="Who would win next week: the forecast rating">Next-week rating</button>
+        </div>
+      )}
+
+      {resumeMode && <p className="rb-note">{RESUME_NOTE}</p>}
+
+      {!resumeMode && (
       <p className="rb-note">
         One global fit over every game rather than a week-by-week rating walk, so the
         result does not depend on the order games were played.
@@ -299,6 +346,7 @@ export default function RankingsBoard({
         {' '}<strong>Rank range</strong> is a bootstrap over resampled seasons — where it
         is wide, that rank is not meaningfully separated from its neighbours.
       </p>
+      )}
 
       {meta?.note && <p className="rb-caveat">{meta.note}</p>}
 
@@ -308,11 +356,11 @@ export default function RankingsBoard({
           {columns.some((c) => c.id === 'results') && (
             ' In past seasons the results order fit 98% of the games already played and picked the winners of the next three weeks about 7 points less often than the rating (64% against 71%).'
           )}
-          {' '}Where an order differs from the rating by 10 or more places the gap is shown beside it.
+          {' '}Where an order differs from {resumeMode ? 'the resume' : 'the rating'} by 10 or more places the gap is shown beside it.
         </p>
       )}
 
-      {hasRationale && (
+      {hasRationale && !resumeMode && (
         <p className="rb-note">
           <strong>Why each team is where it is</strong> comes from the same fit: how much of
           the rating was carried over from last season, what each game was worth to it, and
@@ -323,7 +371,7 @@ export default function RankingsBoard({
         </p>
       )}
 
-      {hasRationale && rows.length > 1 && (
+      {hasRationale && !resumeMode && rows.length > 1 && (
         <ComparePicker rows={rows} sport={sport} season={season} />
       )}
 
@@ -353,8 +401,18 @@ export default function RankingsBoard({
               <th>#</th>
               <th>Team</th>
               <th>Rec</th>
-              <th>Rating</th>
-              <th title="5th–95th percentile rank across bootstrap resamples">Rank range</th>
+              {resumeMode ? (
+                <>
+                  <th title="Strength of record: results against what a typical top-25 team would do on this schedule">Resume</th>
+                  <th title="The range of places this team's record is statistically tied with">Tied</th>
+                  <th title="The forecast rating, and the place it gives this team">Next-week rating</th>
+                </>
+              ) : (
+                <>
+                  <th>Rating</th>
+                  <th title="5th–95th percentile rank across bootstrap resamples">Rank range</th>
+                </>
+              )}
               {columns.map((c) => <th key={c.key} title={c.title}>{c.label}</th>)}
             </tr>
           </thead>
