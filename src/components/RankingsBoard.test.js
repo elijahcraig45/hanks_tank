@@ -379,7 +379,7 @@ describe('RankingsBoard: season-resume order', () => {
     await load(undefined);
     expect(names()[0]).toMatch(/^1Bama/);
     expect(screen.getByRole('columnheader', { name: /Rank range/ })).toBeInTheDocument();
-    expect(screen.queryByRole('columnheader', { name: /^Tied$/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: /^Range/ })).not.toBeInTheDocument();
   });
 
   test('a resume setting numbers and sorts the table by resume, teams without games last', async () => {
@@ -392,12 +392,13 @@ describe('RankingsBoard: season-resume order', () => {
 
   test('resume mode shows strength of record, the tie range and the rating with its own rank', async () => {
     await load('resume');
-    expect(screen.getByRole('columnheader', { name: /^Resume$/ })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /^Resume/ })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /^Range/ })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: /Next-week rating/ })).toBeInTheDocument();
     expect(screen.queryByRole('columnheader', { name: /Rank range/ })).not.toBeInTheDocument();
     expect(screen.getByText('+1.22')).toBeInTheDocument();
     expect(screen.getByText('#1–#9')).toBeInTheDocument();
-    expect(screen.getByText('clear')).toBeInTheDocument();          // UGA: nobody tied with it
+    expect(screen.getByText('firm')).toBeInTheDocument();           // UGA: no other record close enough to swap with it
     expect(screen.getByText('#4')).toBeInTheDocument();             // UGA's rating rank
   });
 
@@ -419,17 +420,17 @@ describe('RankingsBoard: season-resume order', () => {
 
   test('the toggle switches to the rating order and back', async () => {
     await load('resume');
-    fireEvent.click(screen.getByRole('button', { name: /Next-week rating/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Next-week rating$/ }));
     expect(names()[0]).toMatch(/^1Bama/);
     expect(screen.getByText('Rating summary for Bama')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /Season resume/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Season resume$/ }));
     expect(names()[0]).toMatch(/^1UGA/);
   });
 
   test('a board with no resume data offers no toggle and stays in rating order even if asked for resume', async () => {
     const old = data.map(({ resume_rank, resume_sor, resume_summary, resume_games, resume_tie_lo, resume_tie_hi, ...r }) => r);
     await load('resume', old);
-    expect(screen.queryByRole('button', { name: /Season resume/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Season resume$/ })).not.toBeInTheDocument();
     expect(names()[0]).toMatch(/^1Bama/);
   });
 
@@ -439,6 +440,76 @@ describe('RankingsBoard: season-resume order', () => {
     });
     render(<RankingsBoard sport="mlb" season={2026} title="MLB" />);
     await screen.findByText('Brewers');
-    expect(screen.queryByRole('button', { name: /Season resume/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Season resume$/ })).not.toBeInTheDocument();
+  });
+});
+
+
+describe('RankingsBoard: header help and reading guide', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  const rows = [
+    { team: 'UGA', rank: 4, rating: 858, record: '6-0', resume_rank: 1, resume_sor: 1.2, resume_tie_lo: 1, resume_tie_hi: 7,
+      resume_summary: 'UGA summary', resume_games: [], rank_p05: 1, rank_p95: 6, ap_rank: 2, summary: 'x' },
+    { team: 'Bama', rank: 1, rating: 914, record: '5-1', resume_rank: 2, resume_sor: 1.22, resume_tie_lo: 1, resume_tie_hi: 9,
+      resume_summary: 'Bama summary', resume_games: [], rank_p05: 1, rank_p95: 5, ap_rank: 6, summary: 'y' },
+  ];
+  const load = async (primary) => {
+    ApiService.getRankings.mockResolvedValue({
+      data: rows, meta: { count: 2, season: 2026, ...(primary ? { display: { primary, show: ['results'], media: ['ap'] } } : {}) },
+    });
+    render(<RankingsBoard sport="cfb" season={2026} division="fbs" title="CFB" accent="ftbl" />);
+    await screen.findByText('UGA');
+  };
+
+  test('every header has an info marker carrying a plain-language explanation', async () => {
+    await load('resume');
+    for (const label of ['#', 'Team', 'Rec', 'Resume', 'Range', 'Next-week rating', 'AP']) {
+      expect(screen.getByRole('button', { name: new RegExp(`^${label.replace('#', '\\#')}: `) })).toBeInTheDocument();
+    }
+    const resume = screen.getByRole('button', { name: /^Resume: / });
+    expect(resume.getAttribute('data-tip')).toMatch(/typical top-25 team/);
+  });
+
+  test('the info marker opens on tap or click and closes on Escape, without changing the header text', async () => {
+    await load('resume');
+    const btn = screen.getByRole('button', { name: /^Range: / });
+    expect(btn.getAttribute('data-open')).toBe('false');
+    fireEvent.click(btn);
+    expect(btn.getAttribute('data-open')).toBe('true');
+    fireEvent.keyDown(btn, { key: 'Escape' });
+    expect(btn.getAttribute('data-open')).toBe('false');
+    expect(btn.closest('th').textContent).toBe('Range');
+  });
+
+  test('rating mode explains its own headers, not the resume ones', async () => {
+    await load(undefined);
+    expect(screen.getByRole('button', { name: /^Rating: .*64%/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Rank range: / })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Range: / })).not.toBeInTheDocument();
+  });
+
+  test('the guide lists the drawn columns in the current mode', async () => {
+    await load('resume');
+    const guide = screen.getByText('How to read this table').closest('details');
+    expect(guide.textContent).not.toMatch(/Next-week rating/);            // closed: nothing repeated on the page
+    guide.open = true;
+    fireEvent(guide, new Event('toggle'));
+    await waitFor(() => expect(guide.textContent).toMatch(/Range/));
+    expect(guide.textContent).toMatch(/Next-week rating/);
+    expect(guide.textContent).toMatch(/Details/);
+    expect(guide.textContent).not.toMatch(/Rank range/);
+  });
+
+  test('the word "tied" no longer appears on the resume board', async () => {
+    await load('resume');
+    expect(document.body.textContent).not.toMatch(/\btied\b/i);
+    expect(document.body.innerHTML).not.toMatch(/statistically tied/i);
+  });
+
+  test('a long range reads as places, a firm one as firm', async () => {
+    await load('resume');
+    expect(screen.getByText('#1–#9')).toBeInTheDocument();
+    expect(screen.getByText('#1–#7')).toBeInTheDocument();
   });
 });
