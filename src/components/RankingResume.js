@@ -8,7 +8,7 @@ import React from 'react';
 const signed1 = (v) => (v == null || Number.isNaN(v) ? '—' : `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(2)}`);
 export const sor = signed1;
 
-/** "tied #3–#7" when this team's record cannot be told apart from teams ranked around it; null when it is clear. */
+/** "#3–#7" when this team's record cannot be told apart from teams ranked around it; null when its place is firm. */
 export function tieLabel(row) {
   const lo = row.resume_tie_lo;
   const hi = row.resume_tie_hi;
@@ -19,10 +19,9 @@ export function tieLabel(row) {
 export function TieCell({ row }) {
   if (row.resume_tie_lo == null || row.resume_tie_hi == null) return '—';   // no games, no resume to be tied
   const label = tieLabel(row);
-  if (!label) return <span className="rb-tie rb-tie--clear" title="No other team's record is statistically tied with this one">clear</span>;
+  if (!label) return <span className="rb-tie rb-tie--firm" title="No other team's record is close enough to swap places with this one">firm</span>;
   return (
-    <span className="rb-tie"
-          title={`This record cannot be told apart from the records of the teams ranked ${label}, so the order among them is a best estimate`}>
+    <span className="rb-tie" title={`Records this close cannot be told apart yet, so this team could reasonably rank anywhere from ${label.replace('–', ' to ')}`}>
       {label}
     </span>
   );
@@ -71,6 +70,6 @@ export function ResumeGames({ row }) {
 
 export const RESUME_NOTE = 'Ranked by season resume: who has earned it, not who would win next week. Each game is scored against '
   + 'what a typical top-25 team would do against that opponent, so wins over strong teams count most and beating weak ones '
-  + 'almost nothing; a bounded margin credit joins the result. Teams whose records cannot be told apart are ordered by who '
-  + 'beat whom, and the “tied” column says how many places that uncertainty spans. The next-week rating, which is the '
-  + 'forecast, is shown beside it.';
+  + 'almost nothing; a small margin credit joins the result. After only a few games many records are too close to separate, '
+  + 'so the Range column shows the places a team could reasonably hold, and head-to-head results decide the order inside it. '
+  + 'The next-week rating, which is the forecast, is shown beside it.';

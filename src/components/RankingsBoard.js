@@ -3,6 +3,7 @@ import ApiService from '../services/api';
 import RankBand from './RankBand';
 import { ComparePicker, OrderChip, PairExplanation, TeamRationale } from './RankingRationale';
 import { RESUME_NOTE, ResumeGames, TieCell, sor as fmtSor } from './RankingResume';
+import { HELP, HelpHeader, ReadingGuide } from './RankingHelp';
 import './styles/RankingsBoard.css';
 
 /**
@@ -86,8 +87,8 @@ export const CUSTOM_COLUMNS = [
   },
   {
     id: 'resume', key: 'resume_rank', label: 'Resume',
-    title: 'Rank by strength of record: wins above what an average team would win against this schedule',
-    note: 'Resume ranks teams by wins above what an average team would win against the same schedule.',
+    title: 'The season resume: results against schedule strength, graded against a typical top-25 team, with head-to-head deciding teams whose records are too close to separate',
+    note: 'Resume ranks teams by results against schedule strength, graded against a typical top-25 team.',
   },
 ].map((c) => ({ ...c, render: (r) => <RankCell row={r} field={c.key} /> }));
 
@@ -101,7 +102,7 @@ const MEDIA_COLUMNS = [
 /** Optional columns, rendered only where the sport actually supplies the data. */
 const OPTIONAL_COLUMNS = [
   { key: 'conference', label: 'Conf', title: 'Conference or division', render: (r) => r.conference || '—' },
-  { key: 'sor_rank', label: 'SOR', title: 'Strength of record rank: wins against this schedule relative to what an average team would expect (ESPN FPI for college; computed from these ratings where ESPN publishes none)', render: (r) => ord(r.sor_rank) },
+  { key: 'sor_rank', label: 'ESPN SOR', title: "ESPN's strength-of-record rank (college), or a similar rank computed from these ratings where ESPN publishes none. It is a different measure from this table's own Resume.", render: (r) => ord(r.sor_rank) },
   { key: 'sos_rank', label: 'SOS', title: 'Strength of schedule rank (ESPN FPI)', render: (r) => ord(r.sos_rank) },
   { key: 'fpi', label: 'FPI', title: "ESPN's Football Power Index", render: (r) => dec(r.fpi, 1) },
   { key: 'eff_offense', label: 'Off', title: 'Offensive efficiency (ESPN)', render: (r) => dec(r.eff_offense, 1) },
@@ -334,6 +335,8 @@ export default function RankingsBoard({
 
       {resumeMode && <p className="rb-note">{RESUME_NOTE}</p>}
 
+      <ReadingGuide resumeMode={resumeMode} columns={columns} hasDetails={hasRationale} />
+
       {!resumeMode && (
       <p className="rb-note">
         One global fit over every game rather than a week-by-week rating walk, so the
@@ -398,22 +401,22 @@ export default function RankingsBoard({
         <table className="rb-table">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Team</th>
-              <th>Rec</th>
+              <HelpHeader label="#" text={resumeMode ? HELP.rank_resume : HELP.rank_rating} />
+              <HelpHeader label="Team" text={resumeMode ? HELP.team.replace('the measure the table is ordered by', 'strength of record') : HELP.team.replace('the measure the table is ordered by', 'rating')} />
+              <HelpHeader label="Rec" text={HELP.record} />
               {resumeMode ? (
                 <>
-                  <th title="Strength of record: results against what a typical top-25 team would do on this schedule">Resume</th>
-                  <th title="The range of places this team's record is statistically tied with">Tied</th>
-                  <th title="The forecast rating, and the place it gives this team">Next-week rating</th>
+                  <HelpHeader label="Resume" text={HELP.resume} />
+                  <HelpHeader label="Range" text={HELP.range} />
+                  <HelpHeader label="Next-week rating" text={HELP.rating_resume} align="end" />
                 </>
               ) : (
                 <>
-                  <th>Rating</th>
-                  <th title="5th–95th percentile rank across bootstrap resamples">Rank range</th>
+                  <HelpHeader label="Rating" text={HELP.rating} />
+                  <HelpHeader label="Rank range" text={HELP.rank_range} />
                 </>
               )}
-              {columns.map((c) => <th key={c.key} title={c.title}>{c.label}</th>)}
+              {columns.map((c) => <HelpHeader key={c.key} label={c.label} text={c.title || c.label} align="end" />)}
             </tr>
           </thead>
           <tbody>{shown.map((r) => <Row key={r.team} r={r} />)}</tbody>

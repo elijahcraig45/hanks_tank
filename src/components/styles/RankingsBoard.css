@@ -570,3 +570,35 @@
 .rb-games-table tfoot td { border-top: 1px solid var(--ht-gray-300, #d0d5dd); font-weight: 600; }
 .rb-credit--up { color: var(--ht-green-600, #2e7d32); }
 .rb-credit--down { color: var(--ht-red-600, #c62828); }
+
+/* Header help: an info marker whose explanation is drawn from data-tip (hover, keyboard focus, or tap) */
+.rb-table th { position: relative; }
+.rb-th { display: inline-flex; align-items: center; gap: 0.3rem; }
+.rb-info {
+  position: static; flex: none; width: 14px; height: 14px; padding: 0; border-radius: 50%;
+  border: 1px solid var(--text-muted); background: none; color: var(--text-muted); cursor: help;
+  font: 600 9px/1 inherit; display: inline-flex; align-items: center; justify-content: center;
+}
+.rb-info::before { content: 'i'; }
+.rb-info:hover, .rb-info:focus-visible, .rb-info[data-open='true'] { color: var(--accent); border-color: var(--accent); }
+.rb-info:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.rb-info::after {
+  content: attr(data-tip); display: none; position: absolute; top: calc(100% + 4px); left: 6px; z-index: 20;
+  width: max-content; max-width: min(280px, 72vw); padding: 0.5rem 0.65rem; white-space: normal; text-align: left;
+  font: 400 0.74rem/1.45 inherit; color: var(--text-2); background: var(--surface, #fff);
+  border: 1px solid var(--ht-gray-300, #d0d5dd); border-radius: 6px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+  text-transform: none; letter-spacing: 0; font-weight: 400;
+}
+.rb-info[data-align='end']::after { left: auto; right: 6px; }
+.rb-info:hover::after, .rb-info:focus-visible::after, .rb-info[data-open='true']::after { display: block; }
+.rb-tie--firm { color: var(--text-muted); font-style: italic; }
+
+/* How to read this table */
+.rb-guide { margin: 0.2rem 0 0.7rem; font-size: 0.78rem; }
+.rb-guide > summary { cursor: pointer; font-weight: 600; color: var(--accent); width: fit-content; }
+.rb-guide > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+.rb-guide-list { margin: 0.5rem 0 0; display: grid; gap: 0.45rem; max-width: 110ch; }
+.rb-guide-row { display: grid; grid-template-columns: 11rem 1fr; gap: 0.2rem 0.8rem; }
+.rb-guide-row dt { font-weight: 600; color: var(--text-1, inherit); }
+.rb-guide-row dd { margin: 0; color: var(--text-2); line-height: 1.5; }
+@media (max-width: 560px) { .rb-guide-row { grid-template-columns: 1fr; } }
