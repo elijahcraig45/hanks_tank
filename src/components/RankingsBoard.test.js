@@ -351,3 +351,94 @@ describe('meta.display', () => {
     expect(headers()).not.toContain('bogus');
   });
 });
+
+describe('RankingsBoard: season-resume order', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  const games = [
+    { opp: 'Stanford', opp_rank: 102, date: '2026-09-27', site: 'A', won: false, pf: 27, pa: 34, credit: -0.74 },
+    { opp: 'Duke', opp_rank: 39, date: '2026-10-10', site: 'H', won: true, pf: 28, pa: 25, credit: -0.03 },
+  ];
+  const data = [
+    team({ team: 'Bama', rank: 1, rating: 914, resume_rank: 2, resume_sor: 1.22, resume_tie_lo: 1, resume_tie_hi: 9,
+      resume_summary: 'Bama summary line', summary: 'Rating summary for Bama', vs_next: { b: 'ND', b_rank: 2 }, resume_games: games }),
+    team({ team: 'UGA', rank: 4, rating: 858, resume_rank: 1, resume_sor: 1.2, resume_tie_lo: 1, resume_tie_hi: 1,
+      resume_summary: 'UGA summary line', summary: 'Rating summary for UGA', resume_games: [] }),
+    team({ team: 'Idle', rank: 9, rating: 300, resume_rank: null, resume_sor: null, summary: 'Rating summary for Idle' }),
+  ];
+  const names = () => screen.getAllByRole('row').map((r) => r.textContent).filter((t) => /Bama|UGA|Idle/.test(t) && !/summary/.test(t));
+  const load = async (primary, rows = data) => {
+    ApiService.getRankings.mockResolvedValue({
+      data: rows, meta: { count: rows.length, season: 2026, ...(primary ? { display: { primary } } : {}) },
+    });
+    render(<RankingsBoard sport="cfb" season={2026} division="fbs" title="CFB" accent="ftbl" />);
+    await screen.findByText('UGA');
+  };
+
+  test('with no site setting the board keeps the rating order and its columns', async () => {
+    await load(undefined);
+    expect(names()[0]).toMatch(/^1Bama/);
+    expect(screen.getByRole('columnheader', { name: /Rank range/ })).toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: /^Tied$/ })).not.toBeInTheDocument();
+  });
+
+  test('a resume setting numbers and sorts the table by resume, teams without games last', async () => {
+    await load('resume');
+    const rowsText = names();
+    expect(rowsText[0]).toMatch(/^1UGA/);
+    expect(rowsText[1]).toMatch(/^2Bama/);
+    expect(rowsText[2]).toMatch(/^—Idle/);
+  });
+
+  test('resume mode shows strength of record, the tie range and the rating with its own rank', async () => {
+    await load('resume');
+    expect(screen.getByRole('columnheader', { name: /^Resume$/ })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /Next-week rating/ })).toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: /Rank range/ })).not.toBeInTheDocument();
+    expect(screen.getByText('+1.22')).toBeInTheDocument();
+    expect(screen.getByText('#1–#9')).toBeInTheDocument();
+    expect(screen.getByText('clear')).toBeInTheDocument();          // UGA: nobody tied with it
+    expect(screen.getByText('#4')).toBeInTheDocument();             // UGA's rating rank
+  });
+
+  test('resume mode uses the resume summary and hides the rating-order panels', async () => {
+    await load('resume');
+    expect(screen.getByText('Bama summary line')).toBeInTheDocument();
+    expect(screen.queryByText('Rating summary for Bama')).not.toBeInTheDocument();
+    expect(screen.queryByText(/why above/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Compare/)).not.toBeInTheDocument();
+  });
+
+  test('Details opens that team\'s per-game credits', async () => {
+    await load('resume');
+    fireEvent.click(screen.getAllByText('Details')[1]);              // Bama is the second row
+    expect(await screen.findByText(/Stanford/)).toBeInTheDocument();
+    expect(screen.getByText('−0.74')).toBeInTheDocument();
+    expect(screen.getByText('W 28–25')).toBeInTheDocument();
+  });
+
+  test('the toggle switches to the rating order and back', async () => {
+    await load('resume');
+    fireEvent.click(screen.getByRole('button', { name: /Next-week rating/ }));
+    expect(names()[0]).toMatch(/^1Bama/);
+    expect(screen.getByText('Rating summary for Bama')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Season resume/ }));
+    expect(names()[0]).toMatch(/^1UGA/);
+  });
+
+  test('a board with no resume data offers no toggle and stays in rating order even if asked for resume', async () => {
+    const old = data.map(({ resume_rank, resume_sor, resume_summary, resume_games, resume_tie_lo, resume_tie_hi, ...r }) => r);
+    await load('resume', old);
+    expect(screen.queryByRole('button', { name: /Season resume/ })).not.toBeInTheDocument();
+    expect(names()[0]).toMatch(/^1Bama/);
+  });
+
+  test('the toggle does not exist for sports without a resume board', async () => {
+    ApiService.getRankings.mockResolvedValue({
+      data: [team({ team: 'Brewers' })], meta: { count: 1, season: 2026 },
+    });
+    render(<RankingsBoard sport="mlb" season={2026} title="MLB" />);
+    await screen.findByText('Brewers');
+    expect(screen.queryByRole('button', { name: /Season resume/ })).not.toBeInTheDocument();
+  });
+});
