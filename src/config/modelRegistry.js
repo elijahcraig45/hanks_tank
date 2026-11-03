@@ -260,8 +260,8 @@ const NFL_CARDS = {
   },
   ridge: {
     name: 'Margin ridge',
-    role: 'Shadow — candidate replacement for XGBoost',
-    status: 'shadow',
+    role: 'Production since 2026 week 9 — what the NFL picks page shows',
+    status: 'production',
     what: 'One power rating per team, in points, fit so home rating minus away rating plus '
       + 'home-field advantage matches actual scoring margins.',
     inputs: ['Final scores from a decaying two-season window', 'Neutral-site flag'],
@@ -269,6 +269,8 @@ const NFL_CARDS = {
       + 'recent weeks weighted more. The predicted margin becomes a probability through a '
       + 'normal curve (σ ≈ 12.5 points in the NFL).',
     record: {
+      live: 'As a shadow in 2026 weeks 3-8: log loss 0.645 vs the XGBoost\'s 0.664 on the '
+        + 'same 87 games (within noise, CI crosses 0).',
       backtest: 'Walk-forward log loss 0.6342 (2017-24) and 0.6339 (2025) vs the old '
         + 'production XGBoost\'s 0.6455 and 0.6416. Against the EPA-fixed XGBoost it is '
         + 'within noise (−0.008, CI crosses 0).',
@@ -280,8 +282,8 @@ const NFL_CARDS = {
   },
   xgb: {
     name: 'XGBoost',
-    role: 'Production — what the NFL picks page shows',
-    status: 'production',
+    role: 'Former production (through 2026 week 8) — still predicts every week as a shadow',
+    status: 'shadow',
     what: 'A gradient-boosted tree classifier voting on "does the home team win?".',
     inputs: [
       'Elo, season Pythagorean record, point differential over the last 3 and 8 games, streaks',
@@ -350,7 +352,8 @@ const CFB_CARDS = {
   },
   ridge: {
     ...NFL_CARDS.ridge,
-    role: 'Shadow — candidate replacement for the legacy XGBoost',
+    role: 'Production from 2026 week 11 — what the college picks page shows',
+    status: 'production',
     inputs: [
       'Final scores from a decaying two-season window',
       'Neutral site, an FBS-vs-FCS division term, and margins capped at 45 points',
@@ -366,8 +369,8 @@ const CFB_CARDS = {
   },
   xgb: {
     name: 'XGBoost',
-    role: 'Legacy production — what the college picks page shows today',
-    status: 'production',
+    role: 'Former production (through 2026 week 10) — still predicts every week as a shadow',
+    status: 'shadow',
     what: 'A gradient-boosted tree classifier, fit separately for FBS and FCS.',
     inputs: ['Elo (damped for blowouts), season Pythagorean, point differential over 3 and 8 '
       + 'games, win rate, streaks', 'Conference game, neutral site'],
@@ -377,9 +380,9 @@ const CFB_CARDS = {
         + 'differential = 0 (a cold-start bug).',
       backtest: 'FBS 2025 log loss 0.5318 — clearly behind the ridge (0.4823), FPI and the market.',
     },
-    strengths: ['Already running every week.'],
+    strengths: ['Still running every week, so its record stays comparable.'],
     weaknesses: ['The weakest model on the page by a wide, certain margin.'],
-    caveats: ['Scheduled to be replaced by the margin ridge once the shadow earns it.'],
+    caveats: ['Replaced by the margin ridge as the headline from 2026 week 11.'],
     learn: [LEARN.footballModels],
   },
   drive_sim: {
@@ -452,6 +455,7 @@ export const SPORT_INTRO = {
     + 'here carries its interval.',
   nfl: 'Four model families and the betting line, scored on the same games. The market is '
     + 'the bar; ESPN FPI is context, not a target.',
-  cfb: 'In college the gaps are big enough to see: the margin ridge is far ahead of the '
-    + 'legacy XGBoost, and FPI and the market are ahead of both early in the season.',
+  cfb: 'In college the gaps are big enough to see: the margin ridge (the headline from '
+    + '2026 week 11) is far ahead of the old XGBoost, and FPI and the market are ahead of '
+    + 'both early in the season.',
 };
