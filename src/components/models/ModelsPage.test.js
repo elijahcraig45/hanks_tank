@@ -249,7 +249,14 @@ describe('model registry', () => {
   test('the market is the benchmark and FPI is not a target', () => {
     expect(MODEL_CARDS.nfl.market.role).toMatch(/benchmark to beat/i);
     expect(MODEL_CARDS.cfb.fpi.role).toMatch(/not a target/i);
-    expect(MODEL_CARDS.cfb.xgb.role).toMatch(/legacy production/i);
+    expect(MODEL_CARDS.cfb.xgb.role).toMatch(/former production/i);
+  });
+
+  test('the margin ridge is the football headline and the XGBoost a shadow', () => {
+    for (const sport of ['nfl', 'cfb']) {
+      expect(MODEL_CARDS[sport].ridge.status).toBe('production');
+      expect(MODEL_CARDS[sport].xgb.status).toBe('shadow');
+    }
   });
 });
 

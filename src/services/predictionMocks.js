@@ -198,13 +198,12 @@ export function mockPlayers(sport, { date, gameId } = {}) {
 
 const NFL_MODELS = [
   { key: 'market', label: 'Market', role: 'benchmark', available: true, outputs: ['win_prob', 'margin', 'total'], learn: '/learn/football-model-compare.html' },
-  { key: 'ridge', label: 'Ridge', role: 'shadow', available: true, outputs: ['win_prob', 'margin'], learn: '/learn/football-models.html' },
-  { key: 'xgb', label: 'XGBoost', role: 'production', available: true, outputs: ['win_prob'], learn: '/learn/football-models.html' },
+  { key: 'ridge', label: 'Ridge', role: 'production', available: true, outputs: ['win_prob', 'margin'], learn: '/learn/football-models.html' },
+  { key: 'xgb', label: 'XGBoost', role: 'shadow', available: true, outputs: ['win_prob'], learn: '/learn/football-models.html' },
   { key: 'fpi', label: 'FPI', role: 'reference', available: true, outputs: ['win_prob', 'margin'], learn: '/learn/football-model-compare.html' },
   { key: 'drive_sim', label: 'Drive sim', role: 'shadow', available: true, outputs: ['win_prob', 'score', 'total', 'margin', 'dist'], learn: '/learn/football-drive-sim.html' },
 ];
-const CFB_MODELS = NFL_MODELS.filter((m) => m.key !== 'drive_sim')
-  .map((m) => (m.key === 'xgb' ? { ...m, role: 'production' } : m));
+const CFB_MODELS = NFL_MODELS.filter((m) => m.key !== 'drive_sim');
 
 const NFL_TEAMS = [
   [{ id: 'KC', name: 'Kansas City Chiefs', abbr: 'KC' }, { id: 'BUF', name: 'Buffalo Bills', abbr: 'BUF' }],
@@ -287,6 +286,6 @@ function footballSlate(sport, { season, week, division }) {
   });
   return {
     sport, date: null, season: s, week: w, division: nfl ? null : (division || 'fbs'),
-    models: nfl ? NFL_MODELS : CFB_MODELS, featured_default: nfl ? 'xgb' : 'xgb', games,
+    models: nfl ? NFL_MODELS : CFB_MODELS, featured_default: 'ridge', games,
   };
 }
